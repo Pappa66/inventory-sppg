@@ -35,7 +35,7 @@ export default function Page() {
   const showHistory = async (it) => {
     try {
       const { data } = await api.get(`/versions/items/${it.id}`);
-      setVersions({ item: it, rows: data });
+      setVersions(data);
     } catch (er) { toast.error(formatErr(er)); }
   };
 
