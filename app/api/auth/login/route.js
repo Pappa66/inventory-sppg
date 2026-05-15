@@ -20,7 +20,7 @@ export async function POST(request) {
     if (!valid) return apiError("Email atau password salah", 401);
 
     return apiSuccess({
-      token: user.email,
+      token: "demo",
       user: {
         id: user.id,
         email: user.email,

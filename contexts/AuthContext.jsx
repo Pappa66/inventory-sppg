@@ -1,41 +1,52 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
 
 const AuthContext = createContext(null);
+
+function clearAll() {
+  localStorage.removeItem("sppg_token");
+  document.cookie = "sppg_token=; path=/; max-age=0";
+  delete api.defaults.headers.common["Authorization"];
+}
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [activeRole, setActiveRole] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const router = useRouter();
 
   useEffect(() => {
     const token = localStorage.getItem("sppg_token");
-    if (token) {
-      api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-      api.get("/auth/me")
-        .then(({ data }) => {
-          setUser(data);
-          setActiveRole(data.role);
-        })
-        .catch(() => {
-          localStorage.removeItem("sppg_token");
-          document.cookie = "sppg_token=; path=/; max-age=0";
-        })
-        .finally(() => setLoading(false));
-    } else {
+    if (!token) {
       setLoading(false);
+      return;
     }
-  }, []);
+
+    api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+    api.get("/auth/me")
+      .then(({ data }) => {
+        setUser(data);
+        setActiveRole(data.role);
+        setLoading(false);
+      })
+      .catch(() => {
+        clearAll();
+        setLoading(false);
+        router.push("/login");
+      });
+  }, [router]);
 
   const login = useCallback(async (email, password) => {
     try {
       const { data } = await api.post("/auth/login", { email, password });
+      clearAll();
       localStorage.setItem("sppg_token", data.token);
       document.cookie = `sppg_token=${data.token}; path=/; max-age=43200; SameSite=Lax`;
-      api.defaults.headers.common["Authorization"] = `Bearer ${data.user.email}`;
+      api.defaults.headers.common["Authorization"] = `Bearer ${data.token}`;
       setUser(data.user);
       setActiveRole(data.user.role);
       setError("");
@@ -51,12 +62,11 @@ export function AuthProvider({ children }) {
     try {
       await api.post("/auth/logout");
     } catch {}
-    localStorage.removeItem("sppg_token");
-    document.cookie = "sppg_token=; path=/; max-age=0";
-    delete api.defaults.headers.common["Authorization"];
+    clearAll();
     setUser(null);
     setActiveRole(null);
-  }, []);
+    router.push("/login");
+  }, [router]);
 
   return (
     <AuthContext.Provider value={{ user, activeRole, setActiveRole, loading, login, logout, error, setError }}>
