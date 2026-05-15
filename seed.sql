@@ -2,16 +2,18 @@
 -- Jalankan setelah supabase-schema.sql
 
 -- ==================== USERS ====================
-INSERT INTO users (id, email, name, role, is_active, password_hash, created_at) VALUES
+-- Semua password: admin123
+INSERT INTO users (id, email, name, role, is_active, password_hash, created_at)
+SELECT * FROM (VALUES
   (gen_random_uuid(), 'admin@sppg.id', 'Administrator', 'admin', true, '$2a$10$Pz32qBguBXmHlFzQfE4uIuk8hWZEVNHcsS2dcrf2FcfCqGnh8iQW2', now()),
   (gen_random_uuid(), 'akuntan@sppg.id', 'Sri Akuntansi', 'accountant', true, '$2a$10$Pz32qBguBXmHlFzQfE4uIuk8hWZEVNHcsS2dcrf2FcfCqGnh8iQW2', now()),
   (gen_random_uuid(), 'kepala@sppg.id', 'Pak Kepala Dapur', 'kitchen_head', true, '$2a$10$Pz32qBguBXmHlFzQfE4uIuk8hWZEVNHcsS2dcrf2FcfCqGnh8iQW2', now()),
   (gen_random_uuid(), 'chef@sppg.id', 'Chef Wulan', 'head_chef', true, '$2a$10$Pz32qBguBXmHlFzQfE4uIuk8hWZEVNHcsS2dcrf2FcfCqGnh8iQW2', now()),
   (gen_random_uuid(), 'asisten@sppg.id', 'Asisten Belanja', 'field_assistant', true, '$2a$10$Pz32qBguBXmHlFzQfE4uIuk8hWZEVNHcsS2dcrf2FcfCqGnh8iQW2', now()),
   (gen_random_uuid(), 'staf@sppg.id', 'Staf Gudang', 'field_staff', true, '$2a$10$Pz32qBguBXmHlFzQfE4uIuk8hWZEVNHcsS2dcrf2FcfCqGnh8iQW2', now()),
-  (gen_random_uuid(), 'ahligizi@sppg.id', 'Ahli Gizi Maya', 'nutritionist', true, '$2a$10$Pz32qBguBXmHlFzQfE4uIuk8hWZEVNHcsS2dcrf2FcfCqGnh8iQW2', now());
-
--- Semua password: admin123
+  (gen_random_uuid(), 'ahligizi@sppg.id', 'Ahli Gizi Maya', 'nutritionist', true, '$2a$10$Pz32qBguBXmHlFzQfE4uIuk8hWZEVNHcsS2dcrf2FcfCqGnh8iQW2', now())
+) AS v
+WHERE NOT EXISTS (SELECT 1 FROM users WHERE email = v.column2);
 
 -- ==================== ITEMS (Master Bahan) ====================
 INSERT INTO items (id, name, unit, category, par_level, price_per_unit, zone, allergens, created_at, updated_at)
