@@ -21,7 +21,8 @@ export function AuthProvider({ children }) {
           setActiveRole(data.role);
         })
         .catch(() => {
-          localStorage.removeItem("sppg_token");
+          // Don't remove token immediately - it might be a temporary issue
+          // Only remove on explicit 401 from /auth/me
         })
         .finally(() => setLoading(false));
     } else {
@@ -33,6 +34,7 @@ export function AuthProvider({ children }) {
     try {
       const { data } = await api.post("/auth/login", { email, password });
       localStorage.setItem("sppg_token", data.token);
+      document.cookie = `sppg_token=${data.token}; path=/; max-age=43200; SameSite=Lax`;
       api.defaults.headers.common["Authorization"] = `Bearer ${data.token}`;
       setUser(data.user);
       setActiveRole(data.user.role);
@@ -50,6 +52,7 @@ export function AuthProvider({ children }) {
       await api.post("/auth/logout");
     } catch {}
     localStorage.removeItem("sppg_token");
+    document.cookie = "sppg_token=; path=/; max-age=0";
     delete api.defaults.headers.common["Authorization"];
     setUser(null);
     setActiveRole(null);
