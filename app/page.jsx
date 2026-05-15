@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import Layout from "@/components/Layout";
 import { api } from "@/lib/api";
 import { fmtIDR } from "@/lib/format";
-import { Package, AlertTriangle, TrendingUp, Wallet } from "lucide-react";
+import { Package, AlertTriangle, TrendingUp, Wallet, Database } from "lucide-react";
 
 export default function DashboardPage() {
   const [fin, setFin] = useState(null);
@@ -56,6 +56,14 @@ export default function DashboardPage() {
                 </div>
               ))}
             </div>
+          </div>
+        )}
+
+        {!fin && low.length === 0 && (
+          <div className="card-soft p-12 text-center text-[#5C5C5C]">
+            <Database size={40} className="mx-auto mb-3 opacity-30" />
+            <p className="font-display text-lg font-bold">Belum ada data</p>
+            <p className="text-sm mt-1">Jalankan file <code className="bg-[#EAE4D8] px-2 py-0.5 rounded text-xs">seed.sql</code> di Supabase SQL Editor untuk mengisi data demo.</p>
           </div>
         )}
       </div>

@@ -17,6 +17,10 @@ export default function Page() {
   useEffect(() => { load(); }, []);
 
   const toggle = async (u, val) => {
+    if (u.email === "admin@sppg.id" && !val) {
+      toast.error("Akun admin utama tidak bisa dinonaktifkan");
+      return;
+    }
     try {
       await api.patch(`/users/${u.id}`, { is_active: val });
       toast.success(val ? "Akun diaktifkan" : "Akun dinonaktifkan");
@@ -66,9 +70,9 @@ export default function Page() {
                     <span className="role-pill" style={{background:`${ROLE_COLORS[u.role]}1A`, color:ROLE_COLORS[u.role]}}>{ROLE_LABELS[u.role]}</span>
                   </td>
                   <td className="py-3 px-4 audit-ts text-xs">{fmtDateTime(u.created_at)}</td>
-                  <td className="py-3 px-4">
-                    <Switch data-testid={`activate-${u.email}`} checked={!!u.is_active} onCheckedChange={(v)=>toggle(u, v)} />
-                  </td>
+                    <td className="py-3 px-4">
+                      <Switch data-testid={`activate-${u.email}`} checked={!!u.is_active} onCheckedChange={(v)=>toggle(u, v)} disabled={u.email === "admin@sppg.id"} />
+                    </td>
                 </tr>
               ))}
             </tbody>
