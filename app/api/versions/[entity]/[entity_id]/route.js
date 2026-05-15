@@ -3,7 +3,7 @@ import { getTokenUser, apiError, apiSuccess } from "@/lib/db-helpers";
 
 export async function GET(request, { params }) {
   try {
-    await getTokenUser(request);
+    await getTokenUser();
     const { entity, entity_id } = await params;
     const supabase = await createClient();
 
@@ -23,16 +23,26 @@ export async function GET(request, { params }) {
       .eq("id", entity_id)
       .maybeSingle();
 
-    const rows = (audit || []).map(r => ({
-      id: r.id,
-      ts: r.timestamp,
-      action: r.action,
-      actor: r.actor,
-      actor_email: r.actor,
-      changes: r.changes,
-      snapshot: r.changes || {},
-      note: r.note,
-    }));
+    const rows = (audit || []).map(r => {
+      const snapshot = {};
+      if (r.changes && typeof r.changes === "object") {
+        for (const [k, v] of Object.entries(r.changes)) {
+          if (v && typeof v === "object" && "new" in v) {
+            snapshot[k] = v.new;
+          }
+        }
+      }
+      return {
+        id: r.id,
+        ts: r.timestamp,
+        action: r.action,
+        actor: r.actor,
+        actor_email: r.actor,
+        changes: r.changes,
+        snapshot,
+        note: r.note,
+      };
+    });
 
     return apiSuccess({
       item: { name: item?.name || entity_id },
