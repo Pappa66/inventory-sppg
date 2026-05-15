@@ -1,12 +1,13 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import Layout from "@/components/Layout";
 import { api, formatErr } from "@/lib/api";
 import { fmtIDR, fmtDateTime } from "@/lib/format";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { Camera, Plus, BadgeCheck, AlertCircle, Receipt } from "lucide-react";
+import Pagination from "@/components/Pagination";
 
 const EMPTY = {
   category: "STOCK", description: "", amount_idr: 0,
@@ -23,8 +24,10 @@ export default function Page() {
   const [verifyOf, setVerifyOf] = useState(null);
   const [verifyNote, setVerifyNote] = useState("");
   const fileRef = useRef();
+  const [page, setPage] = useState(1);
+  const perPage = 15;
 
-  const load = () => Promise.all([api.get("/purchases"), api.get("/items")]).then(([a,b]) => { setPurchases(a.data); setItems(b.data); });
+  const load = () => Promise.all([api.get("/purchases"), api.get("/items")]).then(([a,b]) => { setPurchases(a.data); setItems(b.data); setPage(1); });
   useEffect(() => { load(); }, []);
 
   const pickPhoto = (e) => {
@@ -59,6 +62,11 @@ export default function Page() {
     } catch (er) { toast.error(formatErr(er)); }
   };
 
+  const paginatedPurchases = useMemo(() => {
+    const start = (page - 1) * perPage;
+    return purchases.slice(start, start + perPage);
+  }, [purchases, page]);
+
   return (
     <Layout>
       <div className="space-y-6" data-testid="procurement-page">
@@ -72,7 +80,7 @@ export default function Page() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {purchases.map((p) => {
+          {paginatedPurchases.map((p) => {
             const mismatch = p.receipt_total_idr && Math.abs(p.receipt_total_idr - p.amount_idr) > 1;
             return (
               <div key={p.id} className="card-soft p-4" data-testid={`purchase-${p.id}`}>
@@ -102,6 +110,7 @@ export default function Page() {
           })}
           {purchases.length === 0 && <div className="col-span-full text-center text-[#5C5C5C] py-10">Belum ada catatan belanja.</div>}
         </div>
+        <Pagination page={page} totalPages={Math.ceil(purchases.length / perPage)} onPageChange={setPage} />
 
         {open && (
           <div className="fixed inset-0 z-40 bg-black/40 grid place-items-center p-4 overflow-y-auto" onClick={()=>setOpen(false)}>

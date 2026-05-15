@@ -1,11 +1,12 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import Layout from "@/components/Layout";
 import { api, formatErr } from "@/lib/api";
 import { COMMON_ALLERGENS } from "@/lib/format";
 import { toast } from "sonner";
 import { Plus, Flame } from "lucide-react";
+import Pagination from "@/components/Pagination";
 
 const EMPTY = { name: "", servings: 100, ingredients: [], instructions: "",
   calories_kcal: 0, protein_g: 0, carbs_g: 0, fats_g: 0, sodium_mg: 0, allergens: [] };
@@ -16,8 +17,10 @@ export default function Page() {
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState(EMPTY);
+  const [page, setPage] = useState(1);
+  const perPage = 15;
 
-  const load = () => Promise.all([api.get("/recipes"), api.get("/items")]).then(([a,b]) => { setRecipes(a.data); setItems(b.data); });
+  const load = () => Promise.all([api.get("/recipes"), api.get("/items")]).then(([a,b]) => { setRecipes(a.data); setItems(b.data); setPage(1); });
   useEffect(() => { load(); }, []);
 
   const addRow = () => setForm(p=>({...p, ingredients:[...p.ingredients, {item_id:"", quantity:0, unit:""}]}));
@@ -34,6 +37,11 @@ export default function Page() {
     } catch (er) { toast.error(formatErr(er)); }
   };
 
+  const paginatedRecipes = useMemo(() => {
+    const start = (page - 1) * perPage;
+    return recipes.slice(start, start + perPage);
+  }, [recipes, page]);
+
   return (
     <Layout>
       <div className="space-y-6" data-testid="recipes-page">
@@ -46,7 +54,7 @@ export default function Page() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {recipes.map(r => (
+          {paginatedRecipes.map(r => (
             <div key={r.id} className="card-soft p-4" data-testid={`recipe-${r.id}`}>
               <div className="flex items-start justify-between">
                 <div>
@@ -78,6 +86,7 @@ export default function Page() {
           ))}
           {recipes.length === 0 && <div className="col-span-full text-center text-[#5C5C5C] py-10">Belum ada resep. Buat resep pertama.</div>}
         </div>
+        <Pagination page={page} totalPages={Math.ceil(recipes.length / perPage)} onPageChange={setPage} />
 
         {open && (
           <div className="fixed inset-0 z-40 bg-black/40 grid place-items-center p-4 overflow-y-auto" onClick={()=>setOpen(false)}>

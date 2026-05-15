@@ -1,11 +1,12 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import Layout from "@/components/Layout";
 import { api, formatErr } from "@/lib/api";
 import { fmtIDR, fmtDateTime, ZONES, ZONE_COLORS, ZONE_LABELS, COMMON_ALLERGENS } from "@/lib/format";
 import { toast } from "sonner";
 import { Plus, History } from "lucide-react";
+import Pagination from "@/components/Pagination";
 
 const EMPTY = { name: "", unit: "kg", category: "Sayur", par_level: 0, price_per_unit: 0, zone: "DRY", allergens: [] };
 
@@ -15,8 +16,10 @@ export default function Page() {
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState(EMPTY);
   const [versions, setVersions] = useState(null);
+  const [page, setPage] = useState(1);
+  const perPage = 15;
 
-  const load = () => api.get("/items").then(({data}) => setItems(data));
+  const load = () => api.get("/items").then(({data}) => { setItems(data); setPage(1); });
   useEffect(() => { load(); }, []);
 
   const save = async (e) => {
@@ -36,6 +39,11 @@ export default function Page() {
     } catch (er) { toast.error(formatErr(er)); }
   };
 
+  const paginatedItems = useMemo(() => {
+    const start = (page - 1) * perPage;
+    return items.slice(start, start + perPage);
+  }, [items, page]);
+
   return (
     <Layout>
       <div className="space-y-6" data-testid="master-data-page">
@@ -48,21 +56,22 @@ export default function Page() {
         </div>
 
         <div className="card-soft overflow-hidden">
-          <table className="w-full text-sm">
-            <thead className="bg-[#EAE4D8] text-[#5C5C5C] text-xs uppercase tracking-wider">
-              <tr>
-                <th className="text-left py-3 px-4">Nama</th>
-                <th className="text-left py-3 px-4">Zona</th>
-                <th className="text-left py-3 px-4">Kategori</th>
-                <th className="text-left py-3 px-4">Satuan</th>
-                <th className="text-right py-3 px-4">Par-Level</th>
-                <th className="text-right py-3 px-4">Harga/Satuan</th>
-                <th className="text-left py-3 px-4">Alergen</th>
-                <th className="text-right py-3 px-4">Aksi</th>
-              </tr>
-            </thead>
-            <tbody>
-              {items.map((it) => (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-[#EAE4D8] text-[#5C5C5C] text-xs uppercase tracking-wider">
+                <tr>
+                  <th className="text-left py-3 px-4">Nama</th>
+                  <th className="text-left py-3 px-4">Zona</th>
+                  <th className="text-left py-3 px-4">Kategori</th>
+                  <th className="text-left py-3 px-4">Satuan</th>
+                  <th className="text-right py-3 px-4">Par-Level</th>
+                  <th className="text-right py-3 px-4">Harga/Satuan</th>
+                  <th className="text-left py-3 px-4">Alergen</th>
+                  <th className="text-right py-3 px-4">Aksi</th>
+                </tr>
+              </thead>
+              <tbody>
+                {paginatedItems.map((it) => (
                 <tr key={it.id} className="border-b border-[#EAE4D8] last:border-0">
                   <td className="py-3 px-4 font-semibold">{it.name}</td>
                   <td className="py-3 px-4"><span className="role-pill" style={{background:`${ZONE_COLORS[it.zone||"DRY"]}1A`, color:ZONE_COLORS[it.zone||"DRY"]}}>{ZONE_LABELS[it.zone||"DRY"]}</span></td>
@@ -79,6 +88,8 @@ export default function Page() {
               ))}
             </tbody>
           </table>
+          </div>
+          <Pagination page={page} totalPages={Math.ceil(items.length / perPage)} onPageChange={setPage} />
         </div>
 
         {open && (

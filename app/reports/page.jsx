@@ -58,7 +58,9 @@ export default function Page() {
     const logo = await getLogo();
     let titleY = 18;
     if (logo) {
-      try { doc.addImage(logo, "JPEG", 14, 10, 40, 0); titleY = 32; } catch { try { doc.addImage(logo, "PNG", 14, 10, 40, 0); titleY = 32; } catch {} }
+      titleY = 34;
+      const fmt = logo.startsWith("data:image/png") ? "PNG" : "JPEG";
+      try { doc.addImage(logo, fmt, 14, 8, 45, 0); } catch { try { doc.addImage(logo, "PNG", 14, 8, 45, 0); } catch {} }
     }
     doc.setFontSize(16);
     doc.text("LAPORAN KEUANGAN · SPPG MBG", 14, titleY);
@@ -112,7 +114,9 @@ export default function Page() {
     const logo = await getLogo();
     let titleY = 18;
     if (logo) {
-      try { doc.addImage(logo, "JPEG", 14, 10, 40, 0); titleY = 32; } catch { try { doc.addImage(logo, "PNG", 14, 10, 40, 0); titleY = 32; } catch {} }
+      titleY = 34;
+      const fmt = logo.startsWith("data:image/png") ? "PNG" : "JPEG";
+      try { doc.addImage(logo, fmt, 14, 8, 45, 0); } catch { try { doc.addImage(logo, "PNG", 14, 8, 45, 0); } catch {} }
     }
     doc.setFontSize(16);
     doc.text("LAPORAN STOK PER ZONA · SPPG MBG", 14, titleY);

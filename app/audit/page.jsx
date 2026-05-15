@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import Layout from "@/components/Layout";
 import { api } from "@/lib/api";
 import { fmtDateTime, ROLE_LABELS, ROLE_COLORS, ZONE_COLORS } from "@/lib/format";
+import Pagination from "@/components/Pagination";
 
 function renderChanges(changes) {
   if (!changes) return null;
@@ -35,14 +36,23 @@ function renderChanges(changes) {
 export default function Page() {
   const [rows, setRows] = useState([]);
   const [filter, setFilter] = useState("");
+  const [page, setPage] = useState(1);
+  const perPage = 10;
 
-  useEffect(() => { api.get("/audit").then(({data})=>setRows(data)); }, []);
+  useEffect(() => { api.get("/audit").then(({data})=>{ setRows(data); setPage(1); }); }, []);
 
   const shown = rows.filter(r => {
     if (!filter) return true;
     const blob = `${r.entity||""} ${r.actor||""} ${r.action||""} ${r.zone||""}`.toLowerCase();
     return blob.includes(filter.toLowerCase());
   });
+
+  useEffect(() => { setPage(1); }, [filter]);
+
+  const paginatedShown = useMemo(() => {
+    const start = (page - 1) * perPage;
+    return shown.slice(start, start + perPage);
+  }, [shown, page]);
 
   return (
     <Layout>
@@ -58,7 +68,7 @@ export default function Page() {
         <div className="card-soft p-6">
           <div className="relative pl-8">
             <div className="absolute left-3 top-2 bottom-2 w-0.5 bg-[#EAE4D8]"/>
-            {shown.map(r => {
+            {paginatedShown.map(r => {
               const ts = r.timestamp || r.ts;
               const role = r.actor_role;
               const roleColor = ROLE_COLORS[role] || "#5C5C5C";
@@ -81,6 +91,7 @@ export default function Page() {
             })}
             {shown.length === 0 && <div className="text-sm text-[#5C5C5C]">Belum ada aktivitas.</div>}
           </div>
+          <Pagination page={page} totalPages={Math.ceil(shown.length / perPage)} onPageChange={setPage} />
         </div>
       </div>
     </Layout>

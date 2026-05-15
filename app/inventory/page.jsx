@@ -6,6 +6,7 @@ import { api, formatErr } from "@/lib/api";
 import { fmtDateTime, ZONES, ZONE_COLORS, ZONE_LABELS } from "@/lib/format";
 import { toast } from "sonner";
 import { Plus, ClipboardCheck, Thermometer, Droplets } from "lucide-react";
+import Pagination from "@/components/Pagination";
 
 export default function Page() {
   const [lots, setLots] = useState([]);
@@ -15,16 +16,24 @@ export default function Page() {
   const [lotForm, setLotForm] = useState({ item_id: "", quantity: 0, expiry_date: "" });
   const [opnameForm, setOpnameForm] = useState({ counted_quantity: 0, zone: "DRY", temperature_c: "", humidity_pct: "", reason: "Routine" });
   const [zoneFilter, setZoneFilter] = useState("ALL");
+  const [page, setPage] = useState(1);
+  const perPage = 15;
 
   const load = () => Promise.all([api.get("/stock-lots"), api.get("/items")])
-    .then(([a,b]) => { setLots(a.data); setItems(b.data); });
+    .then(([a,b]) => { setLots(a.data); setItems(b.data); setPage(1); });
   useEffect(() => { load(); }, []);
+  useEffect(() => { setPage(1); }, [zoneFilter]);
 
   const today = new Date();
   const filtered = useMemo(() => {
     const list = zoneFilter === "ALL" ? lots : lots.filter(l => (l.zone||"DRY") === zoneFilter);
     return [...list].sort((a,b) => (a.expiry_date||"").localeCompare(b.expiry_date||""));
   }, [lots, zoneFilter]);
+
+  const paginated = useMemo(() => {
+    const start = (page - 1) * perPage;
+    return filtered.slice(start, start + perPage);
+  }, [filtered, page]);
 
   const statusFor = (lot) => {
     const d = new Date(lot.expiry_date);
@@ -90,21 +99,22 @@ export default function Page() {
         </div>
 
         <div className="card-soft overflow-hidden">
-          <table className="w-full text-sm">
-            <thead className="bg-[#EAE4D8] text-[#5C5C5C] text-xs uppercase tracking-wider">
-              <tr>
-                <th className="text-left py-3 px-4">Bahan</th>
-                <th className="text-left py-3 px-4">Zona</th>
-                <th className="text-right py-3 px-4">Awal</th>
-                <th className="text-right py-3 px-4">Aktual</th>
-                <th className="text-left py-3 px-4">Kadaluarsa</th>
-                <th className="text-left py-3 px-4">Diterima</th>
-                <th className="text-left py-3 px-4">Status</th>
-                <th className="text-right py-3 px-4">Opname</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.map((l) => {
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-[#EAE4D8] text-[#5C5C5C] text-xs uppercase tracking-wider">
+                <tr>
+                  <th className="text-left py-3 px-4">Bahan</th>
+                  <th className="text-left py-3 px-4">Zona</th>
+                  <th className="text-right py-3 px-4">Awal</th>
+                  <th className="text-right py-3 px-4">Aktual</th>
+                  <th className="text-left py-3 px-4">Kadaluarsa</th>
+                  <th className="text-left py-3 px-4">Diterima</th>
+                  <th className="text-left py-3 px-4">Status</th>
+                  <th className="text-right py-3 px-4">Opname</th>
+                </tr>
+              </thead>
+              <tbody>
+                {paginated.map((l) => {
                 const s = statusFor(l);
                 const z = l.zone || "DRY";
                 return (
@@ -125,6 +135,8 @@ export default function Page() {
               {filtered.length === 0 && <tr><td colSpan={8} className="py-10 text-center text-[#5C5C5C]">Belum ada lot stok untuk zona ini.</td></tr>}
             </tbody>
           </table>
+          </div>
+          <Pagination page={page} totalPages={Math.ceil(filtered.length / perPage)} onPageChange={setPage} />
         </div>
 
         {openLot && (

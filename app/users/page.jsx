@@ -1,19 +1,22 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import Layout from "@/components/Layout";
 import { api, formatErr } from "@/lib/api";
 import { ROLE_LABELS, ROLE_COLORS, fmtDateTime } from "@/lib/format";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { Plus } from "lucide-react";
+import Pagination from "@/components/Pagination";
 
 export default function Page() {
   const [users, setUsers] = useState([]);
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ email: "", name: "", role: "field_staff", password: "" });
+  const [page, setPage] = useState(1);
+  const perPage = 15;
 
-  const load = () => api.get("/users").then(({data}) => setUsers(data)).catch(e => toast.error(formatErr(e)));
+  const load = () => api.get("/users").then(({data}) => { setUsers(data); setPage(1); }).catch(e => toast.error(formatErr(e)));
   useEffect(() => { load(); }, []);
 
   const toggle = async (u, val) => {
@@ -39,6 +42,11 @@ export default function Page() {
     } catch (er) { toast.error(formatErr(er)); }
   };
 
+  const paginatedUsers = useMemo(() => {
+    const start = (page - 1) * perPage;
+    return users.slice(start, start + perPage);
+  }, [users, page]);
+
   return (
     <Layout>
       <div className="space-y-6" data-testid="users-page">
@@ -51,18 +59,19 @@ export default function Page() {
         </div>
 
         <div className="card-soft overflow-hidden">
-          <table className="w-full text-sm">
-            <thead className="bg-[#EAE4D8] text-[#5C5C5C] text-xs uppercase tracking-wider">
-              <tr>
-                <th className="text-left py-3 px-4">Nama</th>
-                <th className="text-left py-3 px-4">Email</th>
-                <th className="text-left py-3 px-4">Peran</th>
-                <th className="text-left py-3 px-4">Dibuat</th>
-                <th className="text-left py-3 px-4">Aktif</th>
-              </tr>
-            </thead>
-            <tbody>
-              {users.map((u) => (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-[#EAE4D8] text-[#5C5C5C] text-xs uppercase tracking-wider">
+                <tr>
+                  <th className="text-left py-3 px-4">Nama</th>
+                  <th className="text-left py-3 px-4">Email</th>
+                  <th className="text-left py-3 px-4">Peran</th>
+                  <th className="text-left py-3 px-4">Dibuat</th>
+                  <th className="text-left py-3 px-4">Aktif</th>
+                </tr>
+              </thead>
+              <tbody>
+                {paginatedUsers.map((u) => (
                 <tr key={u.id} className="border-b border-[#EAE4D8] last:border-0">
                   <td className="py-3 px-4 font-semibold">{u.name}</td>
                   <td className="py-3 px-4 audit-ts text-xs">{u.email}</td>
@@ -77,6 +86,8 @@ export default function Page() {
               ))}
             </tbody>
           </table>
+          </div>
+          <Pagination page={page} totalPages={Math.ceil(users.length / perPage)} onPageChange={setPage} />
         </div>
 
         {open && (
