@@ -1,0 +1,149 @@
+"use client";
+
+import React, { useEffect, useState } from "react";
+import Layout from "@/components/Layout";
+import { api, formatErr } from "@/lib/api";
+import { COMMON_ALLERGENS } from "@/lib/format";
+import { toast } from "sonner";
+import { Plus, Flame } from "lucide-react";
+
+const EMPTY = { name: "", servings: 100, ingredients: [], instructions: "",
+  calories_kcal: 0, protein_g: 0, carbs_g: 0, fats_g: 0, sodium_mg: 0, allergens: [] };
+
+export default function Page() {
+  const [recipes, setRecipes] = useState([]);
+  const [items, setItems] = useState([]);
+  const [open, setOpen] = useState(false);
+  const [editing, setEditing] = useState(null);
+  const [form, setForm] = useState(EMPTY);
+
+  const load = () => Promise.all([api.get("/recipes"), api.get("/items")]).then(([a,b]) => { setRecipes(a.data); setItems(b.data); });
+  useEffect(() => { load(); }, []);
+
+  const addRow = () => setForm(p=>({...p, ingredients:[...p.ingredients, {item_id:"", quantity:0, unit:""}]}));
+  const upd = (i,k,v) => setForm(p=>{ const list=[...p.ingredients]; list[i]={...list[i],[k]:v}; return {...p, ingredients:list}; });
+  const rm = (i) => setForm(p=>({...p, ingredients:p.ingredients.filter((_,idx)=>idx!==i)}));
+
+  const save = async (e) => {
+    e.preventDefault();
+    try {
+      if (editing) await api.patch(`/recipes/${editing.id}`, form);
+      else await api.post("/recipes", form);
+      toast.success("Resep tersimpan");
+      setOpen(false); setEditing(null); setForm(EMPTY); load();
+    } catch (er) { toast.error(formatErr(er)); }
+  };
+
+  return (
+    <Layout>
+      <div className="space-y-6" data-testid="recipes-page">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="font-display text-4xl font-bold">Resep Standar</h1>
+            <p className="text-[#5C5C5C] mt-1">Resep menjadi dasar perhitungan kebutuhan teoritis bahan.</p>
+          </div>
+          <button data-testid="add-recipe-btn" onClick={()=>{setEditing(null); setForm(EMPTY); setOpen(true);}} className="btn-primary"><Plus size={16}/> Resep Baru</button>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {recipes.map(r => (
+            <div key={r.id} className="card-soft p-4" data-testid={`recipe-${r.id}`}>
+              <div className="flex items-start justify-between">
+                <div>
+                  <div className="font-display font-bold text-lg">{r.name}</div>
+                  <div className="text-xs audit-ts text-[#5C5C5C]">{r.servings} porsi</div>
+                </div>
+                <button onClick={()=>{setEditing(r); setForm({name:r.name, servings:r.servings, ingredients:r.ingredients||[], instructions:r.instructions||"", calories_kcal:r.calories_kcal||0, protein_g:r.protein_g||0, carbs_g:r.carbs_g||0, fats_g:r.fats_g||0, sodium_mg:r.sodium_mg||0, allergens:r.allergens||[]}); setOpen(true);}} className="btn-ghost text-xs">Edit</button>
+              </div>
+              <div className="grid grid-cols-5 gap-1 mt-3 text-center">
+                {[["Kkal", r.calories_kcal, "#D97706"],["Prot", r.protein_g, "#4A7C59"],["Karbo", r.carbs_g, "#2C4251"],["Lemak", r.fats_g, "#C5533B"],["Na (mg)", r.sodium_mg, "#5C5C5C"]].map(([l,v,c],i)=>(
+                  <div key={i} className="rounded-md p-1.5" style={{background:`${c}10`}}>
+                    <div className="audit-ts font-bold text-sm" style={{color:c}}>{Number(v||0).toFixed(0)}</div>
+                    <div className="text-[9px] uppercase tracking-wide text-[#5C5C5C]">{l}</div>
+                  </div>
+                ))}
+              </div>
+              {(r.allergens||[]).length > 0 && (
+                <div className="flex flex-wrap gap-1 mt-2">
+                  {r.allergens.map(a => <span key={a} className="tag bg-[#C5533B]/10 text-[#C5533B]">⚠ {a}</span>)}
+                </div>
+              )}
+              <ul className="mt-3 space-y-1 text-sm border-t border-[#EAE4D8] pt-2">
+                {(r.ingredients||[]).map((ing, i) => {
+                  const it = items.find(x=>x.id===ing.item_id);
+                  return <li key={i} className="flex justify-between"><span>{it?.name || "—"}</span><span className="audit-ts text-[#5C5C5C]">{ing.quantity} {ing.unit || it?.unit}</span></li>;
+                })}
+              </ul>
+            </div>
+          ))}
+          {recipes.length === 0 && <div className="col-span-full text-center text-[#5C5C5C] py-10">Belum ada resep. Buat resep pertama.</div>}
+        </div>
+
+        {open && (
+          <div className="fixed inset-0 z-40 bg-black/40 grid place-items-center p-4 overflow-y-auto" onClick={()=>setOpen(false)}>
+            <form onClick={(e)=>e.stopPropagation()} onSubmit={save} className="card-soft p-6 w-full max-w-xl my-8">
+              <h2 className="font-display text-2xl font-bold">{editing?"Edit Resep":"Resep Baru"}</h2>
+              <div className="grid grid-cols-2 gap-3 mt-4">
+                <div className="col-span-2">
+                  <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Nama</label>
+                  <input data-testid="recipe-name" required className="w-full mt-1 px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={form.name} onChange={(e)=>setForm({...form, name:e.target.value})}/>
+                </div>
+                <div>
+                  <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Porsi standar</label>
+                  <input type="number" className="w-full mt-1 px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={form.servings} onChange={(e)=>setForm({...form, servings:parseInt(e.target.value)||1})}/>
+                </div>
+                <div className="col-span-2">
+                  <div className="flex items-center justify-between mt-2">
+                    <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Bahan</label>
+                    <button data-testid="add-ing" type="button" onClick={addRow} className="btn-ghost text-xs"><Plus size={12}/> Baris</button>
+                  </div>
+                  <div className="space-y-2 mt-2">
+                    {form.ingredients.map((ing, i) => (
+                      <div key={i} className="grid grid-cols-12 gap-2">
+                        <select className="col-span-6 px-2 py-2 rounded-md border border-[#EAE4D8] bg-[#F9F6F0] text-sm" value={ing.item_id} onChange={(e)=>upd(i,"item_id",e.target.value)}>
+                          <option value="">— bahan —</option>
+                          {items.map(it => <option key={it.id} value={it.id}>{it.name} ({it.unit})</option>)}
+                        </select>
+                        <input placeholder="qty" type="number" step="0.01" className="col-span-3 px-2 py-2 rounded-md border border-[#EAE4D8] bg-[#F9F6F0] text-sm" value={ing.quantity} onChange={(e)=>upd(i,"quantity",parseFloat(e.target.value)||0)}/>
+                        <input placeholder="unit" className="col-span-2 px-2 py-2 rounded-md border border-[#EAE4D8] bg-[#F9F6F0] text-sm" value={ing.unit} onChange={(e)=>upd(i,"unit",e.target.value)}/>
+                        <button type="button" onClick={()=>rm(i)} className="col-span-1 text-[#C5533B]">×</button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div className="col-span-2">
+                  <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Instruksi (opsional)</label>
+                  <textarea rows={3} className="w-full mt-1 px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={form.instructions} onChange={(e)=>setForm({...form, instructions:e.target.value})}/>
+                </div>
+                <div className="col-span-2 border-t border-[#EAE4D8] pt-3">
+                  <label className="text-xs uppercase tracking-widest text-[#5C5C5C] flex items-center gap-2"><Flame size={12}/> Profil Gizi per Porsi (wajib untuk disetujui Ahli Gizi)</label>
+                  <div className="grid grid-cols-5 gap-2 mt-2">
+                    {[["calories_kcal","Kkal"],["protein_g","Protein (g)"],["carbs_g","Karbo (g)"],["fats_g","Lemak (g)"],["sodium_mg","Sodium (mg)"]].map(([k,l])=>(
+                      <div key={k}>
+                        <label className="text-[10px] uppercase text-[#5C5C5C]">{l}</label>
+                        <input data-testid={`nutri-${k}`} type="number" step="0.1" className="w-full mt-1 px-2 py-1.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0] text-sm audit-ts" value={form[k]} onChange={(e)=>setForm({...form, [k]:parseFloat(e.target.value)||0})}/>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div className="col-span-2">
+                  <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Alergen yang terkandung</label>
+                  <div className="flex flex-wrap gap-2 mt-1">
+                    {COMMON_ALLERGENS.map(a => {
+                      const on = form.allergens?.includes(a);
+                      return <button data-testid={`recipe-allergen-${a}`} type="button" key={a} onClick={()=>setForm(p=>({...p, allergens: on?p.allergens.filter(x=>x!==a):[...(p.allergens||[]), a]}))} className={`tag ${on?"bg-[#C5533B]/15 text-[#C5533B]":"bg-[#EAE4D8] text-[#5C5C5C]"}`}>{a}</button>;
+                    })}
+                  </div>
+                </div>
+              </div>
+              <div className="flex justify-end gap-2 mt-5">
+                <button type="button" onClick={()=>setOpen(false)} className="btn-ghost">Batal</button>
+                <button data-testid="save-recipe" type="submit" className="btn-primary">{editing?"Simpan Versi Baru":"Simpan"}</button>
+              </div>
+            </form>
+          </div>
+        )}
+      </div>
+    </Layout>
+  );
+}
