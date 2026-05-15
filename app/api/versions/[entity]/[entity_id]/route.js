@@ -19,16 +19,18 @@ export async function GET(request, { params }) {
 
     const { data: item } = await supabase
       .from("items")
-      .select("name")
+      .select("*")
       .eq("id", entity_id)
       .maybeSingle();
 
     const rows = (audit || []).map(r => {
-      const snapshot = {};
+      const diff = {};
+      const oldValues = {};
       if (r.changes && typeof r.changes === "object") {
         for (const [k, v] of Object.entries(r.changes)) {
           if (v && typeof v === "object" && "new" in v) {
-            snapshot[k] = v.new;
+            diff[k] = { old: v.old, new: v.new };
+            oldValues[k] = v.old;
           }
         }
       }
@@ -38,14 +40,14 @@ export async function GET(request, { params }) {
         action: r.action,
         actor: r.actor,
         actor_email: r.actor,
-        changes: r.changes,
-        snapshot,
+        changes: diff,
+        snapshot: { ...oldValues },
         note: r.note,
       };
     });
 
     return apiSuccess({
-      item: { name: item?.name || entity_id },
+      item: item || { name: entity_id },
       rows,
     });
   } catch (e) {
