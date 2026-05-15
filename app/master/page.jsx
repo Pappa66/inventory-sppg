@@ -195,12 +195,23 @@ export default function Page() {
           <div className="fixed inset-0 z-40 bg-black/40 grid place-items-center p-4" onClick={()=>setVersions(null)}>
             <div onClick={(e)=>e.stopPropagation()} className="card-soft p-6 w-full max-w-2xl max-h-[85vh] overflow-y-auto">
               <h2 className="font-display text-2xl font-bold">Riwayat Versi · {versions.item.name}</h2>
-              <p className="text-[#5C5C5C] text-sm">Semua perubahan tersimpan permanen. Perubahan terbaru di atas.</p>
+              <p className="text-[#5C5C5C] text-sm">Semua field ditampilkan. Yang diubah ditandai kuning dengan nilai lama → baru.</p>
               <div className="mt-4 relative pl-6">
                 <div className="absolute left-2 top-2 bottom-2 w-0.5 bg-[#EAE4D8]"/>
-                {versions.rows.map((v, idx) => {
-                  const cur = v.changes || {};
+                {versions.rows.map((v) => {
                   const isCreate = v.action === "CREATE";
+                  const changed = v.changes || {};
+                  const fields = [
+                    ["name", "Nama"], ["zone", "Zona"], ["category", "Kategori"],
+                    ["unit", "Satuan"], ["par_level", "Par-Level"],
+                    ["price_per_unit", "Harga/Satuan"], ["allergens", "Alergen"],
+                  ];
+                  const fmt = (val) => {
+                    if (val == null || val === "") return "—";
+                    if (Array.isArray(val)) return val.length ? val.join(", ") : "—";
+                    if (typeof val === "number") return val.toLocaleString("id-ID");
+                    return String(val);
+                  };
                   return (
                     <div key={v.id} className="mb-5 relative">
                       <div className="absolute -left-[18px] top-1 w-3 h-3 rounded-full" style={{background: isCreate?"#4A7C59":"#D97706"}}/>
@@ -208,38 +219,28 @@ export default function Page() {
                         <span className="audit-ts text-xs text-[#5C5C5C]">{fmtDateTime(v.ts)}</span>
                         <span className="tag" style={{background: isCreate?"#4A7C59"+"1A":"#D97706"+"1A", color: isCreate?"#4A7C59":"#D97706"}}>{v.action}</span>
                         <span className="text-sm font-semibold">{v.actor_email}</span>
+                        {v.note && <span className="text-xs text-[#5C5C5C]">— {v.note}</span>}
                       </div>
                       <div className="mt-2 rounded-md border border-[#EAE4D8] overflow-hidden">
-                        {isCreate && <div className="px-4 py-3 text-sm text-[#4A7C59] font-semibold">Bahan baru dibuat</div>}
-                        {!isCreate && (
-                          <table className="w-full text-sm">
-                            <tbody>
-                              {Object.entries(cur).length === 0 && (
-                                <tr><td className="py-3 px-4 text-[#5C5C5C] text-sm">Tidak ada detail perubahan</td></tr>
-                              )}
-                              {Object.entries(cur).map(([k, v]) => {
-                                if (k === "_reason") return null;
-                                const labels = { name:"Nama", zone:"Zona", category:"Kategori", unit:"Satuan", par_level:"Par-Level", price_per_unit:"Harga/Satuan", allergens:"Alergen" };
-                                const fmt = (val) => {
-                                  if (val == null || val === "") return "—";
-                                  if (Array.isArray(val)) return val.length ? val.join(", ") : "—";
-                                  if (typeof val === "number") return val.toLocaleString("id-ID");
-                                  return String(val);
-                                };
-                                return (
-                                  <tr key={k} className="border-b border-[#EAE4D8] last:border-0 bg-[#FFF7E6]">
-                                    <td className="py-2 px-4 text-[#5C5C5C] text-xs uppercase tracking-wider w-40">{labels[k] || k}</td>
-                                    <td className="py-2 px-4 audit-ts text-sm">
-                                      <span className="line-through text-[#C5533B]">{fmt(v.old)}</span>
-                                      <span className="text-[#5C5C5C] mx-1">→</span>
-                                      <span className="text-[#4A7C59] font-semibold">{fmt(v.new)}</span>
-                                    </td>
-                                  </tr>
-                                );
-                              })}
-                            </tbody>
-                          </table>
-                        )}
+                        <table className="w-full text-sm">
+                          <tbody>
+                            {fields.map(([k, label]) => {
+                              const c = changed[k];
+                              return (
+                                <tr key={k} className={`border-b border-[#EAE4D8] last:border-0 ${c ? "bg-[#FFF7E6]" : ""}`}>
+                                  <td className="py-1.5 px-3 text-[#5C5C5C] text-xs uppercase tracking-wider w-40">{label}</td>
+                                  <td className="py-1.5 px-3 audit-ts text-sm">
+                                    {c ? (
+                                      <span><span className="line-through text-[#C5533B]">{fmt(c.old)}</span> <span className="text-[#5C5C5C]">→</span> <span className="text-[#4A7C59] font-semibold">{fmt(c.new)}</span></span>
+                                    ) : (
+                                      <span className="text-[#5C5C5C]">{fmt(versions.item[k])}</span>
+                                    )}
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
                       </div>
                     </div>
                   );
