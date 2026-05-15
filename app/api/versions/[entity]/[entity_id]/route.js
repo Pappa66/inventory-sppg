@@ -7,7 +7,7 @@ export async function GET(request, { params }) {
     const { entity, entity_id } = await params;
     const supabase = await createClient();
 
-    const { data: audit } = await supabase
+    const { data: audit, error: auditErr } = await supabase
       .from("audit_trail")
       .select("*")
       .eq("entity", entity)
@@ -15,24 +15,30 @@ export async function GET(request, { params }) {
       .order("timestamp", { ascending: false })
       .limit(50);
 
+    if (auditErr) return apiError("Gagal ambil riwayat: " + auditErr.message, 500);
+
     const { data: item } = await supabase
       .from("items")
       .select("name")
       .eq("id", entity_id)
-      .single();
+      .maybeSingle();
+
+    const rows = (audit || []).map(r => ({
+      id: r.id,
+      ts: r.timestamp,
+      action: r.action,
+      actor: r.actor,
+      actor_email: r.actor,
+      changes: r.changes,
+      snapshot: r.changes || {},
+      note: r.note,
+    }));
 
     return apiSuccess({
       item: { name: item?.name || entity_id },
-      rows: (audit || []).map(r => ({
-        ts: r.timestamp,
-        action: r.action,
-        actor: r.actor,
-        changes: r.changes,
-        snapshot: r.changes,
-        note: r.note,
-      })),
+      rows,
     });
   } catch (e) {
-    return apiError(e.message, 401);
+    return apiError(e.message, 500);
   }
 }
