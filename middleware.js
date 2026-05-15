@@ -1,14 +1,18 @@
 import { NextResponse } from "next/server";
 
 export function middleware(request) {
-  const token = request.cookies.get("sppg_token")?.value;
   const { pathname } = request.nextUrl;
 
-  // Allow login page and API login endpoint without auth
-  if (pathname === "/login" || pathname === "/api/auth/login") {
-    if (token && pathname === "/login") {
-      return NextResponse.redirect(new URL("/", request.url));
-    }
+  // Skip all API routes — they handle auth themselves
+  if (pathname.startsWith("/api/")) {
+    return NextResponse.next();
+  }
+
+  const token = request.cookies.get("sppg_token")?.value;
+
+  // Allow login page without auth
+  if (pathname === "/login") {
+    if (token) return NextResponse.redirect(new URL("/", request.url));
     return NextResponse.next();
   }
 
@@ -21,5 +25,5 @@ export function middleware(request) {
 }
 
 export const config = {
-  matcher: ["/((?!api/|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)"],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)"],
 };
