@@ -27,7 +27,8 @@ export async function PATCH(request, { params }) {
 
     return apiSuccess({ ok: true });
   } catch (e) {
-    return apiError(e.message, 401);
+    console.error("[items PATCH]", e.message);
+    return apiError("Gagal: " + e.message, 401);
   }
 }
 
