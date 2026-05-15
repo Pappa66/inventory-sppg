@@ -5,15 +5,17 @@ import Layout from "@/components/Layout";
 import { api, formatErr } from "@/lib/api";
 import { DAYS, mondayOf, fmtDate, MENU_STATUS } from "@/lib/format";
 import { toast } from "sonner";
+import { SkeletonCards } from "@/components/Skeleton";
 import { Calendar, ChefHat, Share2, Send, CheckCircle2 } from "lucide-react";
 
 export default function Page() {
   const [weekStart, setWeekStart] = useState(mondayOf());
   const [recipes, setRecipes] = useState([]);
   const [menus, setMenus] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const load = (w = weekStart) => Promise.all([api.get("/recipes"), api.get(`/menus?week_start=${w}`)])
-    .then(([a,b]) => { setRecipes(a.data); setMenus(b.data); });
+  const load = (w = weekStart) => { setLoading(true); Promise.all([api.get("/recipes"), api.get(`/menus?week_start=${w}`)])
+    .then(([a,b]) => { setRecipes(a.data); setMenus(b.data); }).finally(() => setLoading(false)); };
   useEffect(() => { load(); /* eslint-disable-next-line */ }, [weekStart]);
 
   const findMenu = (day) => menus.find(m => m.day === day) || { day, recipe_ids: [], portions: 100, week_start: weekStart };
@@ -71,37 +73,41 @@ export default function Page() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-4">
-          {DAYS.map((d) => {
-            const m = findMenu(d.key);
-            const st = MENU_STATUS[m.status||"DRAFT"];
-            return (
-              <div key={d.key} className="card-soft p-4" data-testid={`menu-day-${d.key}`}>
-                <div className="flex items-center justify-between">
-                  <div className="font-display font-bold text-lg">{d.label}</div>
-                  <span className="role-pill" style={{background:`${st.color}1A`, color:st.color}} data-testid={`status-${d.key}`}>{st.label}</span>
+        {loading ? (
+          <SkeletonCards count={5} />
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-4">
+            {DAYS.map((d) => {
+              const m = findMenu(d.key);
+              const st = MENU_STATUS[m.status||"DRAFT"];
+              return (
+                <div key={d.key} className="card-soft p-4" data-testid={`menu-day-${d.key}`}>
+                  <div className="flex items-center justify-between">
+                    <div className="font-display font-bold text-lg">{d.label}</div>
+                    <span className="role-pill" style={{background:`${st.color}1A`, color:st.color}} data-testid={`status-${d.key}`}>{st.label}</span>
+                  </div>
+                  {m.status === "APPROVED" && m.signature ? (
+                    <div className="mt-2 text-[10px] audit-ts text-[#4A7C59] flex items-start gap-1"><CheckCircle2 size={12} className="mt-0.5 flex-shrink-0"/><span>Disetujui: {m.signature}</span></div>
+                  ) : null}
+                  <label className="block text-[10px] uppercase tracking-widest text-[#5C5C5C] mt-3">Porsi</label>
+                  <input type="number" className="w-full mt-1 px-3 py-1.5 text-sm rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={m.portions||0} onChange={(e)=>setPortions(d.key, parseInt(e.target.value)||0)}/>
+                  <div className="mt-3 space-y-1 max-h-60 overflow-y-auto">
+                    {recipes.map(r => {
+                      const active = m.recipe_ids.includes(r.id);
+                      return (
+                        <button key={r.id} data-testid={`menu-toggle-${d.key}-${r.id}`} onClick={()=>toggleRecipe(d.key, r.id)} className={`w-full text-left text-sm px-2.5 py-1.5 rounded-md transition-colors ${active?"bg-[#4A7C59] text-white":"hover:bg-[#EAE4D8]"}`}>{r.name}</button>
+                      );
+                    })}
+                    {recipes.length === 0 && <div className="text-xs text-[#5C5C5C]">Buat resep dulu di halaman Resep.</div>}
+                  </div>
+                  {m.id && (m.status==="DRAFT" || !m.status) && m.recipe_ids?.length > 0 && (
+                    <button data-testid={`submit-review-${d.key}`} onClick={()=>submitForReview(m)} className="btn-outline w-full mt-3 text-xs py-1.5"><Send size={12}/> Ajukan ke Ahli Gizi</button>
+                  )}
                 </div>
-                {m.status === "APPROVED" && m.signature ? (
-                  <div className="mt-2 text-[10px] audit-ts text-[#4A7C59] flex items-start gap-1"><CheckCircle2 size={12} className="mt-0.5 flex-shrink-0"/><span>Disetujui: {m.signature}</span></div>
-                ) : null}
-                <label className="block text-[10px] uppercase tracking-widest text-[#5C5C5C] mt-3">Porsi</label>
-                <input type="number" className="w-full mt-1 px-3 py-1.5 text-sm rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={m.portions||0} onChange={(e)=>setPortions(d.key, parseInt(e.target.value)||0)}/>
-                <div className="mt-3 space-y-1 max-h-60 overflow-y-auto">
-                  {recipes.map(r => {
-                    const active = m.recipe_ids.includes(r.id);
-                    return (
-                      <button key={r.id} data-testid={`menu-toggle-${d.key}-${r.id}`} onClick={()=>toggleRecipe(d.key, r.id)} className={`w-full text-left text-sm px-2.5 py-1.5 rounded-md transition-colors ${active?"bg-[#4A7C59] text-white":"hover:bg-[#EAE4D8]"}`}>{r.name}</button>
-                    );
-                  })}
-                  {recipes.length === 0 && <div className="text-xs text-[#5C5C5C]">Buat resep dulu di halaman Resep.</div>}
-                </div>
-                {m.id && (m.status==="DRAFT" || !m.status) && m.recipe_ids?.length > 0 && (
-                  <button data-testid={`submit-review-${d.key}`} onClick={()=>submitForReview(m)} className="btn-outline w-full mt-3 text-xs py-1.5"><Send size={12}/> Ajukan ke Ahli Gizi</button>
-                )}
-              </div>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
+        )}
       </div>
     </Layout>
   );

@@ -6,6 +6,7 @@ import { api, formatErr } from "@/lib/api";
 import { COMMON_ALLERGENS } from "@/lib/format";
 import { toast } from "sonner";
 import { Plus, Flame } from "lucide-react";
+import { SkeletonCards } from "@/components/Skeleton";
 import Pagination from "@/components/Pagination";
 
 const EMPTY = { name: "", servings: 100, ingredients: [], instructions: "",
@@ -17,10 +18,11 @@ export default function Page() {
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState(EMPTY);
+  const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const perPage = 15;
 
-  const load = () => Promise.all([api.get("/recipes"), api.get("/items")]).then(([a,b]) => { setRecipes(a.data); setItems(b.data); setPage(1); });
+  const load = () => { setLoading(true); Promise.all([api.get("/recipes"), api.get("/items")]).then(([a,b]) => { setRecipes(a.data); setItems(b.data); setPage(1); }).finally(() => setLoading(false)); };
   useEffect(() => { load(); }, []);
 
   const addRow = () => setForm(p=>({...p, ingredients:[...p.ingredients, {item_id:"", quantity:0, unit:""}]}));
@@ -53,39 +55,43 @@ export default function Page() {
           <button data-testid="add-recipe-btn" onClick={()=>{setEditing(null); setForm(EMPTY); setOpen(true);}} className="btn-primary"><Plus size={16}/> Resep Baru</button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {paginatedRecipes.map(r => (
-            <div key={r.id} className="card-soft p-4" data-testid={`recipe-${r.id}`}>
-              <div className="flex items-start justify-between">
-                <div>
-                  <div className="font-display font-bold text-lg">{r.name}</div>
-                  <div className="text-xs audit-ts text-[#5C5C5C]">{r.servings} porsi</div>
-                </div>
-                <button onClick={()=>{setEditing(r); setForm({name:r.name, servings:r.servings, ingredients:r.ingredients||[], instructions:r.instructions||"", calories_kcal:r.calories_kcal||0, protein_g:r.protein_g||0, carbs_g:r.carbs_g||0, fats_g:r.fats_g||0, sodium_mg:r.sodium_mg||0, allergens:r.allergens||[]}); setOpen(true);}} className="btn-ghost text-xs">Edit</button>
-              </div>
-              <div className="grid grid-cols-5 gap-1 mt-3 text-center">
-                {[["Kkal", r.calories_kcal, "#D97706"],["Prot", r.protein_g, "#4A7C59"],["Karbo", r.carbs_g, "#2C4251"],["Lemak", r.fats_g, "#C5533B"],["Na (mg)", r.sodium_mg, "#5C5C5C"]].map(([l,v,c],i)=>(
-                  <div key={i} className="rounded-md p-1.5" style={{background:`${c}10`}}>
-                    <div className="audit-ts font-bold text-sm" style={{color:c}}>{Number(v||0).toFixed(0)}</div>
-                    <div className="text-[9px] uppercase tracking-wide text-[#5C5C5C]">{l}</div>
+        {loading ? (
+          <SkeletonCards count={6} />
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {paginatedRecipes.map(r => (
+              <div key={r.id} className="card-soft p-4" data-testid={`recipe-${r.id}`}>
+                <div className="flex items-start justify-between">
+                  <div>
+                    <div className="font-display font-bold text-lg">{r.name}</div>
+                    <div className="text-xs audit-ts text-[#5C5C5C]">{r.servings} porsi</div>
                   </div>
-                ))}
-              </div>
-              {(r.allergens||[]).length > 0 && (
-                <div className="flex flex-wrap gap-1 mt-2">
-                  {r.allergens.map(a => <span key={a} className="tag bg-[#C5533B]/10 text-[#C5533B]">⚠ {a}</span>)}
+                  <button onClick={()=>{setEditing(r); setForm({name:r.name, servings:r.servings, ingredients:r.ingredients||[], instructions:r.instructions||"", calories_kcal:r.calories_kcal||0, protein_g:r.protein_g||0, carbs_g:r.carbs_g||0, fats_g:r.fats_g||0, sodium_mg:r.sodium_mg||0, allergens:r.allergens||[]}); setOpen(true);}} className="btn-ghost text-xs">Edit</button>
                 </div>
-              )}
-              <ul className="mt-3 space-y-1 text-sm border-t border-[#EAE4D8] pt-2">
-                {(r.ingredients||[]).map((ing, i) => {
-                  const it = items.find(x=>x.id===ing.item_id);
-                  return <li key={i} className="flex justify-between"><span>{it?.name || "—"}</span><span className="audit-ts text-[#5C5C5C]">{ing.quantity} {ing.unit || it?.unit}</span></li>;
-                })}
-              </ul>
-            </div>
-          ))}
-          {recipes.length === 0 && <div className="col-span-full text-center text-[#5C5C5C] py-10">Belum ada resep. Buat resep pertama.</div>}
-        </div>
+                <div className="grid grid-cols-5 gap-1 mt-3 text-center">
+                  {[["Kkal", r.calories_kcal, "#D97706"],["Prot", r.protein_g, "#4A7C59"],["Karbo", r.carbs_g, "#2C4251"],["Lemak", r.fats_g, "#C5533B"],["Na (mg)", r.sodium_mg, "#5C5C5C"]].map(([l,v,c],i)=>(
+                    <div key={i} className="rounded-md p-1.5" style={{background:`${c}10`}}>
+                      <div className="audit-ts font-bold text-sm" style={{color:c}}>{Number(v||0).toFixed(0)}</div>
+                      <div className="text-[9px] uppercase tracking-wide text-[#5C5C5C]">{l}</div>
+                    </div>
+                  ))}
+                </div>
+                {(r.allergens||[]).length > 0 && (
+                  <div className="flex flex-wrap gap-1 mt-2">
+                    {r.allergens.map(a => <span key={a} className="tag bg-[#C5533B]/10 text-[#C5533B]">⚠ {a}</span>)}
+                  </div>
+                )}
+                <ul className="mt-3 space-y-1 text-sm border-t border-[#EAE4D8] pt-2">
+                  {(r.ingredients||[]).map((ing, i) => {
+                    const it = items.find(x=>x.id===ing.item_id);
+                    return <li key={i} className="flex justify-between"><span>{it?.name || "—"}</span><span className="audit-ts text-[#5C5C5C]">{ing.quantity} {ing.unit || it?.unit}</span></li>;
+                  })}
+                </ul>
+              </div>
+            ))}
+            {recipes.length === 0 && <div className="col-span-full text-center text-[#5C5C5C] py-10">Belum ada resep. Buat resep pertama.</div>}
+          </div>
+        )}
         <Pagination page={page} totalPages={Math.ceil(recipes.length / perPage)} onPageChange={setPage} />
 
         {open && (

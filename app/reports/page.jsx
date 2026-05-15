@@ -9,6 +9,7 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import * as XLSX from "xlsx";
 import { generateBpkPackage } from "@/lib/bpk-export";
+import { SkeletonCards } from "@/components/Skeleton";
 import { useAuth } from "@/contexts/AuthContext";
 import { getLogo } from "@/lib/logo";
 import { toast } from "sonner";
@@ -18,12 +19,16 @@ export default function Page() {
   const [fin, setFin] = useState(null);
   const [low, setLow] = useState([]);
   const [zoneStock, setZoneStock] = useState({ rows: [], by_zone: {} });
+  const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
 
   useEffect(() => {
-    api.get("/reports/financial").then(({data}) => setFin(data));
-    api.get("/reports/low-stock").then(({data}) => setLow(data));
-    api.get("/reports/stock-by-zone").then(({data}) => setZoneStock(data));
+    setLoading(true);
+    Promise.all([
+      api.get("/reports/financial").then(({data}) => setFin(data)),
+      api.get("/reports/low-stock").then(({data}) => setLow(data)),
+      api.get("/reports/stock-by-zone").then(({data}) => setZoneStock(data)),
+    ]).finally(() => setLoading(false));
   }, []);
 
   const exportBpkPackage = async () => {
@@ -168,19 +173,23 @@ export default function Page() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          {[
-            ["STOCK", fin?.summary?.total_stock, "#4A7C59"],
-            ["OPEX", fin?.summary?.total_opex, "#D97706"],
-            ["Transport", fin?.summary?.total_transport, "#2C4251"],
-            ["Grand Total", fin?.summary?.grand_total, "#1F1F1F"],
-          ].map(([l,v,c]) => (
-            <div key={l} className="card-soft p-5">
-              <div className="text-[11px] uppercase tracking-widest text-[#5C5C5C]">{l}</div>
-              <div className="font-display font-bold text-2xl mt-2 audit-ts" style={{color:c}}>{fmtIDR(v||0)}</div>
-            </div>
-          ))}
-        </div>
+        {loading ? (
+          <SkeletonCards count={4} />
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            {[
+              ["STOCK", fin?.summary?.total_stock, "#4A7C59"],
+              ["OPEX", fin?.summary?.total_opex, "#D97706"],
+              ["Transport", fin?.summary?.total_transport, "#2C4251"],
+              ["Grand Total", fin?.summary?.grand_total, "#1F1F1F"],
+            ].map(([l,v,c]) => (
+              <div key={l} className="card-soft p-5">
+                <div className="text-[11px] uppercase tracking-widest text-[#5C5C5C]">{l}</div>
+                <div className="font-display font-bold text-2xl mt-2 audit-ts" style={{color:c}}>{fmtIDR(v||0)}</div>
+              </div>
+            ))}
+          </div>
+        )}
 
         <div className="card-soft overflow-hidden">
           <div className="px-5 py-3 border-b border-[#EAE4D8] font-display font-bold flex items-center justify-between">

@@ -5,6 +5,7 @@ import Link from "next/link";
 import Layout from "@/components/Layout";
 import { api } from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
+import { SkeletonCards } from "@/components/Skeleton";
 import { fmtIDR, ROLE_LABELS, ROLE_COLORS } from "@/lib/format";
 import {
   Package, AlertTriangle, TrendingUp, Wallet, Database,
@@ -19,15 +20,20 @@ export default function DashboardPage() {
   const [menus, setMenus] = useState([]);
   const [items, setItems] = useState([]);
   const [recipes, setRecipes] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    api.get("/reports/financial").then(({ data }) => setFin(data)).catch(() => {});
-    api.get("/reports/low-stock").then(({ data }) => setLow(data)).catch(() => {});
-    api.get("/items").then(({ data }) => setItems(data || [])).catch(() => {});
-    api.get("/recipes").then(({ data }) => setRecipes(data || [])).catch(() => {});
+    setLoading(true);
+    const promises = [
+      api.get("/reports/financial").then(({ data }) => setFin(data)).catch(() => {}),
+      api.get("/reports/low-stock").then(({ data }) => setLow(data)).catch(() => {}),
+      api.get("/items").then(({ data }) => setItems(data || [])).catch(() => {}),
+      api.get("/recipes").then(({ data }) => setRecipes(data || [])).catch(() => {}),
+    ];
     if (activeRole === "nutritionist" || activeRole === "head_chef" || activeRole === "admin") {
-      api.get("/menus").then(({ data }) => setMenus(data)).catch(() => {});
+      promises.push(api.get("/menus").then(({ data }) => setMenus(data)).catch(() => {}));
     }
+    Promise.all(promises).finally(() => setLoading(false));
   }, [activeRole]);
 
   const s = fin?.summary || {};
@@ -98,42 +104,48 @@ export default function DashboardPage() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {cards.map(({ label, value, icon: Icon, color }) => (
-            <div key={label} className="card-soft p-5">
-              <div className="flex items-center justify-between">
-                <div className="text-[11px] uppercase tracking-widest text-[#5C5C5C]">{label}</div>
-                <Icon size={18} style={{ color }} />
-              </div>
-              <div className="font-display font-bold text-2xl mt-2" style={{ color }}>
-                {typeof value === "number" && label !== "Opname Terakhir" ? fmtIDR(value) : value}
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {noData && (
-          <div className="card-soft p-12 text-center text-[#5C5C5C]">
-            <Database size={40} className="mx-auto mb-3 opacity-30" />
-            <p className="font-display text-lg font-bold">Belum ada data</p>
-            <p className="text-sm mt-1">Jalankan file <code className="bg-[#EAE4D8] px-2 py-0.5 rounded text-xs">seed.sql</code> di Supabase SQL Editor.</p>
-          </div>
-        )}
-
-        {low.length > 0 && (
-          <div className="card-soft overflow-hidden">
-            <div className="px-5 py-3 border-b border-[#EAE4D8] font-display font-bold flex items-center gap-2 text-[#C5533B]">
-              <AlertTriangle size={16} /> Stok Menipis
-            </div>
-            <div className="divide-y divide-[#EAE4D8]">
-              {low.slice(0, 10).map((l) => (
-                <div key={l.item_id} className="px-5 py-3 flex justify-between items-center text-sm">
-                  <span>{l.item_name}</span>
-                  <span className="text-[#C5533B] font-semibold">{l.current} / {l.par_level} {l.unit}</span>
+        {loading ? (
+          <SkeletonCards count={6} />
+        ) : (
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {cards.map(({ label, value, icon: Icon, color }) => (
+                <div key={label} className="card-soft p-5">
+                  <div className="flex items-center justify-between">
+                    <div className="text-[11px] uppercase tracking-widest text-[#5C5C5C]">{label}</div>
+                    <Icon size={18} style={{ color }} />
+                  </div>
+                  <div className="font-display font-bold text-2xl mt-2" style={{ color }}>
+                    {typeof value === "number" && label !== "Opname Terakhir" ? fmtIDR(value) : value}
+                  </div>
                 </div>
               ))}
             </div>
-          </div>
+
+            {noData && (
+              <div className="card-soft p-12 text-center text-[#5C5C5C]">
+                <Database size={40} className="mx-auto mb-3 opacity-30" />
+                <p className="font-display text-lg font-bold">Belum ada data</p>
+                <p className="text-sm mt-1">Jalankan file <code className="bg-[#EAE4D8] px-2 py-0.5 rounded text-xs">seed.sql</code> di Supabase SQL Editor.</p>
+              </div>
+            )}
+
+            {low.length > 0 && (
+              <div className="card-soft overflow-hidden">
+                <div className="px-5 py-3 border-b border-[#EAE4D8] font-display font-bold flex items-center gap-2 text-[#C5533B]">
+                  <AlertTriangle size={16} /> Stok Menipis
+                </div>
+                <div className="divide-y divide-[#EAE4D8]">
+                  {low.slice(0, 10).map((l) => (
+                    <div key={l.item_id} className="px-5 py-3 flex justify-between items-center text-sm">
+                      <span>{l.item_name}</span>
+                      <span className="text-[#C5533B] font-semibold">{l.current} / {l.par_level} {l.unit}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </>
         )}
 
         {/* Role-specific quick links */}

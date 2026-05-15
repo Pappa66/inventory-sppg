@@ -4,6 +4,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import Layout from "@/components/Layout";
 import { api } from "@/lib/api";
 import { fmtDateTime, ROLE_LABELS, ROLE_COLORS, ZONE_COLORS } from "@/lib/format";
+import { SkeletonTable } from "@/components/Skeleton";
 import Pagination from "@/components/Pagination";
 
 function renderChanges(changes) {
@@ -36,10 +37,11 @@ function renderChanges(changes) {
 export default function Page() {
   const [rows, setRows] = useState([]);
   const [filter, setFilter] = useState("");
+  const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const perPage = 10;
 
-  useEffect(() => { api.get("/audit").then(({data})=>{ setRows(data); setPage(1); }); }, []);
+  useEffect(() => { setLoading(true); api.get("/audit").then(({data})=>{ setRows(data); setPage(1); }).finally(() => setLoading(false)); }, []);
 
   const shown = rows.filter(r => {
     if (!filter) return true;
@@ -65,34 +67,38 @@ export default function Page() {
           <input data-testid="audit-filter" placeholder="filter (entity/actor/action/zone)…" value={filter} onChange={(e)=>setFilter(e.target.value)} className="card-soft px-3 py-2 text-sm w-72"/>
         </div>
 
-        <div className="card-soft p-6">
-          <div className="relative pl-8">
-            <div className="absolute left-3 top-2 bottom-2 w-0.5 bg-[#EAE4D8]"/>
-            {paginatedShown.map(r => {
-              const ts = r.timestamp || r.ts;
-              const role = r.actor_role;
-              const roleColor = ROLE_COLORS[role] || "#5C5C5C";
-              return (
-                <div key={r.id} className="mb-5 relative" data-testid={`audit-row-${r.id}`}>
-                  <div className="absolute -left-[22px] top-1 w-3.5 h-3.5 rounded-full" style={{background: roleColor, boxShadow:`0 0 0 4px ${roleColor}22`}}/>
-                  <div className="flex flex-wrap items-baseline gap-2">
-                    <span className="audit-ts text-xs text-[#5C5C5C]">{fmtDateTime(ts)}</span>
-                    <span className="role-pill" style={{background:`${roleColor}1A`, color:roleColor}}>{ROLE_LABELS[role] || role}</span>
-                    <span className="font-semibold">{r.actor || r.actor_email}</span>
-                    <span className="tag bg-[#1F1F1F] text-white">{r.action}</span>
-                    <span className="font-display font-semibold">{r.entity}</span>
-                    {r.zone && <span className="role-pill" style={{background:`${ZONE_COLORS[r.zone]}1A`, color:ZONE_COLORS[r.zone]}}>Zona {r.zone}</span>}
-                    <span className="audit-ts text-xs text-[#5C5C5C]">{r.entity_id?.slice(0,8)}</span>
+        {loading ? (
+          <SkeletonTable rows={8} cols={4} />
+        ) : (
+          <div className="card-soft p-6">
+            <div className="relative pl-8">
+              <div className="absolute left-3 top-2 bottom-2 w-0.5 bg-[#EAE4D8]"/>
+              {paginatedShown.map(r => {
+                const ts = r.timestamp || r.ts;
+                const role = r.actor_role;
+                const roleColor = ROLE_COLORS[role] || "#5C5C5C";
+                return (
+                  <div key={r.id} className="mb-5 relative" data-testid={`audit-row-${r.id}`}>
+                    <div className="absolute -left-[22px] top-1 w-3.5 h-3.5 rounded-full" style={{background: roleColor, boxShadow:`0 0 0 4px ${roleColor}22`}}/>
+                    <div className="flex flex-wrap items-baseline gap-2">
+                      <span className="audit-ts text-xs text-[#5C5C5C]">{fmtDateTime(ts)}</span>
+                      <span className="role-pill" style={{background:`${roleColor}1A`, color:roleColor}}>{ROLE_LABELS[role] || role}</span>
+                      <span className="font-semibold">{r.actor || r.actor_email}</span>
+                      <span className="tag bg-[#1F1F1F] text-white">{r.action}</span>
+                      <span className="font-display font-semibold">{r.entity}</span>
+                      {r.zone && <span className="role-pill" style={{background:`${ZONE_COLORS[r.zone]}1A`, color:ZONE_COLORS[r.zone]}}>Zona {r.zone}</span>}
+                      <span className="audit-ts text-xs text-[#5C5C5C]">{r.entity_id?.slice(0,8)}</span>
+                    </div>
+                    {r.note ? <div className="text-sm text-[#5C5C5C] mt-1">"{r.note}"</div> : null}
+                    {renderChanges(r.changes)}
                   </div>
-                  {r.note ? <div className="text-sm text-[#5C5C5C] mt-1">"{r.note}"</div> : null}
-                  {renderChanges(r.changes)}
-                </div>
-              );
-            })}
-            {shown.length === 0 && <div className="text-sm text-[#5C5C5C]">Belum ada aktivitas.</div>}
+                );
+              })}
+              {shown.length === 0 && <div className="text-sm text-[#5C5C5C]">Belum ada aktivitas.</div>}
+            </div>
+            <Pagination page={page} totalPages={Math.ceil(shown.length / perPage)} onPageChange={setPage} />
           </div>
-          <Pagination page={page} totalPages={Math.ceil(shown.length / perPage)} onPageChange={setPage} />
-        </div>
+        )}
       </div>
     </Layout>
   );

@@ -7,6 +7,7 @@ import { fmtIDR, fmtDateTime } from "@/lib/format";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { Camera, Plus, BadgeCheck, AlertCircle, Receipt } from "lucide-react";
+import { SkeletonCards } from "@/components/Skeleton";
 import Pagination from "@/components/Pagination";
 
 const EMPTY = {
@@ -24,10 +25,11 @@ export default function Page() {
   const [verifyOf, setVerifyOf] = useState(null);
   const [verifyNote, setVerifyNote] = useState("");
   const fileRef = useRef();
+  const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const perPage = 15;
 
-  const load = () => Promise.all([api.get("/purchases"), api.get("/items")]).then(([a,b]) => { setPurchases(a.data); setItems(b.data); setPage(1); });
+  const load = () => { setLoading(true); Promise.all([api.get("/purchases"), api.get("/items")]).then(([a,b]) => { setPurchases(a.data); setItems(b.data); setPage(1); }).finally(() => setLoading(false)); };
   useEffect(() => { load(); }, []);
 
   const pickPhoto = (e) => {
@@ -79,37 +81,41 @@ export default function Page() {
             <button data-testid="add-purchase-btn" onClick={()=>{setForm(EMPTY); setOpen(true);}} className="btn-primary"><Plus size={16}/> Catat Belanja</button>}
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {paginatedPurchases.map((p) => {
-            const mismatch = p.receipt_total_idr && Math.abs(p.receipt_total_idr - p.amount_idr) > 1;
-            return (
-              <div key={p.id} className="card-soft p-4" data-testid={`purchase-${p.id}`}>
-                <div className="flex items-center justify-between">
-                  <span className="tag" style={{background: p.category==="STOCK"?"#4A7C59"+"1A":"#D97706"+"1A", color: p.category==="STOCK"?"#4A7C59":"#D97706"}}>{p.category}</span>
-                  {p.verified ? <span className="tag bg-[#2C4251]/10 text-[#2C4251]"><BadgeCheck size={12} className="inline mr-1"/>Tervalidasi</span> : <span className="tag bg-[#5C5C5C]/10 text-[#5C5C5C]">Belum divalidasi</span>}
-                </div>
-                <div className="font-display font-bold text-lg mt-2">{p.description}</div>
-                <img alt="struk" src={p.receipt_photo} className="mt-3 w-full h-44 object-cover rounded-md border border-[#EAE4D8] bg-[#2D2D2D]"/>
-                <div className="text-xs audit-ts text-[#5C5C5C] mt-2">{fmtDateTime(p.purchased_at)} · {p.created_by_name}</div>
-                <div className="flex items-center justify-between mt-3 text-sm">
-                  <div className="text-[#5C5C5C]">Manual</div><div className="audit-ts font-semibold">{fmtIDR(p.amount_idr)}</div>
-                </div>
-                {p.receipt_total_idr ? (
-                  <div className={`flex items-center justify-between text-sm ${mismatch?"text-[#C5533B]":""}`}>
-                    <div className="text-[#5C5C5C]">Struk Digital</div><div className="audit-ts font-semibold flex items-center gap-1">{mismatch && <AlertCircle size={12}/>}{fmtIDR(p.receipt_total_idr)}</div>
+        {loading ? (
+          <SkeletonCards count={6} />
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {paginatedPurchases.map((p) => {
+              const mismatch = p.receipt_total_idr && Math.abs(p.receipt_total_idr - p.amount_idr) > 1;
+              return (
+                <div key={p.id} className="card-soft p-4" data-testid={`purchase-${p.id}`}>
+                  <div className="flex items-center justify-between">
+                    <span className="tag" style={{background: p.category==="STOCK"?"#4A7C59"+"1A":"#D97706"+"1A", color: p.category==="STOCK"?"#4A7C59":"#D97706"}}>{p.category}</span>
+                    {p.verified ? <span className="tag bg-[#2C4251]/10 text-[#2C4251]"><BadgeCheck size={12} className="inline mr-1"/>Tervalidasi</span> : <span className="tag bg-[#5C5C5C]/10 text-[#5C5C5C]">Belum divalidasi</span>}
                   </div>
-                ) : null}
-                {p.transport_amount_idr ? (
-                  <div className="flex items-center justify-between text-sm"><div className="text-[#5C5C5C]">Transport</div><div className="audit-ts">{fmtIDR(p.transport_amount_idr)}</div></div>
-                ) : null}
-                {(activeRole === "accountant" || activeRole === "admin") && !p.verified && (
-                  <button data-testid={`verify-${p.id}`} onClick={()=>setVerifyOf(p)} className="btn-outline w-full mt-3 text-xs py-1.5"><Receipt size={14}/> Validasi Akuntan</button>
-                )}
-              </div>
-            );
-          })}
-          {purchases.length === 0 && <div className="col-span-full text-center text-[#5C5C5C] py-10">Belum ada catatan belanja.</div>}
-        </div>
+                  <div className="font-display font-bold text-lg mt-2">{p.description}</div>
+                  <img alt="struk" src={p.receipt_photo} className="mt-3 w-full h-44 object-cover rounded-md border border-[#EAE4D8] bg-[#2D2D2D]"/>
+                  <div className="text-xs audit-ts text-[#5C5C5C] mt-2">{fmtDateTime(p.purchased_at)} · {p.created_by_name}</div>
+                  <div className="flex items-center justify-between mt-3 text-sm">
+                    <div className="text-[#5C5C5C]">Manual</div><div className="audit-ts font-semibold">{fmtIDR(p.amount_idr)}</div>
+                  </div>
+                  {p.receipt_total_idr ? (
+                    <div className={`flex items-center justify-between text-sm ${mismatch?"text-[#C5533B]":""}`}>
+                      <div className="text-[#5C5C5C]">Struk Digital</div><div className="audit-ts font-semibold flex items-center gap-1">{mismatch && <AlertCircle size={12}/>}{fmtIDR(p.receipt_total_idr)}</div>
+                    </div>
+                  ) : null}
+                  {p.transport_amount_idr ? (
+                    <div className="flex items-center justify-between text-sm"><div className="text-[#5C5C5C]">Transport</div><div className="audit-ts">{fmtIDR(p.transport_amount_idr)}</div></div>
+                  ) : null}
+                  {(activeRole === "accountant" || activeRole === "admin") && !p.verified && (
+                    <button data-testid={`verify-${p.id}`} onClick={()=>setVerifyOf(p)} className="btn-outline w-full mt-3 text-xs py-1.5"><Receipt size={14}/> Validasi Akuntan</button>
+                  )}
+                </div>
+              );
+            })}
+            {purchases.length === 0 && <div className="col-span-full text-center text-[#5C5C5C] py-10">Belum ada catatan belanja.</div>}
+          </div>
+        )}
         <Pagination page={page} totalPages={Math.ceil(purchases.length / perPage)} onPageChange={setPage} />
 
         {open && (

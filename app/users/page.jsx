@@ -7,16 +7,18 @@ import { ROLE_LABELS, ROLE_COLORS, fmtDateTime } from "@/lib/format";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { Plus } from "lucide-react";
+import { SkeletonTable } from "@/components/Skeleton";
 import Pagination from "@/components/Pagination";
 
 export default function Page() {
   const [users, setUsers] = useState([]);
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ email: "", name: "", role: "field_staff", password: "" });
+  const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const perPage = 15;
 
-  const load = () => api.get("/users").then(({data}) => { setUsers(data); setPage(1); }).catch(e => toast.error(formatErr(e)));
+  const load = () => { setLoading(true); api.get("/users").then(({data}) => { setUsers(data); setPage(1); }).catch(e => toast.error(formatErr(e))).finally(() => setLoading(false)); };
   useEffect(() => { load(); }, []);
 
   const toggle = async (u, val) => {
@@ -58,61 +60,65 @@ export default function Page() {
           <button data-testid="add-user-btn" onClick={()=>setOpen(true)} className="btn-primary"><Plus size={16}/> Tambah Pengguna</button>
         </div>
 
-        <div className="card-soft overflow-hidden">
-          <div className="hidden md:block overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-[#EAE4D8] text-[#5C5C5C] text-xs uppercase tracking-wider">
-                <tr>
-                  <th className="text-left py-3 px-4">Nama</th>
-                  <th className="text-left py-3 px-4">Email</th>
-                  <th className="text-left py-3 px-4">Peran</th>
-                  <th className="text-left py-3 px-4">Dibuat</th>
-                  <th className="text-left py-3 px-4">Aktif</th>
-                </tr>
-              </thead>
-              <tbody>
-                {paginatedUsers.map((u) => (
-                <tr key={u.id} className="border-b border-[#EAE4D8] last:border-0">
-                  <td className="py-3 px-4 font-semibold">{u.name}</td>
-                  <td className="py-3 px-4 audit-ts text-xs">{u.email}</td>
-                  <td className="py-3 px-4">
-                    <span className="role-pill" style={{background:`${ROLE_COLORS[u.role]}1A`, color:ROLE_COLORS[u.role]}}>{ROLE_LABELS[u.role]}</span>
-                  </td>
-                  <td className="py-3 px-4 audit-ts text-xs">{fmtDateTime(u.created_at)}</td>
+        {loading ? (
+          <SkeletonTable rows={8} cols={5} />
+        ) : (
+          <div className="card-soft overflow-hidden">
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="bg-[#EAE4D8] text-[#5C5C5C] text-xs uppercase tracking-wider">
+                  <tr>
+                    <th className="text-left py-3 px-4">Nama</th>
+                    <th className="text-left py-3 px-4">Email</th>
+                    <th className="text-left py-3 px-4">Peran</th>
+                    <th className="text-left py-3 px-4">Dibuat</th>
+                    <th className="text-left py-3 px-4">Aktif</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {paginatedUsers.map((u) => (
+                  <tr key={u.id} className="border-b border-[#EAE4D8] last:border-0">
+                    <td className="py-3 px-4 font-semibold">{u.name}</td>
+                    <td className="py-3 px-4 audit-ts text-xs">{u.email}</td>
                     <td className="py-3 px-4">
-                      <Switch data-testid={`activate-${u.email}`} checked={!!u.is_active} onCheckedChange={(v)=>toggle(u, v)} disabled={u.email === "admin@sppg.id"} />
+                      <span className="role-pill" style={{background:`${ROLE_COLORS[u.role]}1A`, color:ROLE_COLORS[u.role]}}>{ROLE_LABELS[u.role]}</span>
                     </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          </div>
-          <div className="md:hidden space-y-3">
-            {paginatedUsers.map((u) => (
-              <div key={u.id} className="card-soft p-4 space-y-2">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <div className="font-semibold">{u.name}</div>
-                    <div className="audit-ts text-xs">{u.email}</div>
+                    <td className="py-3 px-4 audit-ts text-xs">{fmtDateTime(u.created_at)}</td>
+                      <td className="py-3 px-4">
+                        <Switch data-testid={`activate-${u.email}`} checked={!!u.is_active} onCheckedChange={(v)=>toggle(u, v)} disabled={u.email === "admin@sppg.id"} />
+                      </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            </div>
+            <div className="md:hidden space-y-3">
+              {paginatedUsers.map((u) => (
+                <div key={u.id} className="card-soft p-4 space-y-2">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <div className="font-semibold">{u.name}</div>
+                      <div className="audit-ts text-xs">{u.email}</div>
+                    </div>
+                    <Switch checked={!!u.is_active} onCheckedChange={(v)=>toggle(u, v)} disabled={u.email === "admin@sppg.id"} />
                   </div>
-                  <Switch checked={!!u.is_active} onCheckedChange={(v)=>toggle(u, v)} disabled={u.email === "admin@sppg.id"} />
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="text-[#5C5C5C]">Peran</span>
+                    <span className="role-pill" style={{background:`${ROLE_COLORS[u.role]}1A`, color:ROLE_COLORS[u.role]}}>{ROLE_LABELS[u.role]}</span>
+                  </div>
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="text-[#5C5C5C]">Dibuat</span>
+                    <span className="audit-ts text-xs">{fmtDateTime(u.created_at)}</span>
+                  </div>
                 </div>
-                <div className="flex justify-between items-center text-sm">
-                  <span className="text-[#5C5C5C]">Peran</span>
-                  <span className="role-pill" style={{background:`${ROLE_COLORS[u.role]}1A`, color:ROLE_COLORS[u.role]}}>{ROLE_LABELS[u.role]}</span>
-                </div>
-                <div className="flex justify-between items-center text-sm">
-                  <span className="text-[#5C5C5C]">Dibuat</span>
-                  <span className="audit-ts text-xs">{fmtDateTime(u.created_at)}</span>
-                </div>
-              </div>
-            ))}
-            {paginatedUsers.length === 0 && (
-              <div className="text-center text-[#5C5C5C] py-10">Belum ada pengguna.</div>
-            )}
+              ))}
+              {paginatedUsers.length === 0 && (
+                <div className="text-center text-[#5C5C5C] py-10">Belum ada pengguna.</div>
+              )}
+            </div>
+            <Pagination page={page} totalPages={Math.ceil(users.length / perPage)} onPageChange={setPage} />
           </div>
-          <Pagination page={page} totalPages={Math.ceil(users.length / perPage)} onPageChange={setPage} />
-        </div>
+        )}
 
         {open && (
           <div className="fixed inset-0 z-40 bg-black/40 grid place-items-center p-4" onClick={()=>setOpen(false)}>

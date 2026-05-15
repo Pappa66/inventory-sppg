@@ -6,6 +6,7 @@ import { api, formatErr } from "@/lib/api";
 import { fmtDateTime, ZONES, ZONE_COLORS, ZONE_LABELS } from "@/lib/format";
 import { toast } from "sonner";
 import { Plus, ClipboardCheck, Thermometer, Droplets } from "lucide-react";
+import { SkeletonTable } from "@/components/Skeleton";
 import Pagination from "@/components/Pagination";
 
 export default function Page() {
@@ -16,11 +17,12 @@ export default function Page() {
   const [lotForm, setLotForm] = useState({ item_id: "", quantity: 0, expiry_date: "" });
   const [opnameForm, setOpnameForm] = useState({ counted_quantity: 0, zone: "DRY", temperature_c: "", humidity_pct: "", reason: "Routine" });
   const [zoneFilter, setZoneFilter] = useState("ALL");
+  const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const perPage = 15;
 
-  const load = () => Promise.all([api.get("/stock-lots"), api.get("/items")])
-    .then(([a,b]) => { setLots(a.data); setItems(b.data); setPage(1); });
+  const load = () => { setLoading(true); Promise.all([api.get("/stock-lots"), api.get("/items")])
+    .then(([a,b]) => { setLots(a.data); setItems(b.data); setPage(1); }).finally(() => setLoading(false)); };
   useEffect(() => { load(); }, []);
   useEffect(() => { setPage(1); }, [zoneFilter]);
 
@@ -98,81 +100,85 @@ export default function Page() {
           </div>
         </div>
 
-        <div className="card-soft overflow-hidden">
-          <div className="hidden md:block overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-[#EAE4D8] text-[#5C5C5C] text-xs uppercase tracking-wider">
-                <tr>
-                  <th className="text-left py-3 px-4">Bahan</th>
-                  <th className="text-left py-3 px-4">Zona</th>
-                  <th className="text-right py-3 px-4">Awal</th>
-                  <th className="text-right py-3 px-4">Aktual</th>
-                  <th className="text-left py-3 px-4">Kadaluarsa</th>
-                  <th className="text-left py-3 px-4">Diterima</th>
-                  <th className="text-left py-3 px-4">Status</th>
-                  <th className="text-right py-3 px-4">Opname</th>
-                </tr>
-              </thead>
-              <tbody>
-                {paginated.map((l) => {
-                const s = statusFor(l);
-                const z = l.zone || "DRY";
-                return (
-                  <tr key={l.id} className="border-b border-[#EAE4D8] last:border-0">
-                    <td className="py-3 px-4 font-semibold">{l.item_name}</td>
-                    <td className="py-3 px-4"><span className="role-pill" style={{background:`${ZONE_COLORS[z]}1A`, color:ZONE_COLORS[z]}}>{ZONE_LABELS[z]}</span></td>
-                    <td className="py-3 px-4 text-right audit-ts">{l.quantity} {l.unit}</td>
-                    <td className="py-3 px-4 text-right audit-ts font-semibold">{l.actual_quantity} {l.unit}</td>
-                    <td className="py-3 px-4 audit-ts">{l.expiry_date}</td>
-                    <td className="py-3 px-4 audit-ts text-xs">{fmtDateTime(l.received_at)}</td>
-                    <td className="py-3 px-4"><span className="role-pill" style={{background:`${s.color}1A`, color:s.color}}>{s.label}</span></td>
-                    <td className="py-3 px-4 text-right">
-                      <button data-testid={`opname-${l.id}`} onClick={()=>{setOpenOpname(l); setOpnameForm({counted_quantity:l.actual_quantity, zone:l.zone||"DRY", temperature_c:"", humidity_pct:"", reason:"Routine"});}} className="btn-ghost text-xs"><ClipboardCheck size={14}/> Opname</button>
-                    </td>
+        {loading ? (
+          <SkeletonTable rows={8} cols={8} />
+        ) : (
+          <div className="card-soft overflow-hidden">
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="bg-[#EAE4D8] text-[#5C5C5C] text-xs uppercase tracking-wider">
+                  <tr>
+                    <th className="text-left py-3 px-4">Bahan</th>
+                    <th className="text-left py-3 px-4">Zona</th>
+                    <th className="text-right py-3 px-4">Awal</th>
+                    <th className="text-right py-3 px-4">Aktual</th>
+                    <th className="text-left py-3 px-4">Kadaluarsa</th>
+                    <th className="text-left py-3 px-4">Diterima</th>
+                    <th className="text-left py-3 px-4">Status</th>
+                    <th className="text-right py-3 px-4">Opname</th>
                   </tr>
-                );
-              })}
-              {filtered.length === 0 && <tr><td colSpan={8} className="py-10 text-center text-[#5C5C5C]">Belum ada lot stok untuk zona ini.</td></tr>}
-            </tbody>
-          </table>
-          </div>
-          <div className="md:hidden space-y-3">
-            {paginated.map((l) => {
-            const s = statusFor(l);
-            const z = l.zone || "DRY";
-            return (
-              <div key={l.id} className="card-soft p-4 space-y-2">
-                <div className="flex justify-between items-start">
-                  <div className="font-semibold">{l.item_name}</div>
-                  <span className="role-pill text-xs" style={{background:`${ZONE_COLORS[z]}1A`, color:ZONE_COLORS[z]}}>{ZONE_LABELS[z]}</span>
-                </div>
-                <div className="grid grid-cols-2 gap-2 text-sm">
-                  <div>
-                    <span className="text-[#5C5C5C]">Awal</span>
-                    <div className="audit-ts">{l.quantity} {l.unit}</div>
+                </thead>
+                <tbody>
+                  {paginated.map((l) => {
+                  const s = statusFor(l);
+                  const z = l.zone || "DRY";
+                  return (
+                    <tr key={l.id} className="border-b border-[#EAE4D8] last:border-0">
+                      <td className="py-3 px-4 font-semibold">{l.item_name}</td>
+                      <td className="py-3 px-4"><span className="role-pill" style={{background:`${ZONE_COLORS[z]}1A`, color:ZONE_COLORS[z]}}>{ZONE_LABELS[z]}</span></td>
+                      <td className="py-3 px-4 text-right audit-ts">{l.quantity} {l.unit}</td>
+                      <td className="py-3 px-4 text-right audit-ts font-semibold">{l.actual_quantity} {l.unit}</td>
+                      <td className="py-3 px-4 audit-ts">{l.expiry_date}</td>
+                      <td className="py-3 px-4 audit-ts text-xs">{fmtDateTime(l.received_at)}</td>
+                      <td className="py-3 px-4"><span className="role-pill" style={{background:`${s.color}1A`, color:s.color}}>{s.label}</span></td>
+                      <td className="py-3 px-4 text-right">
+                        <button data-testid={`opname-${l.id}`} onClick={()=>{setOpenOpname(l); setOpnameForm({counted_quantity:l.actual_quantity, zone:l.zone||"DRY", temperature_c:"", humidity_pct:"", reason:"Routine"});}} className="btn-ghost text-xs"><ClipboardCheck size={14}/> Opname</button>
+                      </td>
+                    </tr>
+                  );
+                })}
+                {filtered.length === 0 && <tr><td colSpan={8} className="py-10 text-center text-[#5C5C5C]">Belum ada lot stok untuk zona ini.</td></tr>}
+              </tbody>
+            </table>
+            </div>
+            <div className="md:hidden space-y-3">
+              {paginated.map((l) => {
+              const s = statusFor(l);
+              const z = l.zone || "DRY";
+              return (
+                <div key={l.id} className="card-soft p-4 space-y-2">
+                  <div className="flex justify-between items-start">
+                    <div className="font-semibold">{l.item_name}</div>
+                    <span className="role-pill text-xs" style={{background:`${ZONE_COLORS[z]}1A`, color:ZONE_COLORS[z]}}>{ZONE_LABELS[z]}</span>
                   </div>
-                  <div>
-                    <span className="text-[#5C5C5C]">Aktual</span>
-                    <div className="audit-ts font-semibold">{l.actual_quantity} {l.unit}</div>
+                  <div className="grid grid-cols-2 gap-2 text-sm">
+                    <div>
+                      <span className="text-[#5C5C5C]">Awal</span>
+                      <div className="audit-ts">{l.quantity} {l.unit}</div>
+                    </div>
+                    <div>
+                      <span className="text-[#5C5C5C]">Aktual</span>
+                      <div className="audit-ts font-semibold">{l.actual_quantity} {l.unit}</div>
+                    </div>
+                  </div>
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="text-[#5C5C5C]">Kadaluarsa</span>
+                    <span className="audit-ts">{l.expiry_date}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="role-pill text-xs" style={{background:`${s.color}1A`, color:s.color}}>{s.label}</span>
+                    <button data-testid={`opname-${l.id}`} onClick={()=>{setOpenOpname(l); setOpnameForm({counted_quantity:l.actual_quantity, zone:l.zone||"DRY", temperature_c:"", humidity_pct:"", reason:"Routine"});}} className="btn-ghost text-xs"><ClipboardCheck size={14}/> Opname</button>
                   </div>
                 </div>
-                <div className="flex justify-between items-center text-sm">
-                  <span className="text-[#5C5C5C]">Kadaluarsa</span>
-                  <span className="audit-ts">{l.expiry_date}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="role-pill text-xs" style={{background:`${s.color}1A`, color:s.color}}>{s.label}</span>
-                  <button data-testid={`opname-${l.id}`} onClick={()=>{setOpenOpname(l); setOpnameForm({counted_quantity:l.actual_quantity, zone:l.zone||"DRY", temperature_c:"", humidity_pct:"", reason:"Routine"});}} className="btn-ghost text-xs"><ClipboardCheck size={14}/> Opname</button>
-                </div>
-              </div>
-            );
-          })}
-          {filtered.length === 0 && (
-            <div className="text-center text-[#5C5C5C] py-10">Belum ada lot stok untuk zona ini.</div>
-          )}
+              );
+            })}
+            {filtered.length === 0 && (
+              <div className="text-center text-[#5C5C5C] py-10">Belum ada lot stok untuk zona ini.</div>
+            )}
+            </div>
+            <Pagination page={page} totalPages={Math.ceil(filtered.length / perPage)} onPageChange={setPage} />
           </div>
-          <Pagination page={page} totalPages={Math.ceil(filtered.length / perPage)} onPageChange={setPage} />
-        </div>
+        )}
 
         {openLot && (
           <div className="fixed inset-0 z-40 bg-black/40 grid place-items-center p-4" onClick={()=>setOpenLot(false)}>
