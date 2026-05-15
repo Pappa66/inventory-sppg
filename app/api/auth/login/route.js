@@ -1,6 +1,5 @@
-import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase";
-import { createAccessToken } from "@/lib/db-helpers";
+import { apiError, apiSuccess } from "@/lib/db-helpers";
 import bcrypt from "bcryptjs";
 
 export async function POST(request) {
@@ -8,24 +7,20 @@ export async function POST(request) {
     const { email, password } = await request.json();
     const supabase = await createClient();
 
-    const { data: users, error: queryError } = await supabase
+    const { data: user } = await supabase
       .from("users")
       .select("*")
-      .eq("email", email.toLowerCase());
+      .eq("email", email.toLowerCase())
+      .single();
 
-    if (queryError) {
-      return NextResponse.json({ detail: "DB error: " + queryError.message }, { status: 500 });
-    }
-
-    const user = users?.[0] || null;
-    if (!user) return NextResponse.json({ detail: "User tidak ditemukan: " + email.toLowerCase() }, { status: 401 });
+    if (!user) return apiError("Email atau password salah", 401);
+    if (!user.is_active) return apiError("Akun dinonaktifkan", 403);
 
     const valid = bcrypt.compareSync(password, user.password_hash);
-    if (!valid) return NextResponse.json({ detail: "Email atau password salah" }, { status: 401 });
+    if (!valid) return apiError("Email atau password salah", 401);
 
-    const token = createAccessToken(user.id, user.email);
-    const response = NextResponse.json({
-      token,
+    return apiSuccess({
+      token: user.email,
       user: {
         id: user.id,
         email: user.email,
@@ -34,17 +29,7 @@ export async function POST(request) {
         is_active: user.is_active,
       },
     });
-
-    response.cookies.set("sppg_token", token, {
-      httpOnly: true,
-      path: "/",
-      maxAge: 43200,
-      sameSite: "lax",
-    });
-
-    return response;
   } catch (e) {
-    console.error("Login error:", e);
-    return NextResponse.json({ detail: e.message }, { status: 500 });
+    return apiError(e.message, 500);
   }
 }

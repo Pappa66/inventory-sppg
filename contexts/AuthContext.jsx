@@ -35,7 +35,7 @@ export function AuthProvider({ children }) {
       const { data } = await api.post("/auth/login", { email, password });
       localStorage.setItem("sppg_token", data.token);
       document.cookie = `sppg_token=${data.token}; path=/; max-age=43200; SameSite=Lax`;
-      api.defaults.headers.common["Authorization"] = `Bearer ${data.token}`;
+      api.defaults.headers.common["Authorization"] = `Bearer ${data.user.email}`;
       setUser(data.user);
       setActiveRole(data.user.role);
       setError("");
