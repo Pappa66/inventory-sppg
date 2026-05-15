@@ -21,8 +21,8 @@ export function AuthProvider({ children }) {
           setActiveRole(data.role);
         })
         .catch(() => {
-          // Don't remove token immediately - it might be a temporary issue
-          // Only remove on explicit 401 from /auth/me
+          localStorage.removeItem("sppg_token");
+          document.cookie = "sppg_token=; path=/; max-age=0";
         })
         .finally(() => setLoading(false));
     } else {
