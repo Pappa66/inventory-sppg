@@ -92,11 +92,11 @@ SELECT * FROM (VALUES
 -- ==================== AUDIT TRAIL ====================
 INSERT INTO audit_trail (id, timestamp, actor, actor_id, actor_role, action, entity, entity_id, zone, changes, note)
 SELECT * FROM (VALUES
-  (gen_random_uuid(), now() - interval '14 days', 'Asisten Belanja (Field Assistant)', (SELECT id FROM users WHERE email='asisten@sppg.id'), 'field_assistant', 'CREATE_PURCHASE', 'purchases', gen_random_uuid()::text, null, null, 'Pembelian beras 100kg'),
-  (gen_random_uuid(), now() - interval '12 days', 'Akuntan (Accountant)', (SELECT id FROM users WHERE email='akuntan@sppg.id'), 'accountant', 'VERIFY_PURCHASE', 'purchases', gen_random_uuid()::text, null, '{"verified":{"old":false,"new":true}}', 'Verifikasi pembelian beras'),
-  (gen_random_uuid(), now() - interval '7 days', 'Admin (Admin)', (SELECT id FROM users WHERE email='admin@sppg.id'), 'admin', 'CREATE_USER', 'users', gen_random_uuid()::text, null, null, 'Tambah user baru: Staf Gudang'),
-  (gen_random_uuid(), now() - interval '3 days', 'Ahli Gizi Maya (Nutritionist)', (SELECT id FROM users WHERE email='ahligizi@sppg.id'), 'nutritionist', 'MENU_APPROVED', 'menus', gen_random_uuid()::text, null, '{"status":{"old":"PENDING_REVIEW","new":"APPROVED"}}', 'Menu Senin disetujui'),
-  (gen_random_uuid(), now() - interval '1 day', 'Staf Gudang (Field Staff)', (SELECT id FROM users WHERE email='staf@sppg.id'), 'field_staff', 'OPNAME', 'opnames', gen_random_uuid()::text, 'DRY', null, 'Opname rutin gudang kering')
+  (gen_random_uuid(), now() - interval '14 days', 'Asisten Belanja (Field Assistant)', (SELECT id FROM users WHERE email='asisten@sppg.id')::text, 'field_assistant', 'CREATE_PURCHASE', 'purchases', gen_random_uuid()::text, null, null::jsonb, 'Pembelian beras 100kg'),
+  (gen_random_uuid(), now() - interval '12 days', 'Akuntan (Accountant)', (SELECT id FROM users WHERE email='akuntan@sppg.id')::text, 'accountant', 'VERIFY_PURCHASE', 'purchases', gen_random_uuid()::text, null, '{"verified":{"old":false,"new":true}}'::jsonb, 'Verifikasi pembelian beras'),
+  (gen_random_uuid(), now() - interval '7 days', 'Admin (Admin)', (SELECT id FROM users WHERE email='admin@sppg.id')::text, 'admin', 'CREATE_USER', 'users', gen_random_uuid()::text, null, null::jsonb, 'Tambah user baru: Staf Gudang'),
+  (gen_random_uuid(), now() - interval '3 days', 'Ahli Gizi Maya (Nutritionist)', (SELECT id FROM users WHERE email='ahligizi@sppg.id')::text, 'nutritionist', 'MENU_APPROVED', 'menus', gen_random_uuid()::text, null, '{"status":{"old":"PENDING_REVIEW","new":"APPROVED"}}'::jsonb, 'Menu Senin disetujui'),
+  (gen_random_uuid(), now() - interval '1 day', 'Staf Gudang (Field Staff)', (SELECT id FROM users WHERE email='staf@sppg.id')::text, 'field_staff', 'OPNAME', 'opnames', gen_random_uuid()::text, 'DRY', null::jsonb, 'Opname rutin gudang kering')
 ) AS v;
 
 -- ==================== SETTINGS ====================
