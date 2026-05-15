@@ -7,18 +7,18 @@ export async function POST(request) {
     const { email, password } = await request.json();
     const supabase = await createClient();
 
-    const { data: user, error: queryError } = await supabase
+    const { data: users, error: queryError } = await supabase
       .from("users")
       .select("*")
-      .eq("email", email.toLowerCase())
-      .single();
+      .eq("email", email.toLowerCase());
 
     if (queryError) {
       console.error("Supabase query error:", queryError);
-      return apiError("Gagal query database: " + queryError.message, 500);
+      return apiError("DB error: " + queryError.message, 500);
     }
 
-    if (!user) return apiError("Email atau password salah", 401);
+    const user = users?.[0] || null;
+    if (!user) return apiError("User tidak ditemukan: " + email.toLowerCase(), 401);
     if (!user.is_active) return apiError("Akun dinonaktifkan oleh admin", 403);
 
     const valid = bcrypt.compareSync(password, user.password_hash);
