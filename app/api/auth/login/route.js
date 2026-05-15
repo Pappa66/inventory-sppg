@@ -1,5 +1,6 @@
+import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase";
-import { createAccessToken, apiError, apiSuccess } from "@/lib/db-helpers";
+import { createAccessToken } from "@/lib/db-helpers";
 import bcrypt from "bcryptjs";
 
 export async function POST(request) {
@@ -13,20 +14,17 @@ export async function POST(request) {
       .eq("email", email.toLowerCase());
 
     if (queryError) {
-      console.error("Supabase query error:", queryError);
-      return apiError("DB error: " + queryError.message, 500);
+      return NextResponse.json({ detail: "DB error: " + queryError.message }, { status: 500 });
     }
 
     const user = users?.[0] || null;
-    if (!user) return apiError("User tidak ditemukan: " + email.toLowerCase(), 401);
-    if (!user.is_active) return apiError("Akun dinonaktifkan oleh admin", 403);
+    if (!user) return NextResponse.json({ detail: "User tidak ditemukan: " + email.toLowerCase() }, { status: 401 });
 
     const valid = bcrypt.compareSync(password, user.password_hash);
-    if (!valid) return apiError("Email atau password salah", 401);
+    if (!valid) return NextResponse.json({ detail: "Email atau password salah" }, { status: 401 });
 
     const token = createAccessToken(user.id, user.email);
-
-    const response = apiSuccess({
+    const response = NextResponse.json({
       token,
       user: {
         id: user.id,
@@ -34,17 +32,19 @@ export async function POST(request) {
         name: user.name,
         role: user.role,
         is_active: user.is_active,
-        created_at: user.created_at,
       },
     });
 
-    response.headers.set(
-      "Set-Cookie",
-      `sppg_token=${token}; HttpOnly; Path=/; Max-Age=43200; SameSite=Lax`
-    );
+    response.cookies.set("sppg_token", token, {
+      httpOnly: true,
+      path: "/",
+      maxAge: 43200,
+      sameSite: "lax",
+    });
 
     return response;
   } catch (e) {
-    return apiError(e.message, 500);
+    console.error("Login error:", e);
+    return NextResponse.json({ detail: e.message }, { status: 500 });
   }
 }
