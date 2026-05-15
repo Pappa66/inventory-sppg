@@ -69,10 +69,18 @@ export default function Page() {
             <p className="text-[#5C5C5C] mt-1">Urut berdasarkan tanggal kadaluarsa terdekat. Filter berdasarkan zona penyimpanan.</p>
           </div>
           <div className="flex items-center gap-2 flex-wrap">
-            <div className="role-switch" data-testid="zone-filter">
+            <div className="inline-flex items-center gap-1.5 bg-[#EAE4D8] p-1 rounded-full" data-testid="zone-filter">
               {["ALL", ...ZONES].map((z) => (
-                <button key={z} data-active={zoneFilter===z} type="button" onClick={()=>setZoneFilter(z)}
-                  style={zoneFilter===z?{background: z==="ALL"?"#2D2D2D":ZONE_COLORS[z], color:"white", boxShadow:`0 0 0 2px white, 0 0 0 4px ${z==="ALL"?"#2D2D2D":ZONE_COLORS[z]}`}:{}}>
+                <button key={z} type="button" onClick={()=>setZoneFilter(z)}
+                  className="px-3 py-1.5 rounded-full text-[11px] font-semibold uppercase tracking-wider whitespace-nowrap transition-all duration-150"
+                  style={zoneFilter===z ? {
+                    background: z==="ALL" ? "#2D2D2D" : ZONE_COLORS[z],
+                    color: "white",
+                    boxShadow: "inset 0 0 0 2px rgba(255,255,255,0.55), 0 1px 2px rgba(0,0,0,0.18)",
+                  } : {
+                    background: "transparent",
+                    color: "#5C5C5C",
+                  }}>
                   {z === "ALL" ? "Semua" : ZONE_LABELS[z]}
                 </button>
               ))}

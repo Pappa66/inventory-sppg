@@ -135,7 +135,14 @@ export default function Page() {
 
   const shareWA = () => {
     const s = fin?.summary || {};
-    const txt = `*LAPORAN SPPG · MBG*\n${fmtDate(new Date().toISOString())}\n\nSTOCK: ${fmtIDR(s.total_stock)}\nOPEX: ${fmtIDR(s.total_opex)}\nTransport: ${fmtIDR(s.total_transport)}\n*Total: ${fmtIDR(s.grand_total)}*\nValidasi: ${s.verified_count}/${s.total_count}\nLow-Stock: ${low.length} bahan`;
+    let detail = "";
+    if (low.length > 0) {
+      detail = "\n\n*⚠ STOK MENIPIS:*\n" + low.slice(0, 10).map(l =>
+        `• ${l.item_name}: ${l.current}/${l.par_level} ${l.unit} (kurang ${l.shortage})`
+      ).join("\n");
+      if (low.length > 10) detail += `\n...dan ${low.length - 10} bahan lainnya`;
+    }
+    const txt = `*LAPORAN SPPG · MBG*\n${fmtDate(new Date().toISOString())}\n\nSTOCK: ${fmtIDR(s.total_stock)}\nOPEX: ${fmtIDR(s.total_opex)}\nTransport: ${fmtIDR(s.total_transport)}\n*Total: ${fmtIDR(s.grand_total)}*\nValidasi: ${s.verified_count}/${s.total_count}\nLow-Stok: ${low.length} bahan${detail}`;
     window.open(`https://wa.me/?text=${encodeURIComponent(txt)}`, "_blank");
   };
 

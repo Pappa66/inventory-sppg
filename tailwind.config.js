@@ -10,6 +10,7 @@ module.exports = {
     extend: {
       fontFamily: {
         display: ["Inter", "sans-serif"],
+        sans: ["Inter", "system-ui", "sans-serif"],
       },
       colors: {
         pandan: "#4A7C59",
