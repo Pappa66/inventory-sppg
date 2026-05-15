@@ -7,11 +7,16 @@ export async function POST(request) {
     const { email, password } = await request.json();
     const supabase = await createClient();
 
-    const { data: user } = await supabase
+    const { data: user, error: queryError } = await supabase
       .from("users")
       .select("*")
       .eq("email", email.toLowerCase())
       .single();
+
+    if (queryError) {
+      console.error("Supabase query error:", queryError);
+      return apiError("Gagal query database: " + queryError.message, 500);
+    }
 
     if (!user) return apiError("Email atau password salah", 401);
     if (!user.is_active) return apiError("Akun dinonaktifkan oleh admin", 403);
