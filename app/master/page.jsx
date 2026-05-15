@@ -56,7 +56,7 @@ export default function Page() {
         </div>
 
         <div className="card-soft overflow-hidden">
-          <div className="overflow-x-auto">
+          <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-sm">
               <thead className="bg-[#EAE4D8] text-[#5C5C5C] text-xs uppercase tracking-wider">
                 <tr>
@@ -88,6 +88,43 @@ export default function Page() {
               ))}
             </tbody>
           </table>
+          </div>
+          <div className="md:hidden space-y-3">
+            {paginatedItems.map((it) => (
+              <div key={it.id} className="card-soft p-4 space-y-2">
+                <div className="flex justify-between items-start">
+                  <div className="font-semibold">{it.name}</div>
+                  <span className="role-pill text-xs" style={{background:`${ZONE_COLORS[it.zone||"DRY"]}1A`, color:ZONE_COLORS[it.zone||"DRY"]}}>{ZONE_LABELS[it.zone||"DRY"]}</span>
+                </div>
+                <div className="grid grid-cols-2 gap-2 text-sm">
+                  <div>
+                    <span className="text-[#5C5C5C]">Kategori</span>
+                    <div>{it.category}</div>
+                  </div>
+                  <div>
+                    <span className="text-[#5C5C5C]">Satuan</span>
+                    <div className="audit-ts">{it.unit}</div>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-2 text-sm">
+                  <div>
+                    <span className="text-[#5C5C5C]">Par-Level</span>
+                    <div className="audit-ts">{it.par_level}</div>
+                  </div>
+                  <div>
+                    <span className="text-[#5C5C5C]">Harga</span>
+                    <div className="audit-ts">{fmtIDR(it.price_per_unit)}</div>
+                  </div>
+                </div>
+                <div className="flex justify-end gap-2 pt-1">
+                  <button data-testid={`edit-item-${it.id}`} onClick={()=>{setEditing(it); setForm({name:it.name,unit:it.unit,category:it.category,par_level:it.par_level,price_per_unit:it.price_per_unit,zone:it.zone||"DRY",allergens:it.allergens||[]}); setOpen(true);}} className="btn-ghost text-xs">Edit</button>
+                  <button data-testid={`history-${it.id}`} onClick={()=>showHistory(it)} className="btn-ghost text-xs"><History size={14}/> Riwayat</button>
+                </div>
+              </div>
+            ))}
+            {paginatedItems.length === 0 && (
+              <div className="text-center text-[#5C5C5C] py-10">Belum ada bahan.</div>
+            )}
           </div>
           <Pagination page={page} totalPages={Math.ceil(items.length / perPage)} onPageChange={setPage} />
         </div>

@@ -99,7 +99,7 @@ export default function Page() {
         </div>
 
         <div className="card-soft overflow-hidden">
-          <div className="overflow-x-auto">
+          <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-sm">
               <thead className="bg-[#EAE4D8] text-[#5C5C5C] text-xs uppercase tracking-wider">
                 <tr>
@@ -135,6 +135,41 @@ export default function Page() {
               {filtered.length === 0 && <tr><td colSpan={8} className="py-10 text-center text-[#5C5C5C]">Belum ada lot stok untuk zona ini.</td></tr>}
             </tbody>
           </table>
+          </div>
+          <div className="md:hidden space-y-3">
+            {paginated.map((l) => {
+            const s = statusFor(l);
+            const z = l.zone || "DRY";
+            return (
+              <div key={l.id} className="card-soft p-4 space-y-2">
+                <div className="flex justify-between items-start">
+                  <div className="font-semibold">{l.item_name}</div>
+                  <span className="role-pill text-xs" style={{background:`${ZONE_COLORS[z]}1A`, color:ZONE_COLORS[z]}}>{ZONE_LABELS[z]}</span>
+                </div>
+                <div className="grid grid-cols-2 gap-2 text-sm">
+                  <div>
+                    <span className="text-[#5C5C5C]">Awal</span>
+                    <div className="audit-ts">{l.quantity} {l.unit}</div>
+                  </div>
+                  <div>
+                    <span className="text-[#5C5C5C]">Aktual</span>
+                    <div className="audit-ts font-semibold">{l.actual_quantity} {l.unit}</div>
+                  </div>
+                </div>
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-[#5C5C5C]">Kadaluarsa</span>
+                  <span className="audit-ts">{l.expiry_date}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="role-pill text-xs" style={{background:`${s.color}1A`, color:s.color}}>{s.label}</span>
+                  <button data-testid={`opname-${l.id}`} onClick={()=>{setOpenOpname(l); setOpnameForm({counted_quantity:l.actual_quantity, zone:l.zone||"DRY", temperature_c:"", humidity_pct:"", reason:"Routine"});}} className="btn-ghost text-xs"><ClipboardCheck size={14}/> Opname</button>
+                </div>
+              </div>
+            );
+          })}
+          {filtered.length === 0 && (
+            <div className="text-center text-[#5C5C5C] py-10">Belum ada lot stok untuk zona ini.</div>
+          )}
           </div>
           <Pagination page={page} totalPages={Math.ceil(filtered.length / perPage)} onPageChange={setPage} />
         </div>

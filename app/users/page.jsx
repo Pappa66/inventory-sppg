@@ -59,7 +59,7 @@ export default function Page() {
         </div>
 
         <div className="card-soft overflow-hidden">
-          <div className="overflow-x-auto">
+          <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-sm">
               <thead className="bg-[#EAE4D8] text-[#5C5C5C] text-xs uppercase tracking-wider">
                 <tr>
@@ -86,6 +86,30 @@ export default function Page() {
               ))}
             </tbody>
           </table>
+          </div>
+          <div className="md:hidden space-y-3">
+            {paginatedUsers.map((u) => (
+              <div key={u.id} className="card-soft p-4 space-y-2">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <div className="font-semibold">{u.name}</div>
+                    <div className="audit-ts text-xs">{u.email}</div>
+                  </div>
+                  <Switch checked={!!u.is_active} onCheckedChange={(v)=>toggle(u, v)} disabled={u.email === "admin@sppg.id"} />
+                </div>
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-[#5C5C5C]">Peran</span>
+                  <span className="role-pill" style={{background:`${ROLE_COLORS[u.role]}1A`, color:ROLE_COLORS[u.role]}}>{ROLE_LABELS[u.role]}</span>
+                </div>
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-[#5C5C5C]">Dibuat</span>
+                  <span className="audit-ts text-xs">{fmtDateTime(u.created_at)}</span>
+                </div>
+              </div>
+            ))}
+            {paginatedUsers.length === 0 && (
+              <div className="text-center text-[#5C5C5C] py-10">Belum ada pengguna.</div>
+            )}
           </div>
           <Pagination page={page} totalPages={Math.ceil(users.length / perPage)} onPageChange={setPage} />
         </div>
