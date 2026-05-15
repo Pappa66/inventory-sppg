@@ -5,8 +5,14 @@ export async function GET(request) {
   try {
     const user = await getTokenUser(request);
     const supabase = await createClient();
-    const { data } = await supabase.from("stock_lots").select("*").order("expiry_date");
-    return apiSuccess(data || []);
+    const { data: lots } = await supabase.from("stock_lots").select("*, items(name, unit)").order("expiry_date");
+    const enriched = (lots || []).map(l => ({
+      ...l,
+      item_name: l.items?.name || "—",
+      unit: l.items?.unit || "",
+      zone: l.zone || l.items?.zone || "DRY",
+    }));
+    return apiSuccess(enriched);
   } catch (e) {
     return apiError(e.message, 401);
   }
