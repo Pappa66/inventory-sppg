@@ -22,7 +22,7 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     const token = localStorage.getItem("sppg_token");
     if (!token) {
-      setLoading(false);
+      autoLogin();
       return;
     }
 
@@ -35,10 +35,19 @@ export function AuthProvider({ children }) {
       })
       .catch(() => {
         clearAll();
-        setLoading(false);
-        router.push("/login");
+        autoLogin();
       });
   }, [router]);
+
+  function autoLogin() {
+    const demoUser = { id: null, email: "demo@sppg.id", name: "Demo", role: "admin", is_active: true };
+    localStorage.setItem("sppg_token", "demo");
+    document.cookie = "sppg_token=demo; path=/; max-age=43200; SameSite=Lax";
+    api.defaults.headers.common["Authorization"] = "Bearer demo";
+    setUser(demoUser);
+    setActiveRole(demoUser.role);
+    setLoading(false);
+  }
 
   const login = useCallback(async (email, password) => {
     try {
