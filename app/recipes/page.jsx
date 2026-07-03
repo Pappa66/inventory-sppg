@@ -134,17 +134,19 @@ export default function Page() {
                   <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Instruksi (opsional)</label>
                   <textarea rows={3} className="w-full mt-1 px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={form.instructions} onChange={(e)=>setForm({...form, instructions:e.target.value})}/>
                 </div>
-                <div className="col-span-2 border-t border-[#EAE4D8] pt-3">
-                  <label className="text-xs uppercase tracking-widest text-[#5C5C5C] flex items-center gap-2"><Flame size={12}/> Profil Gizi per Porsi (wajib untuk disetujui Ahli Gizi)</label>
-                  <div className="grid grid-cols-5 gap-2 mt-2">
-                    {[["calories_kcal","Kkal"],["protein_g","Protein (g)"],["carbs_g","Karbo (g)"],["fats_g","Lemak (g)"],["sodium_mg","Sodium (mg)"]].map(([k,l])=>(
-                      <div key={k}>
-                        <label className="text-[10px] uppercase text-[#5C5C5C]">{l}</label>
-                        <input data-testid={`nutri-${k}`} type="number" step="0.1" className="w-full mt-1 px-2 py-1.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0] text-sm audit-ts" value={form[k]} onChange={(e)=>setForm({...form, [k]:parseFloat(e.target.value)||0})}/>
-                      </div>
-                    ))}
+                {activeRole === "nutritionist" || activeRole === "admin" ? (
+                  <div className="col-span-2 border-t border-[#EAE4D8] pt-3">
+                    <label className="text-xs uppercase tracking-widest text-[#5C5C5C] flex items-center gap-2"><Flame size={12}/> Profil Gizi per Porsi</label>
+                    <div className="grid grid-cols-5 gap-2 mt-2">
+                      {[["calories_kcal","Kkal"],["protein_g","Protein (g)"],["carbs_g","Karbo (g)"],["fats_g","Lemak (g)"],["sodium_mg","Sodium (mg)"]].map(([k,l])=>(
+                        <div key={k}>
+                          <label className="text-[10px] uppercase text-[#5C5C5C]">{l}</label>
+                          <input data-testid={`nutri-${k}`} type="number" step="0.1" className="w-full mt-1 px-2 py-1.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0] text-sm audit-ts" value={form[k]} onChange={(e)=>setForm({...form, [k]:parseFloat(e.target.value)||0})}/>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                </div>
+                ) : null}
                 <div className="col-span-2">
                   <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Alergen yang terkandung</label>
                   <div className="flex flex-wrap gap-2 mt-1">
