@@ -1,31 +1,51 @@
+import { createClient } from "@/lib/supabase";
 import { apiError, apiSuccess } from "@/lib/db-helpers";
-
-const DEMO_USERS = [
-  { email: "admin@sppg.id", name: "Administrator", role: "admin" },
-  { email: "akuntan@sppg.id", name: "Sri Akuntansi", role: "accountant" },
-  { email: "kepala@sppg.id", name: "Pak Kepala Dapur", role: "kitchen_head" },
-  { email: "chef@sppg.id", name: "Chef Wulan", role: "head_chef" },
-  { email: "asisten@sppg.id", name: "Asisten Belanja", role: "field_assistant" },
-  { email: "staf@sppg.id", name: "Staf Gudang", role: "field_staff" },
-  { email: "ahligizi@sppg.id", name: "Ahli Gizi Maya", role: "nutritionist" },
-];
+import bcrypt from "bcryptjs";
 
 export async function POST(request) {
   try {
     const { email, password } = await request.json();
 
-    if (password !== "admin123") {
+    const supabase = await createClient();
+    const { data: rows, error } = await supabase
+      .from("users")
+      .select("*")
+      .eq("email", email.toLowerCase());
+
+    if (error) {
+      console.error("[LOGIN] Supabase error:", error.message);
+      return apiError("Gagal terhubung ke database", 500);
+    }
+
+    if (!rows || rows.length === 0) {
       return apiError("Email atau password salah", 401);
     }
 
-    const user = DEMO_USERS.find((u) => u.email === email.toLowerCase());
-    if (!user) return apiError("Email atau password salah", 401);
+    const user = rows[0];
+
+    if (!user.is_active) {
+      return apiError("Akun dinonaktifkan", 403);
+    }
+
+    const valid = bcrypt.compareSync(password, user.password_hash);
+    if (!valid) {
+      return apiError("Email atau password salah", 401);
+    }
+
+    const payload = {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      role: user.role,
+      is_active: user.is_active,
+    };
 
     return apiSuccess({
-      token: "demo",
-      user: { ...user, id: null, is_active: true },
+      token: Buffer.from(JSON.stringify(payload)).toString("base64"),
+      user: payload,
     });
   } catch (e) {
-    return apiError(e.message, 500);
+    console.error("[LOGIN] Error:", e.message);
+    return apiError("Terjadi kesalahan server", 500);
   }
 }
