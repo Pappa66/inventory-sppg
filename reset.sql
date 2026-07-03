@@ -1,6 +1,17 @@
 -- SPPG MBG — Reset & Seed
 -- Jalankan di Supabase SQL Editor (buka https://supabase.com/dashboard > SQL Editor)
 
+-- ============= 0. DISABLE RLS (biar anon key bisa baca/tulis) =============
+ALTER TABLE public.users  DISABLE ROW LEVEL SECURITY;
+ALTER TABLE public.items DISABLE ROW LEVEL SECURITY;
+ALTER TABLE public.stock_lots DISABLE ROW LEVEL SECURITY;
+ALTER TABLE public.opnames DISABLE ROW LEVEL SECURITY;
+ALTER TABLE public.purchases DISABLE ROW LEVEL SECURITY;
+ALTER TABLE public.recipes DISABLE ROW LEVEL SECURITY;
+ALTER TABLE public.menus DISABLE ROW LEVEL SECURITY;
+ALTER TABLE public.audit_trail DISABLE ROW LEVEL SECURITY;
+ALTER TABLE public.settings DISABLE ROW LEVEL SECURITY;
+
 -- ============= 1. HAPUS SEMUA DATA =============
 TRUNCATE TABLE audit_trail CASCADE;
 TRUNCATE TABLE opnames CASCADE;
