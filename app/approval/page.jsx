@@ -9,7 +9,7 @@ import { toast } from "sonner";
 import { CheckCircle2, XCircle, Flame, Send } from "lucide-react";
 
 export default function Page() {
-  const { user } = useAuth();
+  const { user, activeRole } = useAuth();
   const [pending, setPending] = useState([]);
   const [signing, setSigning] = useState(null);
   const [signature, setSignature] = useState("");
@@ -78,9 +78,9 @@ export default function Page() {
                   </div>
                 )}
                 <div className="mt-3 flex gap-2">
-                  {m.status === "DRAFT" && user.role !== "nutritionist" && <button data-testid={`submit-${m.id}`} onClick={()=>submit(m.id)} className="btn-outline flex-1 text-xs py-1.5"><Send size={12}/> Ajukan</button>}
-                  {m.status === "DRAFT" && user.role === "nutritionist" && <div className="flex-1 text-xs text-[#5C5C5C] py-1.5 text-center italic">Menunggu diajukan Chef…</div>}
-                  {m.status === "PENDING_REVIEW" && (user.role === "nutritionist" || user.role === "admin") && (
+                  {m.status === "DRAFT" && activeRole === "nutritionist" && <div className="flex-1 text-xs text-[#5C5C5C] py-1.5 text-center italic">Menunggu diajukan Chef…</div>}
+                  {m.status === "DRAFT" && activeRole !== "nutritionist" && <button data-testid={`submit-${m.id}`} onClick={()=>submit(m.id)} className="btn-outline flex-1 text-xs py-1.5"><Send size={12}/> Ajukan</button>}
+                  {m.status === "PENDING_REVIEW" && (activeRole === "nutritionist" || activeRole === "admin") && (
                     <button data-testid={`open-sign-${m.id}`} onClick={()=>{setSigning(m); setSignature(`${user.name} · Ahli Gizi`);}} className="btn-primary flex-1 text-xs py-1.5"><CheckCircle2 size={12}/> Review & Tanda Tangan</button>
                   )}
                 </div>
