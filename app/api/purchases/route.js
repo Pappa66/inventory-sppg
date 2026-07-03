@@ -1,9 +1,9 @@
 import { createClient } from "@/lib/supabase";
-import { getTokenUser, logAudit, apiError, apiSuccess } from "@/lib/db-helpers";
+import { getTokenUser, requireRoles, logAudit, apiError, apiSuccess } from "@/lib/db-helpers";
 
 export async function GET(request) {
   try {
-    const user = await getTokenUser(request);
+    await getTokenUser(request);
     const supabase = await createClient();
     const { data } = await supabase.from("purchases").select("*").order("purchased_at", { ascending: false }).limit(2000);
     return apiSuccess(data || []);

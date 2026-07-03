@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase";
-import { getTokenUser, logAudit, apiError, apiSuccess } from "@/lib/db-helpers";
+import { getTokenUser, requireRoles, logAudit, apiError, apiSuccess } from "@/lib/db-helpers";
 
 export async function GET(request) {
   try {
@@ -15,6 +15,7 @@ export async function GET(request) {
 export async function POST(request) {
   try {
     const user = await getTokenUser(request);
+    requireRoles("admin", "head_chef", "nutritionist", "kitchen_head")(user);
     const body = await request.json();
     const supabase = await createClient();
 

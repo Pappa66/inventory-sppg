@@ -3,7 +3,7 @@ import { getTokenUser, apiError, apiSuccess } from "@/lib/db-helpers";
 
 export async function GET(request, { params }) {
   try {
-    await getTokenUser();
+    await getTokenUser(request);
     const { entity, entity_id } = await params;
     const supabase = await createClient();
 

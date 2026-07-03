@@ -14,8 +14,9 @@ export default function Page() {
   const [signing, setSigning] = useState(null);
   const [signature, setSignature] = useState("");
   const [note, setNote] = useState("");
+  const [loading, setLoading] = useState(true);
 
-  const load = () => api.get("/menus/pending").then(({data}) => setPending(data));
+  const load = () => { setLoading(true); api.get("/menus/pending").then(({data}) => setPending(data)).finally(() => setLoading(false)); };
   useEffect(() => { load(); }, []);
 
   const submit = async (id) => {
@@ -39,16 +40,18 @@ export default function Page() {
           <p className="text-[#5C5C5C] mt-1">Review menu yang diajukan Chef. Ahli Gizi memberikan tanda tangan digital untuk validasi nutrisi & alergen.</p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+        {loading && <div className="text-center text-[#5C5C5C] py-10">Memuat data...</div>}
+        {!loading && <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {pending.map(m => {
             const st = MENU_STATUS[m.status||"DRAFT"];
             const dayLabel = DAYS.find(d=>d.key===m.day)?.label || m.day;
+            const p = m.portions || 1;
             const totals = (m.recipes||[]).reduce((acc, r) => ({
-              calories_kcal: acc.calories_kcal + (r.calories_kcal||0),
-              protein_g: acc.protein_g + (r.protein_g||0),
-              carbs_g: acc.carbs_g + (r.carbs_g||0),
-              fats_g: acc.fats_g + (r.fats_g||0),
-              sodium_mg: acc.sodium_mg + (r.sodium_mg||0),
+              calories_kcal: acc.calories_kcal + (r.calories_kcal||0) * p,
+              protein_g: acc.protein_g + (r.protein_g||0) * p,
+              carbs_g: acc.carbs_g + (r.carbs_g||0) * p,
+              fats_g: acc.fats_g + (r.fats_g||0) * p,
+              sodium_mg: acc.sodium_mg + (r.sodium_mg||0) * p,
             }), { calories_kcal:0, protein_g:0, carbs_g:0, fats_g:0, sodium_mg:0 });
             const allergens = Array.from(new Set((m.recipes||[]).flatMap(r => r.allergens||[])));
             return (
@@ -81,14 +84,14 @@ export default function Page() {
                   {m.status === "DRAFT" && activeRole === "nutritionist" && <div className="flex-1 text-xs text-[#5C5C5C] py-1.5 text-center italic">Menunggu diajukan Chef…</div>}
                   {m.status === "DRAFT" && (activeRole === "head_chef" || activeRole === "admin") && <button data-testid={`submit-${m.id}`} onClick={()=>submit(m.id)} className="btn-outline flex-1 text-xs py-1.5"><Send size={12}/> Ajukan</button>}
                   {m.status === "PENDING_REVIEW" && (activeRole === "nutritionist" || activeRole === "admin") && (
-                    <button data-testid={`open-sign-${m.id}`} onClick={()=>{setSigning(m); setSignature(`${user.name} · Ahli Gizi`);}} className="btn-primary flex-1 text-xs py-1.5"><CheckCircle2 size={12}/> Review & Tanda Tangan</button>
+                    <button data-testid={`open-sign-${m.id}`} onClick={()=>{setSigning(m); setSignature(`${user.name} · ${user.role === "nutritionist" ? "Ahli Gizi" : "Admin"}`);}} className="btn-primary flex-1 text-xs py-1.5"><CheckCircle2 size={12}/> Review & Tanda Tangan</button>
                   )}
                 </div>
               </div>
             );
           })}
           {pending.length === 0 && <div className="col-span-full text-center text-[#5C5C5C] py-10">Tidak ada menu yang menunggu persetujuan.</div>}
-        </div>
+        </div>}
 
         {signing && (
           <div className="fixed inset-0 z-40 bg-black/40 grid place-items-center p-4" onClick={()=>setSigning(null)}>

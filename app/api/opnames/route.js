@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase";
-import { getTokenUser, logAudit, apiError, apiSuccess } from "@/lib/db-helpers";
+import { getTokenUser, requireRoles, logAudit, apiError, apiSuccess } from "@/lib/db-helpers";
 
 export async function GET(request) {
   try {
@@ -37,7 +37,8 @@ export async function POST(request) {
 
     // Update stock lot actual_quantity
     if (body.lot_id) {
-      await supabase.from("stock_lots").update({ actual_quantity: body.counted_quantity }).eq("id", body.lot_id);
+      const { error: lotErr } = await supabase.from("stock_lots").update({ actual_quantity: body.counted_quantity }).eq("id", body.lot_id);
+      if (lotErr) console.error("[OPNAME] stock_lot update error:", lotErr);
     }
 
     await logAudit(supabase, {

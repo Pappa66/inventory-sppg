@@ -1,9 +1,9 @@
 import { createClient } from "@/lib/supabase";
 import { getTokenUser, apiError, apiSuccess } from "@/lib/db-helpers";
 
-export async function GET() {
+export async function GET(request) {
   try {
-    await getTokenUser();
+    await getTokenUser(request);
     const supabase = await createClient();
 
     const { data: menus } = await supabase

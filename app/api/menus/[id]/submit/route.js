@@ -3,10 +3,15 @@ import { getTokenUser, requireRoles, logAudit, apiError, apiSuccess } from "@/li
 
 export async function POST(request, { params }) {
   try {
-    const user = await getTokenUser();
+    const user = await getTokenUser(request);
     requireRoles("admin", "head_chef", "kitchen_head")(user);
     const { id } = await params;
     const supabase = await createClient();
+
+    const { data: old } = await supabase.from("menus").select("status").eq("id", id).single();
+    if (old && old.status !== "DRAFT") {
+      return apiError("Menu sudah diajukan, tidak bisa submit ulang", 400);
+    }
 
     const { error } = await supabase.from("menus").update({ status: "PENDING_REVIEW" }).eq("id", id);
     if (error) return apiError(error.message);

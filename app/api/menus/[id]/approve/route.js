@@ -3,11 +3,20 @@ import { getTokenUser, requireRoles, logAudit, apiError, apiSuccess } from "@/li
 
 export async function POST(request, { params }) {
   try {
-    const user = await getTokenUser();
+    const user = await getTokenUser(request);
     requireRoles("admin", "nutritionist")(user);
     const { id } = await params;
     const body = await request.json();
     const supabase = await createClient();
+
+    if (typeof body.approve !== "boolean") {
+      return apiError("Field 'approve' wajib boolean", 400);
+    }
+
+    const { data: old } = await supabase.from("menus").select("status").eq("id", id).single();
+    if (!old || old.status !== "PENDING_REVIEW") {
+      return apiError("Menu harus dalam status PENDING_REVIEW untuk disetujui/ditolak", 400);
+    }
 
     const newStatus = body.approve ? "APPROVED" : "REJECTED";
     const updates = {

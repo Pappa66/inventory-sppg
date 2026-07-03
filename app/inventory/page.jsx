@@ -43,7 +43,7 @@ export default function Page() {
     const d = new Date(lot.expiry_date);
     const diff = (d - today) / (1000*60*60*24);
     if (diff < 0) return { label: "Kadaluarsa", color: "#C5533B" };
-    if (diff <= 5) return { label: "Hampir Habis", color: "#D97706" };
+    if (diff <= 5) return { label: "Hampir Kadaluarsa", color: "#D97706" };
     return { label: "Aman", color: "#4A7C59" };
   };
 
@@ -59,7 +59,7 @@ export default function Page() {
   const submitOpname = async (e) => {
     e.preventDefault();
     try {
-      await api.post("/opname", {
+      await api.post("/opnames", {
         item_id: openOpname.item_id,
         lot_id: openOpname.id,
         counted_quantity: opnameForm.counted_quantity,

@@ -9,7 +9,8 @@ export async function GET(request) {
     const weekStart = url.searchParams.get("week_start");
     let query = supabase.from("menus").select("*");
     if (weekStart) query = query.eq("week_start", weekStart);
-    const { data } = await query.order("created_at", { ascending: false });
+    const { data, error } = await query.order("created_at", { ascending: false });
+    if (error) return apiError(error.message);
     return apiSuccess(data || []);
   } catch (e) {
     return apiError(e.message, 401);

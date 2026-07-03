@@ -3,6 +3,7 @@ import { getTokenUser, apiError, apiSuccess } from "@/lib/db-helpers";
 export async function GET(request) {
   try {
     const user = await getTokenUser(request);
+    if (!user) return apiError("Unauthorized", 401);
     return apiSuccess({
       id: user.id,
       email: user.email,

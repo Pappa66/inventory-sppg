@@ -24,7 +24,12 @@ export default function Page() {
 
   const save = async (day, recipe_ids, portions) => {
     try {
-      await api.post("/menus", { week_start: weekStart, day, recipe_ids, portions: portions||100 });
+      const existing = menus.find(m => m.day === day);
+      if (existing) {
+        await api.patch(`/menus/${existing.id}`, { recipe_ids, portions: portions||100 });
+      } else {
+        await api.post("/menus", { week_start: weekStart, day, recipe_ids, portions: portions||100 });
+      }
       toast.success("Menu tersimpan");
       load();
     } catch (er) { toast.error(formatErr(er)); }
@@ -102,7 +107,7 @@ export default function Page() {
                     })}
                     {recipes.length === 0 && <div className="text-xs text-[#5C5C5C]">Buat resep dulu di halaman Resep.</div>}
                   </div>
-                  {m.id && (m.status==="DRAFT" || !m.status) && m.recipe_ids?.length > 0 && (activeRole === "head_chef" || activeRole === "admin" || activeRole === "kitchen_head") && (
+                  {m.id && m.status==="DRAFT" && m.recipe_ids?.length > 0 && (activeRole === "head_chef" || activeRole === "admin" || activeRole === "kitchen_head") && (
                     <button data-testid={`submit-review-${d.key}`} onClick={()=>submitForReview(m)} className="btn-outline w-full mt-3 text-xs py-1.5"><Send size={12}/> Ajukan ke Ahli Gizi</button>
                   )}
                 </div>

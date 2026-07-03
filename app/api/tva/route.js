@@ -5,26 +5,43 @@ export async function GET(request) {
   try {
     await getTokenUser(request);
     const supabase = await createClient();
+    const url = new URL(request.url);
+    const weekStart = url.searchParams.get("week_start") || "";
 
     const { data: items } = await supabase.from("items").select("*");
     const { data: lots } = await supabase.from("stock_lots").select("*");
-    const { data: purchases } = await supabase.from("purchases").select("*");
 
-    const itemById = {};
-    for (const it of items || []) itemById[it.id] = it;
-
-    const actualByItem = {};
-    for (const l of lots || []) {
-      actualByItem[l.item_id] = (actualByItem[l.item_id] || 0) + Number(l.actual_quantity || l.quantity || 0);
+    // Filter purchases by week if week_start provided
+    let purchases;
+    if (weekStart) {
+      const weekEnd = new Date(weekStart);
+      weekEnd.setDate(weekEnd.getDate() + 6);
+      const endStr = weekEnd.toISOString().split("T")[0];
+      const { data } = await supabase
+        .from("purchases")
+        .select("*")
+        .gte("purchased_at", weekStart + "T00:00:00Z")
+        .lte("purchased_at", endStr + "T23:59:59Z");
+      purchases = data || [];
+    } else {
+      const { data } = await supabase.from("purchases").select("*");
+      purchases = data || [];
     }
 
+    // Theoretical = items purchased in period
     const theoreticalByItem = {};
-    for (const p of purchases || []) {
+    for (const p of purchases) {
       if (p.category === "STOCK" && p.items) {
         for (const pi of p.items) {
           theoreticalByItem[pi.item_id] = (theoreticalByItem[pi.item_id] || 0) + Number(pi.quantity || 0);
         }
       }
+    }
+
+    // Actual = current stock (from most recent opname or stock lot)
+    const actualByItem = {};
+    for (const l of lots || []) {
+      actualByItem[l.item_id] = (actualByItem[l.item_id] || 0) + Number(l.actual_quantity || l.quantity || 0);
     }
 
     const rows = (items || []).map(it => {
