@@ -40,54 +40,56 @@ export default function DashboardPage() {
   const role = activeRole || "admin";
 
   const cards = (() => {
+    function rp(v) { return { value: v, currency: true }; }
+    function ct(v) { return { value: v, currency: false }; }
     switch (role) {
       case "admin":
         return [
-          { label: "Total Stok", value: s.total_stock, icon: Package, color: "#4A7C59" },
-          { label: "Total OPEX", value: s.total_opex, icon: Wallet, color: "#D97706" },
-          { label: "Transport", value: s.total_transport, icon: TrendingUp, color: "#2C4251" },
-          { label: "Low Stock", value: low.length, icon: AlertTriangle, color: "#C5533B" },
-          { label: "Total Transaksi", value: s.total_count || 0, icon: ShoppingBasket, color: "#6D28D9" },
-          { label: "Tervalidasi", value: `${s.verified_count || 0}/${s.total_count || 0}`, icon: BadgeCheck, color: "#4A7C59" },
+          { label: "Total Stok", ...rp(s.total_stock), icon: Package, color: "#4A7C59" },
+          { label: "Total OPEX", ...rp(s.total_opex), icon: Wallet, color: "#D97706" },
+          { label: "Transport", ...rp(s.total_transport), icon: TrendingUp, color: "#2C4251" },
+          { label: "Low Stock", ...ct(low.length), icon: AlertTriangle, color: "#C5533B" },
+          { label: "Total Transaksi", ...ct(s.total_count || 0), icon: ShoppingBasket, color: "#6D28D9" },
+          { label: "Tervalidasi", ...ct(`${s.verified_count || 0}/${s.total_count || 0}`), icon: BadgeCheck, color: "#4A7C59" },
         ];
       case "accountant":
         return [
-          { label: "Total Stok", value: s.total_stock, icon: Package, color: "#2C4251" },
-          { label: "Total OPEX", value: s.total_opex, icon: Wallet, color: "#2C4251" },
-          { label: "Grand Total", value: s.grand_total, icon: TrendingUp, color: "#2C4251" },
-          { label: "Tervalidasi", value: `${s.verified_count || 0}/${s.total_count || 0}`, icon: BadgeCheck, color: "#4A7C59" },
-          { label: "Belum Validasi", value: (s.total_count || 0) - (s.verified_count || 0), icon: AlertTriangle, color: "#C5533B" },
+          { label: "Total Stok", ...rp(s.total_stock), icon: Package, color: "#2C4251" },
+          { label: "Total OPEX", ...rp(s.total_opex), icon: Wallet, color: "#2C4251" },
+          { label: "Grand Total", ...rp(s.grand_total), icon: TrendingUp, color: "#2C4251" },
+          { label: "Tervalidasi", ...ct(`${s.verified_count || 0}/${s.total_count || 0}`), icon: BadgeCheck, color: "#4A7C59" },
+          { label: "Belum Validasi", ...ct((s.total_count || 0) - (s.verified_count || 0)), icon: AlertTriangle, color: "#C5533B" },
         ];
       case "kitchen_head":
       case "head_chef":
         return [
-          { label: "Bahan Aktif", value: items.length, icon: Package, color: "#4A7C59" },
-          { label: "Low Stock", value: low.length, icon: AlertTriangle, color: "#C5533B" },
-          { label: "Menu Aktif", value: menus.filter(m => m.status !== "DRAFT").length, icon: CalendarDays, color: "#D97706" },
-          { label: "Resep", value: recipes.length, icon: ChefHat, color: "#4A7C59" },
+          { label: "Bahan Aktif", ...ct(items.length), icon: Package, color: "#4A7C59" },
+          { label: "Low Stock", ...ct(low.length), icon: AlertTriangle, color: "#C5533B" },
+          { label: "Menu Aktif", ...ct(menus.filter(m => m.status !== "DRAFT").length), icon: CalendarDays, color: "#D97706" },
+          { label: "Resep", ...ct(recipes.length), icon: ChefHat, color: "#4A7C59" },
         ];
       case "field_assistant":
         return [
-          { label: "Total Belanja", value: s.grand_total, icon: ShoppingBasket, color: "#C5533B" },
-          { label: "Transaksi", value: s.total_count || 0, icon: Wallet, color: "#C5533B" },
-          { label: "Belum Validasi", value: (s.total_count || 0) - (s.verified_count || 0), icon: AlertTriangle, color: "#C5533B" },
+          { label: "Total Belanja", ...rp(s.grand_total), icon: ShoppingBasket, color: "#C5533B" },
+          { label: "Transaksi", ...ct(s.total_count || 0), icon: Wallet, color: "#C5533B" },
+          { label: "Belum Validasi", ...ct((s.total_count || 0) - (s.verified_count || 0)), icon: AlertTriangle, color: "#C5533B" },
         ];
       case "field_staff":
         return [
-          { label: "Low Stock", value: low.length, icon: AlertTriangle, color: "#8B6F3A" },
-          { label: "Total Bahan", value: items.length, icon: Package, color: "#8B6F3A" },
-          { label: "Opname Terakhir", value: "—", icon: Database, color: "#8B6F3A" },
+          { label: "Low Stock", ...ct(low.length), icon: AlertTriangle, color: "#8B6F3A" },
+          { label: "Total Bahan", ...ct(items.length), icon: Package, color: "#8B6F3A" },
+          { label: "Opname Terakhir", ...ct("—"), icon: Database, color: "#8B6F3A" },
         ];
       case "nutritionist":
         return [
-          { label: "Menu Disetujui", value: menus.filter(m => m.status === "APPROVED").length, icon: BadgeCheck, color: "#6D28D9" },
-          { label: "Menunggu Review", value: menus.filter(m => m.status === "PENDING_REVIEW").length, icon: AlertTriangle, color: "#D97706" },
-          { label: "Menu Draft", value: menus.filter(m => m.status === "DRAFT").length, icon: CalendarDays, color: "#6D28D9" },
+          { label: "Menu Disetujui", ...ct(menus.filter(m => m.status === "APPROVED").length), icon: BadgeCheck, color: "#6D28D9" },
+          { label: "Menunggu Review", ...ct(menus.filter(m => m.status === "PENDING_REVIEW").length), icon: AlertTriangle, color: "#D97706" },
+          { label: "Menu Draft", ...ct(menus.filter(m => m.status === "DRAFT").length), icon: CalendarDays, color: "#6D28D9" },
         ];
       default:
         return [
-          { label: "Total Stok", value: s.total_stock, icon: Package, color: "#4A7C59" },
-          { label: "Low Stock", value: low.length, icon: AlertTriangle, color: "#C5533B" },
+          { label: "Total Stok", ...rp(s.total_stock), icon: Package, color: "#4A7C59" },
+          { label: "Low Stock", ...ct(low.length), icon: AlertTriangle, color: "#C5533B" },
         ];
     }
   })();
@@ -109,14 +111,14 @@ export default function DashboardPage() {
         ) : (
           <>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {cards.map(({ label, value, icon: Icon, color }) => (
+              {cards.map(({ label, value, currency, icon: Icon, color }) => (
                 <div key={label} className="card-soft p-5">
                   <div className="flex items-center justify-between">
                     <div className="text-[11px] uppercase tracking-widest text-[#5C5C5C]">{label}</div>
                     <Icon size={18} style={{ color }} />
                   </div>
                   <div className="font-display font-bold text-2xl mt-2" style={{ color }}>
-                    {typeof value === "number" && label !== "Opname Terakhir" ? fmtIDR(value) : value}
+                    {currency ? fmtIDR(value) : value}
                   </div>
                 </div>
               ))}
