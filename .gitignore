@@ -7,3 +7,7 @@ out/
 *.log
 .DS_Store
 .vercel
+
+# Dokumen internal (tidak untuk publik)
+PROPOSAL.md
+DOKUMENTASI.md
