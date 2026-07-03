@@ -5,7 +5,11 @@ export async function GET(request) {
   try {
     await getTokenUser(request);
     const supabase = await createClient();
-    const { data } = await supabase.from("menus").select("*").order("created_at", { ascending: false });
+    const url = new URL(request.url);
+    const weekStart = url.searchParams.get("week_start");
+    let query = supabase.from("menus").select("*");
+    if (weekStart) query = query.eq("week_start", weekStart);
+    const { data } = await query.order("created_at", { ascending: false });
     return apiSuccess(data || []);
   } catch (e) {
     return apiError(e.message, 401);

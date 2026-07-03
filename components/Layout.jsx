@@ -18,7 +18,7 @@ const ALL_NAV = [
   { to: "/inventory", label: "Stok (FEFO)", icon: Boxes, roles: ["admin","field_staff","kitchen_head","head_chef"] },
   { to: "/procurement", label: "Belanja & Struk", icon: ShoppingBasket, roles: ["admin","field_assistant","accountant","kitchen_head"] },
   { to: "/menu", label: "Menu 5-Hari", icon: CalendarDays, roles: ["admin","head_chef","kitchen_head"] },
-  { to: "/recipes", label: "Resep & Gizi", icon: ChefHat, roles: ["admin","head_chef","kitchen_head","nutritionist"] },
+  { to: "/recipes", label: "Resep & Gizi", icon: ChefHat, roles: ["admin","nutritionist"] },
   { to: "/approval", label: "Persetujuan Menu", icon: BadgeCheck, roles: ["admin","nutritionist","kitchen_head"] },
   { to: "/tva", label: "TvA Selisih", icon: BarChart3, roles: ["admin","kitchen_head","head_chef","accountant"] },
   { to: "/reports", label: "Laporan", icon: FileText, roles: ["admin","kitchen_head","accountant","head_chef","nutritionist"] },

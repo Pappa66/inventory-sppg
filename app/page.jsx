@@ -171,7 +171,6 @@ export default function DashboardPage() {
             <>
               <QuickLink href="/inventory" label="Stok" icon={Package} />
               <QuickLink href="/menu" label="Menu" icon={CalendarDays} />
-              <QuickLink href="/recipes" label="Resep" icon={ChefHat} />
               <QuickLink href="/tva" label="TvA" icon={TrendingUp} />
             </>
           )}
@@ -184,7 +183,6 @@ export default function DashboardPage() {
           {role === "nutritionist" && (
             <>
               <QuickLink href="/approval" label="Persetujuan" icon={BadgeCheck} />
-              <QuickLink href="/menu" label="Menu" icon={CalendarDays} />
               <QuickLink href="/recipes" label="Resep & Gizi" icon={ChefHat} />
             </>
           )}
