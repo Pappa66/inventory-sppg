@@ -153,7 +153,9 @@ export default function Page() {
       if (low.length > 10) detail += `\n...dan ${low.length - 10} bahan lainnya`;
     }
     const txt = `*LAPORAN SPPG · MBG*\n${fmtDate(new Date().toISOString())}\n\nSTOCK: ${fmtIDR(s.total_stock)}\nOPEX: ${fmtIDR(s.total_opex)}\nTransport: ${fmtIDR(s.total_transport)}\n*Total: ${fmtIDR(s.grand_total)}*\nValidasi: ${s.verified_count}/${s.total_count}\nLow-Stok: ${low.length} bahan${detail}`;
-    window.open(`https://wa.me/?text=${encodeURIComponent(txt)}`, "_blank");
+    const waUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(txt)}`;
+    const win = window.open(waUrl, "_blank");
+    if (!win) window.location.href = waUrl;
   };
 
   return (

@@ -63,7 +63,9 @@ export default function Page() {
       return `*${d.label}*: ${names} (${m.portions||0} porsi)`;
     });
     const txt = `*MENU SPPG · MBG*\nMinggu mulai ${fmtDate(weekStart)}\n\n${lines.join("\n")}`;
-    window.open(`https://wa.me/?text=${encodeURIComponent(txt)}`, "_blank");
+    const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(txt)}`;
+    const win = window.open(url, "_blank");
+    if (!win) window.location.href = url;
   };
 
   return (
