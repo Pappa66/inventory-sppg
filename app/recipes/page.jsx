@@ -5,6 +5,7 @@ import Layout from "@/components/Layout";
 import { api, formatErr } from "@/lib/api";
 import { COMMON_ALLERGENS } from "@/lib/format";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
 import { Plus, Flame } from "lucide-react";
 import { SkeletonCards } from "@/components/Skeleton";
 import Pagination from "@/components/Pagination";
@@ -12,7 +13,10 @@ import Pagination from "@/components/Pagination";
 const EMPTY = { name: "", servings: 100, ingredients: [], instructions: "",
   calories_kcal: 0, protein_g: 0, carbs_g: 0, fats_g: 0, sodium_mg: 0, allergens: [] };
 
+const CAN_EDIT = ["admin", "head_chef", "nutritionist", "kitchen_head"];
+
 export default function Page() {
+  const { activeRole } = useAuth();
   const [recipes, setRecipes] = useState([]);
   const [items, setItems] = useState([]);
   const [open, setOpen] = useState(false);
@@ -52,7 +56,7 @@ export default function Page() {
             <h1 className="font-display text-4xl font-bold">Resep Standar</h1>
             <p className="text-[#5C5C5C] mt-1">Resep menjadi dasar perhitungan kebutuhan teoritis bahan.</p>
           </div>
-          <button data-testid="add-recipe-btn" onClick={()=>{setEditing(null); setForm(EMPTY); setOpen(true);}} className="btn-primary"><Plus size={16}/> Resep Baru</button>
+          {CAN_EDIT.includes(activeRole) && <button data-testid="add-recipe-btn" onClick={()=>{setEditing(null); setForm(EMPTY); setOpen(true);}} className="btn-primary"><Plus size={16}/> Resep Baru</button>}
         </div>
 
         {loading ? (
@@ -66,7 +70,7 @@ export default function Page() {
                     <div className="font-display font-bold text-lg">{r.name}</div>
                     <div className="text-xs audit-ts text-[#5C5C5C]">{r.servings} porsi</div>
                   </div>
-                  <button onClick={()=>{setEditing(r); setForm({name:r.name, servings:r.servings, ingredients:r.ingredients||[], instructions:r.instructions||"", calories_kcal:r.calories_kcal||0, protein_g:r.protein_g||0, carbs_g:r.carbs_g||0, fats_g:r.fats_g||0, sodium_mg:r.sodium_mg||0, allergens:r.allergens||[]}); setOpen(true);}} className="btn-ghost text-xs">Edit</button>
+                  {CAN_EDIT.includes(activeRole) && <button onClick={()=>{setEditing(r); setForm({name:r.name, servings:r.servings, ingredients:r.ingredients||[], instructions:r.instructions||"", calories_kcal:r.calories_kcal||0, protein_g:r.protein_g||0, carbs_g:r.carbs_g||0, fats_g:r.fats_g||0, sodium_mg:r.sodium_mg||0, allergens:r.allergens||[]}); setOpen(true);}} className="btn-ghost text-xs">Edit</button>}
                 </div>
                 <div className="grid grid-cols-5 gap-1 mt-3 text-center">
                   {[["Kkal", r.calories_kcal, "#D97706"],["Prot", r.protein_g, "#4A7C59"],["Karbo", r.carbs_g, "#2C4251"],["Lemak", r.fats_g, "#C5533B"],["Na (mg)", r.sodium_mg, "#5C5C5C"]].map(([l,v,c],i)=>(

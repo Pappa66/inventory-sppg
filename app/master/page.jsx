@@ -5,13 +5,17 @@ import Layout from "@/components/Layout";
 import { api, formatErr } from "@/lib/api";
 import { fmtIDR, fmtDateTime, ZONES, ZONE_COLORS, ZONE_LABELS, COMMON_ALLERGENS } from "@/lib/format";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
 import { Plus, History } from "lucide-react";
 import { SkeletonTable } from "@/components/Skeleton";
 import Pagination from "@/components/Pagination";
 
 const EMPTY = { name: "", unit: "kg", category: "Sayur", par_level: 0, price_per_unit: 0, zone: "DRY", allergens: [] };
 
+const CAN_EDIT = ["admin", "kitchen_head"];
+
 export default function Page() {
+  const { activeRole } = useAuth();
   const [items, setItems] = useState([]);
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState(null);
@@ -54,7 +58,7 @@ export default function Page() {
             <h1 className="font-display text-4xl font-bold">Master Bahan</h1>
             <p className="text-[#5C5C5C] mt-1">Daftar bahan baku, satuan, par-level. Setiap perubahan tersimpan sebagai versi baru.</p>
           </div>
-          <button data-testid="add-item-btn" onClick={()=>{setEditing(null); setForm(EMPTY); setOpen(true);}} className="btn-primary"><Plus size={16}/> Bahan Baru</button>
+          {CAN_EDIT.includes(activeRole) && <button data-testid="add-item-btn" onClick={()=>{setEditing(null); setForm(EMPTY); setOpen(true);}} className="btn-primary"><Plus size={16}/> Bahan Baru</button>}
         </div>
 
         {loading ? (
@@ -86,7 +90,7 @@ export default function Page() {
                     <td className="py-3 px-4 text-right audit-ts">{fmtIDR(it.price_per_unit)}</td>
                     <td className="py-3 px-4 text-xs">{(it.allergens||[]).join(", ") || "—"}</td>
                     <td className="py-3 px-4 text-right space-x-2">
-                      <button data-testid={`edit-item-${it.id}`} onClick={()=>{setEditing(it); setForm({name:it.name,unit:it.unit,category:it.category,par_level:it.par_level,price_per_unit:it.price_per_unit,zone:it.zone||"DRY",allergens:it.allergens||[]}); setOpen(true);}} className="btn-ghost text-xs">Edit</button>
+                      {CAN_EDIT.includes(activeRole) && <button data-testid={`edit-item-${it.id}`} onClick={()=>{setEditing(it); setForm({name:it.name,unit:it.unit,category:it.category,par_level:it.par_level,price_per_unit:it.price_per_unit,zone:it.zone||"DRY",allergens:it.allergens||[]}); setOpen(true);}} className="btn-ghost text-xs">Edit</button>}
                       <button data-testid={`history-${it.id}`} onClick={()=>showHistory(it)} className="btn-ghost text-xs"><History size={14}/> Riwayat</button>
                     </td>
                   </tr>
@@ -122,7 +126,7 @@ export default function Page() {
                     </div>
                   </div>
                   <div className="flex justify-end gap-2 pt-1">
-                    <button data-testid={`edit-item-${it.id}`} onClick={()=>{setEditing(it); setForm({name:it.name,unit:it.unit,category:it.category,par_level:it.par_level,price_per_unit:it.price_per_unit,zone:it.zone||"DRY",allergens:it.allergens||[]}); setOpen(true);}} className="btn-ghost text-xs">Edit</button>
+                    {CAN_EDIT.includes(activeRole) && <button data-testid={`edit-item-${it.id}`} onClick={()=>{setEditing(it); setForm({name:it.name,unit:it.unit,category:it.category,par_level:it.par_level,price_per_unit:it.price_per_unit,zone:it.zone||"DRY",allergens:it.allergens||[]}); setOpen(true);}} className="btn-ghost text-xs">Edit</button>}
                     <button data-testid={`history-${it.id}`} onClick={()=>showHistory(it)} className="btn-ghost text-xs"><History size={14}/> Riwayat</button>
                   </div>
                 </div>

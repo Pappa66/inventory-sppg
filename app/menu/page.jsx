@@ -6,9 +6,11 @@ import { api, formatErr } from "@/lib/api";
 import { DAYS, mondayOf, fmtDate, MENU_STATUS } from "@/lib/format";
 import { toast } from "sonner";
 import { SkeletonCards } from "@/components/Skeleton";
+import { useAuth } from "@/contexts/AuthContext";
 import { Calendar, ChefHat, Share2, Send, CheckCircle2 } from "lucide-react";
 
 export default function Page() {
+  const { activeRole } = useAuth();
   const [weekStart, setWeekStart] = useState(mondayOf());
   const [recipes, setRecipes] = useState([]);
   const [menus, setMenus] = useState([]);
@@ -100,7 +102,7 @@ export default function Page() {
                     })}
                     {recipes.length === 0 && <div className="text-xs text-[#5C5C5C]">Buat resep dulu di halaman Resep.</div>}
                   </div>
-                  {m.id && (m.status==="DRAFT" || !m.status) && m.recipe_ids?.length > 0 && (
+                  {m.id && (m.status==="DRAFT" || !m.status) && m.recipe_ids?.length > 0 && (activeRole === "head_chef" || activeRole === "admin" || activeRole === "kitchen_head") && (
                     <button data-testid={`submit-review-${d.key}`} onClick={()=>submitForReview(m)} className="btn-outline w-full mt-3 text-xs py-1.5"><Send size={12}/> Ajukan ke Ahli Gizi</button>
                   )}
                 </div>

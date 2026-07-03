@@ -5,11 +5,13 @@ import Layout from "@/components/Layout";
 import { api, formatErr } from "@/lib/api";
 import { fmtDateTime, ZONES, ZONE_COLORS, ZONE_LABELS } from "@/lib/format";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
 import { Plus, ClipboardCheck, Thermometer, Droplets } from "lucide-react";
 import { SkeletonTable } from "@/components/Skeleton";
 import Pagination from "@/components/Pagination";
 
 export default function Page() {
+  const { activeRole } = useAuth();
   const [lots, setLots] = useState([]);
   const [items, setItems] = useState([]);
   const [openLot, setOpenLot] = useState(false);
@@ -96,7 +98,9 @@ export default function Page() {
                 </button>
               ))}
             </div>
-            <button data-testid="add-lot-btn" onClick={()=>setOpenLot(true)} className="btn-primary"><Plus size={16}/> Tambah Lot</button>
+            {(activeRole === "field_staff" || activeRole === "admin" || activeRole === "kitchen_head" || activeRole === "head_chef") && (
+              <button data-testid="add-lot-btn" onClick={()=>setOpenLot(true)} className="btn-primary"><Plus size={16}/> Tambah Lot</button>
+            )}
           </div>
         </div>
 
@@ -132,7 +136,9 @@ export default function Page() {
                       <td className="py-3 px-4 audit-ts text-xs">{fmtDateTime(l.received_at)}</td>
                       <td className="py-3 px-4"><span className="role-pill" style={{background:`${s.color}1A`, color:s.color}}>{s.label}</span></td>
                       <td className="py-3 px-4 text-right">
-                        <button data-testid={`opname-${l.id}`} onClick={()=>{setOpenOpname(l); setOpnameForm({counted_quantity:l.actual_quantity, zone:l.zone||"DRY", temperature_c:"", humidity_pct:"", reason:"Routine"});}} className="btn-ghost text-xs"><ClipboardCheck size={14}/> Opname</button>
+                        {(activeRole === "field_staff" || activeRole === "admin" || activeRole === "kitchen_head" || activeRole === "head_chef") &&
+                          <button data-testid={`opname-${l.id}`} onClick={()=>{setOpenOpname(l); setOpnameForm({counted_quantity:l.actual_quantity, zone:l.zone||"DRY", temperature_c:"", humidity_pct:"", reason:"Routine"});}} className="btn-ghost text-xs"><ClipboardCheck size={14}/> Opname</button>
+                        }
                       </td>
                     </tr>
                   );
@@ -167,7 +173,9 @@ export default function Page() {
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="role-pill text-xs" style={{background:`${s.color}1A`, color:s.color}}>{s.label}</span>
-                    <button data-testid={`opname-${l.id}`} onClick={()=>{setOpenOpname(l); setOpnameForm({counted_quantity:l.actual_quantity, zone:l.zone||"DRY", temperature_c:"", humidity_pct:"", reason:"Routine"});}} className="btn-ghost text-xs"><ClipboardCheck size={14}/> Opname</button>
+                    {(activeRole === "field_staff" || activeRole === "admin" || activeRole === "kitchen_head" || activeRole === "head_chef") &&
+                      <button data-testid={`opname-${l.id}`} onClick={()=>{setOpenOpname(l); setOpnameForm({counted_quantity:l.actual_quantity, zone:l.zone||"DRY", temperature_c:"", humidity_pct:"", reason:"Routine"});}} className="btn-ghost text-xs"><ClipboardCheck size={14}/> Opname</button>
+                    }
                   </div>
                 </div>
               );
