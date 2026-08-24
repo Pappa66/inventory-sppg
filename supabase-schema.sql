@@ -357,3 +357,43 @@ CREATE TABLE public.volunteer_incentives (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 CREATE INDEX idx_volunteer_incentives_period ON volunteer_incentives(period_id);
+
+-- ============= ANGGARAN PERIODS (3 Section Anggaran sesuai Excel) =============
+CREATE TABLE public.anggaran_periods (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  period_id UUID REFERENCES biweekly_periods(id),
+  plan_date DATE NOT NULL,
+  -- Section 1: Anggaran Bahan Makanan (per kelompok sasaran)
+  bahan_balita INT DEFAULT 0,
+  bahan_paud_tk_ra INT DEFAULT 0,
+  bahan_sd_1_3 INT DEFAULT 0,
+  bahan_sd_4_6 INT DEFAULT 0,
+  bahan_smp_mts INT DEFAULT 0,
+  bahan_sma_ma_smk INT DEFAULT 0,
+  bahan_slb INT DEFAULT 0,
+  bahan_santri INT DEFAULT 0,
+  bahan_pend_tk INT DEFAULT 0,
+  bahan_bumil INT DEFAULT 0,
+  bahan_busui INT DEFAULT 0,
+  harga_satuan1 FLOAT DEFAULT 8000,
+  harga_satuan2 FLOAT DEFAULT 10000,
+  bahan_rab FLOAT DEFAULT 0,
+  bahan_actual FLOAT DEFAULT 0,
+  -- Section 2: Anggaran Operasional
+  ops_jumlah_paket INT DEFAULT 0,
+  ops_harga_satuan FLOAT DEFAULT 0,
+  ops_rab FLOAT DEFAULT 0,
+  ops_actual FLOAT DEFAULT 0,
+  -- Section 3: Anggaran Insentif Fasilitas
+  ins_jumlah_paket INT DEFAULT 0,
+  ins_harga_satuan FLOAT DEFAULT 0,
+  ins_rab FLOAT DEFAULT 0,
+  ins_actual FLOAT DEFAULT 0,
+  -- Notes
+  notes TEXT,
+  created_by UUID REFERENCES users(id),
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
+CREATE INDEX idx_anggaran_periods_date ON anggaran_periods(plan_date);
+CREATE INDEX idx_anggaran_periods_period ON anggaran_periods(period_id);

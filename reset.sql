@@ -26,8 +26,10 @@ ALTER TABLE public.transaksis          DISABLE ROW LEVEL SECURITY;
 ALTER TABLE public.item_hierarchies    DISABLE ROW LEVEL SECURITY;
 ALTER TABLE public.item_opening_balances DISABLE ROW LEVEL SECURITY;
 ALTER TABLE public.volunteer_incentives DISABLE ROW LEVEL SECURITY;
+ALTER TABLE public.anggaran_periods DISABLE ROW LEVEL SECURITY;
 
 -- ============= 1. HAPUS SEMUA DATA =============
+TRUNCATE TABLE anggaran_periods CASCADE;
 TRUNCATE TABLE volunteer_incentives CASCADE;
 TRUNCATE TABLE item_opening_balances CASCADE;
 TRUNCATE TABLE item_hierarchies CASCADE;
