@@ -114,7 +114,7 @@ export default function Page() {
                 </button>
               ))}
             </div>
-            {(activeRole === "field_assistant" || activeRole === "admin" || activeRole === "kitchen_head" || activeRole === "head_chef") && (
+            {(activeRole === "field_assistant" || activeRole === "admin_apps" || activeRole === "admin_sppg" || activeRole === "kitchen_head" || activeRole === "head_chef") && (
               <button data-testid="add-lot-btn" onClick={()=>setOpenLot(true)} className="btn-primary"><Plus size={16}/> Tambah Lot</button>
             )}
           </div>
@@ -155,7 +155,7 @@ export default function Page() {
                       <td className="py-3 px-4"><span className="role-pill" style={{background:`${s.color}1A`, color:s.color}}>{s.label}</span></td>
                       <td className="py-3 px-4 text-right">
                         <div className="flex justify-end gap-1">
-                          {(activeRole === "field_assistant" || activeRole === "admin" || activeRole === "kitchen_head" || activeRole === "head_chef") && (
+                          {(activeRole === "field_assistant" || activeRole === "admin_apps" || activeRole === "admin_sppg" || activeRole === "kitchen_head" || activeRole === "head_chef") && (
                             <>
                               <button data-testid={`taken-${l.id}`} onClick={()=>{setOpenTaken(l); setTakenForm({quantity:0, reason:"COOKING"});}} className="btn-ghost text-xs text-[#D97706]"><HandPlatter size={14}/> Ambil</button>
                               <button data-testid={`opname-${l.id}`} onClick={()=>{setOpenOpname(l); setOpnameForm({counted_quantity:l.actual_quantity, zone:l.zone||"DRY", temperature_c:"", humidity_pct:"", reason:"Routine"});}} className="btn-ghost text-xs"><ClipboardCheck size={14}/> Opname</button>
@@ -202,7 +202,7 @@ export default function Page() {
                   <div className="flex justify-between items-center">
                     <span className="role-pill text-xs" style={{background:`${s.color}1A`, color:s.color}}>{s.label}</span>
                     <div className="flex gap-1">
-                      {(activeRole === "field_assistant" || activeRole === "admin" || activeRole === "kitchen_head" || activeRole === "head_chef") && (
+                      {(activeRole === "field_assistant" || activeRole === "admin_apps" || activeRole === "admin_sppg" || activeRole === "kitchen_head" || activeRole === "head_chef") && (
                         <>
                           <button data-testid={`taken-${l.id}`} onClick={()=>{setOpenTaken(l); setTakenForm({quantity:0, reason:"COOKING"});}} className="btn-ghost text-xs text-[#D97706]"><HandPlatter size={14}/> Ambil</button>
                           <button data-testid={`opname-${l.id}`} onClick={()=>{setOpenOpname(l); setOpnameForm({counted_quantity:l.actual_quantity, zone:l.zone||"DRY", temperature_c:"", humidity_pct:"", reason:"Routine"});}} className="btn-ghost text-xs"><ClipboardCheck size={14}/> Opname</button>

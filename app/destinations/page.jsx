@@ -29,7 +29,7 @@ export default function Page() {
   const [form, setForm] = useState(EMPTY_FORM);
   const perPage = 15;
 
-  const canWrite = activeRole === "admin" || activeRole === "field_assistant";
+  const canWrite = activeRole === "admin_apps" || activeRole === "admin_sppg" || activeRole === "field_assistant";
 
   const load = () => {
     setLoading(true);

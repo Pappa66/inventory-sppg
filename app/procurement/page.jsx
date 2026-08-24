@@ -77,7 +77,7 @@ export default function Page() {
             <h1 className="font-display text-4xl font-bold">Belanja & Struk</h1>
             <p className="text-[#5C5C5C] mt-1">STOCK = bahan baku · OPERATIONAL = transport/bbm. Foto struk wajib untuk setiap entri.</p>
           </div>
-          {(activeRole === "field_assistant" || activeRole === "admin") &&
+          {(activeRole === "field_assistant" || activeRole === "admin_apps" || activeRole === "admin_sppg") &&
             <button data-testid="add-purchase-btn" onClick={()=>{setForm(EMPTY); setOpen(true);}} className="btn-primary"><Plus size={16}/> Catat Belanja</button>}
         </div>
 
@@ -107,7 +107,7 @@ export default function Page() {
                   {p.transport_amount_idr ? (
                     <div className="flex items-center justify-between text-sm"><div className="text-[#5C5C5C]">Transport</div><div className="audit-ts">{fmtIDR(p.transport_amount_idr)}</div></div>
                   ) : null}
-                  {(activeRole === "accountant" || activeRole === "admin") && !p.verified && (
+                  {(activeRole === "accountant" || activeRole === "admin_apps" || activeRole === "admin_sppg") && !p.verified && (
                     <button data-testid={`verify-${p.id}`} onClick={()=>setVerifyOf(p)} className="btn-outline w-full mt-3 text-xs py-1.5"><Receipt size={14}/> Validasi Akuntan</button>
                   )}
                 </div>

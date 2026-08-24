@@ -5,7 +5,7 @@ import bcrypt from "bcryptjs";
 export async function GET(request) {
   try {
     const user = await getTokenUser(request);
-    requireRoles("admin")(user);
+    requireRoles("admin_apps","admin_sppg")(user);
     const supabase = await createClient();
     const { data } = await supabase.from("users").select("*").order("created_at", { ascending: false });
     return apiSuccess(data || []);
@@ -17,7 +17,7 @@ export async function GET(request) {
 export async function POST(request) {
   try {
     const user = await getTokenUser(request);
-    requireRoles("admin")(user);
+    requireRoles("admin_apps","admin_sppg")(user);
     const body = await request.json();
     const supabase = await createClient();
 

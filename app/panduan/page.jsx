@@ -207,7 +207,7 @@ const GUIDES = {
 
 export default function PanduanPage() {
   const { activeRole } = useAuth();
-  const role = activeRole || "admin";
+  const role = activeRole || "admin_sppg";
   const guide = GUIDES[role] || GUIDES.admin;
 
   return (

@@ -18,8 +18,24 @@ ALTER TABLE public.delivery_assignments   DISABLE ROW LEVEL SECURITY;
 ALTER TABLE public.delivery_logs          DISABLE ROW LEVEL SECURITY;
 ALTER TABLE public.daily_tasks         DISABLE ROW LEVEL SECURITY;
 ALTER TABLE public.anggaran_beneficiaries DISABLE ROW LEVEL SECURITY;
+ALTER TABLE public.global_config       DISABLE ROW LEVEL SECURITY;
+ALTER TABLE public.setup_sppg          DISABLE ROW LEVEL SECURITY;
+ALTER TABLE public.chart_of_accounts   DISABLE ROW LEVEL SECURITY;
+ALTER TABLE public.biweekly_periods    DISABLE ROW LEVEL SECURITY;
+ALTER TABLE public.transaksis          DISABLE ROW LEVEL SECURITY;
+ALTER TABLE public.item_hierarchies    DISABLE ROW LEVEL SECURITY;
+ALTER TABLE public.item_opening_balances DISABLE ROW LEVEL SECURITY;
+ALTER TABLE public.volunteer_incentives DISABLE ROW LEVEL SECURITY;
 
 -- ============= 1. HAPUS SEMUA DATA =============
+TRUNCATE TABLE volunteer_incentives CASCADE;
+TRUNCATE TABLE item_opening_balances CASCADE;
+TRUNCATE TABLE item_hierarchies CASCADE;
+TRUNCATE TABLE transaksis CASCADE;
+TRUNCATE TABLE biweekly_periods CASCADE;
+TRUNCATE TABLE chart_of_accounts CASCADE;
+TRUNCATE TABLE setup_sppg CASCADE;
+TRUNCATE TABLE global_config CASCADE;
 TRUNCATE TABLE daily_tasks CASCADE;
 TRUNCATE TABLE anggaran_beneficiaries CASCADE;
 TRUNCATE TABLE delivery_logs CASCADE;
@@ -40,19 +56,20 @@ TRUNCATE TABLE settings CASCADE;
 -- ============= 2. USERS =============
 INSERT INTO public.users (id, email, name, role, is_active, password_hash, created_at)
 VALUES
-  ('a0000001-0000-0000-0000-000000000001'::uuid, 'admin@sppg.id',     'Administrator',    'admin',           true, '$2a$10$Pz32qBguBXmHlFzQfE4uIuk8hWZEVNHcsS2dcrf2FcfCqGnh8iQW2', now()),
-  ('a0000001-0000-0000-0000-000000000002'::uuid, 'akuntan@sppg.id',   'Sri Akuntansi',    'accountant',      true, '$2a$10$Pz32qBguBXmHlFzQfE4uIuk8hWZEVNHcsS2dcrf2FcfCqGnh8iQW2', now()),
-  ('a0000001-0000-0000-0000-000000000003'::uuid, 'kepala@sppg.id',    'Pak Kepala Dapur', 'kitchen_head',    true, '$2a$10$Pz32qBguBXmHlFzQfE4uIuk8hWZEVNHcsS2dcrf2FcfCqGnh8iQW2', now()),
-  ('a0000001-0000-0000-0000-000000000004'::uuid, 'chef@sppg.id',      'Chef Wulan',       'head_chef',       true, '$2a$10$Pz32qBguBXmHlFzQfE4uIuk8hWZEVNHcsS2dcrf2FcfCqGnh8iQW2', now()),
-  ('a0000001-0000-0000-0000-000000000005'::uuid, 'asisten@sppg.id',   'Asisten Lapangan', 'field_assistant', true, '$2a$10$Pz32qBguBXmHlFzQfE4uIuk8hWZEVNHcsS2dcrf2FcfCqGnh8iQW2', now()),
-  ('a0000001-0000-0000-0000-000000000006'::uuid, 'ahligizi@sppg.id',  'Ahli Gizi Maya',   'nutritionist',    true, '$2a$10$Pz32qBguBXmHlFzQfE4uIuk8hWZEVNHcsS2dcrf2FcfCqGnh8iQW2', now()),
-  ('a0000001-0000-0000-0000-000000000007'::uuid, 'driver@sppg.id',    'Driver Budi',      'driver',          true, '$2a$10$Pz32qBguBXmHlFzQfE4uIuk8hWZEVNHcsS2dcrf2FcfCqGnh8iQW2', now()),
-  ('a0000001-0000-0000-0000-000000000008'::uuid, 'driver2@sppg.id',   'Driver Sari',      'driver',          true, '$2a$10$Pz32qBguBXmHlFzQfE4uIuk8hWZEVNHcsS2dcrf2FcfCqGnh8iQW2', now()),
-  ('a0000001-0000-0000-0000-000000000010'::uuid, 'persiapan@sppg.id', 'Rina Persiapan',   'persiapan',       true, '$2a$10$Pz32qBguBXmHlFzQfE4uIuk8hWZEVNHcsS2dcrf2FcfCqGnh8iQW2', now()),
-  ('a0000001-0000-0000-0000-000000000011'::uuid, 'masak@sppg.id',    'Sari Masak',      'tenaga_masak',    true, '$2a$10$Pz32qBguBXmHlFzQfE4uIuk8hWZEVNHcsS2dcrf2FcfCqGnh8iQW2', now()),
-  ('a0000001-0000-0000-0000-000000000012'::uuid, 'pemorsian@sppg.id','Dewi Pemorsian',  'pemorsian',       true, '$2a$10$Pz32qBguBXmHlFzQfE4uIuk8hWZEVNHcsS2dcrf2FcfCqGnh8iQW2', now()),
-  ('a0000001-0000-0000-0000-000000000013'::uuid, 'kebersihan@sppg.id','Siti Kebersihan', 'kebersihan',    true, '$2a$10$Pz32qBguBXmHlFzQfE4uIuk8hWZEVNHcsS2dcrf2FcfCqGnh8iQW2', now()),
-  ('a0000001-0000-0000-0000-000000000014'::uuid, 'pencuci@sppg.id',  'Budi Pencuci',    'pencuci',         true, '$2a$10$Pz32qBguBXmHlFzQfE4uIuk8hWZEVNHcsS2dcrf2FcfCqGnh8iQW2', now())
+  ('a0000001-0000-0000-0000-000000000001'::uuid, 'admin@sppg.id',     'Administrator Aplikasi', 'admin_apps',     true, '$2a$10$Pz32qBguBXmHlFzQfE4uIuk8hWZEVNHcsS2dcrf2FcfCqGnh8iQW2', now()),
+  ('a0000001-0000-0000-0000-000000000002'::uuid, 'admin-sppg@sppg.id','Admin Dapur SPPG',       'admin_sppg',     true, '$2a$10$Pz32qBguBXmHlFzQfE4uIuk8hWZEVNHcsS2dcrf2FcfCqGnh8iQW2', now()),
+  ('a0000001-0000-0000-0000-000000000003'::uuid, 'akuntan@sppg.id',   'Sri Akuntansi',          'accountant',     true, '$2a$10$Pz32qBguBXmHlFzQfE4uIuk8hWZEVNHcsS2dcrf2FcfCqGnh8iQW2', now()),
+  ('a0000001-0000-0000-0000-000000000004'::uuid, 'kepala@sppg.id',    'Pak Kepala Dapur',       'kitchen_head',   true, '$2a$10$Pz32qBguBXmHlFzQfE4uIuk8hWZEVNHcsS2dcrf2FcfCqGnh8iQW2', now()),
+  ('a0000001-0000-0000-0000-000000000005'::uuid, 'chef@sppg.id',      'Chef Wulan',             'head_chef',      true, '$2a$10$Pz32qBguBXmHlFzQfE4uIuk8hWZEVNHcsS2dcrf2FcfCqGnh8iQW2', now()),
+  ('a0000001-0000-0000-0000-000000000006'::uuid, 'asisten@sppg.id',   'Asisten Lapangan',       'field_assistant',true, '$2a$10$Pz32qBguBXmHlFzQfE4uIuk8hWZEVNHcsS2dcrf2FcfCqGnh8iQW2', now()),
+  ('a0000001-0000-0000-0000-000000000007'::uuid, 'ahligizi@sppg.id',  'Ahli Gizi Maya',         'nutritionist',   true, '$2a$10$Pz32qBguBXmHlFzQfE4uIuk8hWZEVNHcsS2dcrf2FcfCqGnh8iQW2', now()),
+  ('a0000001-0000-0000-0000-000000000008'::uuid, 'driver@sppg.id',    'Driver Budi',            'driver',         true, '$2a$10$Pz32qBguBXmHlFzQfE4uIuk8hWZEVNHcsS2dcrf2FcfCqGnh8iQW2', now()),
+  ('a0000001-0000-0000-0000-000000000009'::uuid, 'driver2@sppg.id',   'Driver Sari',            'driver',         true, '$2a$10$Pz32qBguBXmHlFzQfE4uIuk8hWZEVNHcsS2dcrf2FcfCqGnh8iQW2', now()),
+  ('a0000001-0000-0000-0000-000000000010'::uuid, 'persiapan@sppg.id', 'Rina Persiapan',         'persiapan',      true, '$2a$10$Pz32qBguBXmHlFzQfE4uIuk8hWZEVNHcsS2dcrf2FcfCqGnh8iQW2', now()),
+  ('a0000001-0000-0000-0000-000000000011'::uuid, 'masak@sppg.id',     'Sari Masak',            'tenaga_masak',   true, '$2a$10$Pz32qBguBXmHlFzQfE4uIuk8hWZEVNHcsS2dcrf2FcfCqGnh8iQW2', now()),
+  ('a0000001-0000-0000-0000-000000000012'::uuid, 'pemorsian@sppg.id', 'Dewi Pemorsian',        'pemorsian',      true, '$2a$10$Pz32qBguBXmHlFzQfE4uIuk8hWZEVNHcsS2dcrf2FcfCqGnh8iQW2', now()),
+  ('a0000001-0000-0000-0000-000000000013'::uuid, 'kebersihan@sppg.id','Siti Kebersihan',       'kebersihan',     true, '$2a$10$Pz32qBguBXmHlFzQfE4uIuk8hWZEVNHcsS2dcrf2FcfCqGnh8iQW2', now()),
+  ('a0000001-0000-0000-0000-000000000014'::uuid, 'pencuci@sppg.id',   'Budi Pencuci',          'pencuci',        true, '$2a$10$Pz32qBguBXmHlFzQfE4uIuk8hWZEVNHcsS2dcrf2FcfCqGnh8iQW2', now())
 ON CONFLICT (email) DO NOTHING;
 
 -- ============= 3. ITEMS (30 bahan, 6 kategori) =============
@@ -314,8 +331,89 @@ INSERT INTO public.settings (key, value) VALUES ('logo', '') ON CONFLICT (key) D
 -- ============= 11. ANGGARAN SAMPLE =============
 INSERT INTO public.anggaran_beneficiaries (id, plan_date, total_portions, price_per_portion, rab, actual, notes, created_by)
 VALUES
-  (gen_random_uuid(), CURRENT_DATE - 6, 425, 15000, 6375000, 6200000, 'Senin', 'a0000001-0000-0000-0000-000000000005'),
-  (gen_random_uuid(), CURRENT_DATE - 5, 425, 15000, 6375000, 6300000, 'Selasa', 'a0000001-0000-0000-0000-000000000005'),
-  (gen_random_uuid(), CURRENT_DATE - 4, 425, 15000, 6375000, 6350000, 'Rabu', 'a0000001-0000-0000-0000-000000000005'),
-  (gen_random_uuid(), CURRENT_DATE - 3, 425, 15000, 6375000, 6280000, 'Kamis', 'a0000001-0000-0000-0000-000000000005'),
-  (gen_random_uuid(), CURRENT_DATE - 2, 425, 15000, 6375000, 6320000, 'Jumat', 'a0000001-0000-0000-0000-000000000005');
+  (gen_random_uuid(), CURRENT_DATE - 6, 425, 15000, 6375000, 6200000, 'Senin', 'a0000001-0000-0000-0000-000000000006'),
+  (gen_random_uuid(), CURRENT_DATE - 5, 425, 15000, 6375000, 6300000, 'Selasa', 'a0000001-0000-0000-0000-000000000006'),
+  (gen_random_uuid(), CURRENT_DATE - 4, 425, 15000, 6375000, 6350000, 'Rabu', 'a0000001-0000-0000-0000-000000000006'),
+  (gen_random_uuid(), CURRENT_DATE - 3, 425, 15000, 6375000, 6280000, 'Kamis', 'a0000001-0000-0000-0000-000000000006'),
+  (gen_random_uuid(), CURRENT_DATE - 2, 425, 15000, 6375000, 6320000, 'Jumat', 'a0000001-0000-0000-0000-000000000006');
+
+-- ============= 12. GLOBAL CONFIG (Default Nilai Dinamis) =============
+INSERT INTO public.global_config (key, value, description, updated_at) VALUES
+  ('tax_rate_percent', '11', 'Persentase PPN/PPH', NOW()),
+  ('incentive_per_portion', '2000', 'Insentif fasilitas per porsi (Rp)', NOW()),
+  ('price_group1', '8000', 'Harga satuan Kelompok 1: Balita, PAUD/TK/RA, SD 1-3', NOW()),
+  ('price_group2', '10000', 'Harga satuan Kelompok 2: SD 4-6 s.d. Busui', NOW()),
+  ('daily_portion_capacity', '3000', 'Kapasitas maksimal porsi per hari', NOW()),
+  ('max_beneficiaries', '2500', 'Maksimal penerima manfaat per hari', NOW()),
+  ('cooking_start_hour', '1', 'Jam mulai masak (0-23)', NOW()),
+  ('distribution_start_hour', '9', 'Jam mulai distribusi (0-23)', NOW()),
+  ('operational_percentage', '20', 'Persentase dana operasional dari total Rp15.000', NOW()),
+  ('incentive_percentage', '13', 'Persentase dana insentif fasilitas dari total Rp15.000', NOW()),
+  ('bahan_baku_percentage', '67', 'Persentase dana bahan baku dari total Rp15.000', NOW())
+ON CONFLICT (key) DO NOTHING;
+
+-- ============= 13. CHART OF ACCOUNTS (Daftar Akun) =============
+INSERT INTO public.chart_of_accounts (code, name, type, parent_code, is_active) VALUES
+  -- Aset
+  ('1000', 'BUKU KAS UMUM', 'ASET', NULL, true),
+  ('1100', 'Petty Cash', 'ASET', '1000', true),
+  ('1200', 'Kas di Bank', 'ASET', '1000', true),
+  ('1300', 'Dana Bantuan Pemerintah', 'ASET', '1000', true),
+  -- Belanja
+  ('2000', 'BELANJA', 'BELANJA', NULL, true),
+  ('2100', 'Biaya Bahan Baku', 'BELANJA', '2000', true),
+  ('2200', 'Biaya Operasional', 'BELANJA', '2000', true),
+  ('2300', 'Biaya Insentif Fasilitas', 'BELANJA', '2000', true),
+  ('3100', 'PPN', 'BELANJA', '2000', true)
+ON CONFLICT (code) DO NOTHING;
+
+-- ============= 14. BIWEEKLY PERIODS =============
+INSERT INTO public.biweekly_periods (id, period_name, start_date, end_date, is_active) VALUES
+  (gen_random_uuid(), 'Periode 05-17 Januari 2026', '2026-01-05', '2026-01-17', true),
+  (gen_random_uuid(), 'Periode 19-31 Januari 2026', '2026-01-19', '2026-01-31', true),
+  (gen_random_uuid(), 'Periode 02-14 Februari 2026', '2026-02-02', '2026-02-14', true)
+ON CONFLICT DO NOTHING;
+
+-- ============= 15. SETUP SPPG =============
+INSERT INTO public.setup_sppg (nama_sppg, id_sppg, alamat, nama_kepala, nama_akuntan, nama_yayasan, rekening_va, tahun_anggaran, periode_start, periode_end)
+VALUES ('SPPG MBG Kadudampit', 'SPPG-KDD-001', 'Jl. Raya Kadudampit No. 1, Kab. Sukabumi', 'Pak Kepala Dapur', 'Sri Akuntansi', 'Yayasan Bakti Sosial', 'VA-1234567890', 2026, '2026-01-05', '2026-12-31')
+ON CONFLICT DO NOTHING;
+
+-- ============= 16. ITEM HIERARCHIES (Contoh Hirarki 3 Level) =============
+INSERT INTO public.item_hierarchies (code, name, level, parent_code, category, unit, zone) VALUES
+  -- Level 1: Kelompok
+  ('KH', 'Karbohidrat', 1, NULL, 'KH', NULL, NULL),
+  ('PH', 'Protein Hewani', 1, NULL, 'PH', NULL, NULL),
+  ('PN', 'Protein Nabati', 1, NULL, 'PN', NULL, NULL),
+  ('SY', 'Sayuran', 1, NULL, 'SY', NULL, NULL),
+  ('BU', 'Buah-buahan', 1, NULL, 'BU', NULL, NULL),
+  ('BB', 'Bahan Baku Lain', 1, NULL, 'BB', NULL, NULL),
+  -- Level 2: Sub-Kelompok
+  ('KH-01', 'Beras & Serealia', 2, 'KH', 'KH', NULL, NULL),
+  ('KH-02', 'Umbi-umbian', 2, 'KH', 'KH', NULL, NULL),
+  ('PH-01', 'Daging & Unggas', 2, 'PH', 'PH', NULL, NULL),
+  ('PH-02', 'Ikan & Seafood', 2, 'PH', 'PH', NULL, NULL),
+  ('PH-03', 'Telur & Susu', 2, 'PH', 'PH', NULL, NULL),
+  ('PN-01', 'Kedelai & Olahan', 2, 'PN', 'PN', NULL, NULL),
+  ('SY-01', 'Sayuran Daun', 2, 'SY', 'SY', NULL, NULL),
+  ('SY-02', 'Sayuran Akar', 2, 'SY', 'SY', NULL, NULL),
+  ('SY-03', 'Sayuran Buah', 2, 'SY', 'SY', NULL, NULL),
+  ('BB-01', 'Bumbu Dapur', 2, 'BB', 'BB', NULL, NULL),
+  ('BB-02', 'Minyak & Lemak', 2, 'BB', 'BB', NULL, NULL),
+  -- Level 3: Barang (contoh beberapa saja)
+  ('KH-01-001', 'Beras Premium', 3, 'KH-01', 'KH', 'kg', 'DRY'),
+  ('KH-01-002', 'Beras Merah', 3, 'KH-01', 'KH', 'kg', 'DRY'),
+  ('KH-02-001', 'Kentang', 3, 'KH-02', 'KH', 'kg', 'DRY'),
+  ('PH-01-001', 'Ayam Beku', 3, 'PH-01', 'PH', 'kg', 'FREEZER'),
+  ('PH-02-001', 'Ikan Kembung', 3, 'PH-02', 'PH', 'kg', 'FREEZER'),
+  ('PH-03-001', 'Telur Ayam', 3, 'PH-03', 'PH', 'kg', 'WET'),
+  ('PN-01-001', 'Tempe', 3, 'PN-01', 'PN', 'papan', 'WET'),
+  ('PN-01-002', 'Tahu', 3, 'PN-01', 'PN', 'papan', 'WET'),
+  ('SY-01-001', 'Bayam', 3, 'SY-01', 'SY', 'ikat', 'WET'),
+  ('SY-01-002', 'Kangkung', 3, 'SY-01', 'SY', 'ikat', 'WET'),
+  ('SY-02-001', 'Wortel', 3, 'SY-02', 'SY', 'kg', 'WET'),
+  ('BB-01-001', 'Bawang Merah', 3, 'BB-01', 'BB', 'kg', 'DRY'),
+  ('BB-01-002', 'Bawang Putih', 3, 'BB-01', 'BB', 'kg', 'DRY'),
+  ('BB-01-003', 'Cabe Merah', 3, 'BB-01', 'BB', 'kg', 'WET'),
+  ('BB-02-001', 'Minyak Goreng', 3, 'BB-02', 'BB', 'liter', 'DRY')
+ON CONFLICT (code) DO NOTHING;

@@ -31,8 +31,8 @@ export default function Page() {
 
   const [filterDate, setFilterDate] = useState("");
 
-  const canEdit = activeRole === "admin" || activeRole === "kitchen_head";
-  const canDelete = activeRole === "admin";
+  const canEdit = activeRole === "admin_apps" || activeRole === "admin_sppg" || activeRole === "kitchen_head";
+  const canDelete = activeRole === "admin_apps" || activeRole === "admin_sppg";
 
   const load = () => {
     setLoading(true);

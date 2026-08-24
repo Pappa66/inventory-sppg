@@ -14,34 +14,44 @@ import {
 
 const ALL_NAV = [
   { to: "/", label: "Dasbor", icon: LayoutDashboard, roles: "*" },
-  { to: "/users", label: "Pengguna", icon: Users, roles: ["admin"] },
-  { to: "/settings", label: "Pengaturan", icon: SettingsIcon, roles: ["admin"] },
-  { divider: true, label: "Master & Persediaan", roles: ["admin","head_chef","kitchen_head","nutritionist","field_assistant","persiapan","tenaga_masak"] },
-  { to: "/master", label: "Master Bahan", icon: Database, roles: ["admin","head_chef","kitchen_head","nutritionist","field_assistant"] },
-  { to: "/inventory", label: "Stok & Opname", icon: Boxes, roles: ["admin","field_assistant","kitchen_head","head_chef","persiapan"] },
-  { to: "/procurement", label: "Belanja & Struk", icon: ShoppingBasket, roles: ["admin","field_assistant","accountant","kitchen_head"] },
-  { divider: true, label: "Dapur & Menu", roles: ["admin","head_chef","kitchen_head","nutritionist","persiapan","tenaga_masak","pemorsian","kebersihan","pencuci"] },
-  { to: "/recipes", label: "Resep & Gizi", icon: ChefHat, roles: ["admin","head_chef","kitchen_head","nutritionist"] },
-  { to: "/menu", label: "Menu & Cetak", icon: CalendarDays, roles: ["admin","head_chef","kitchen_head","nutritionist"] },
+  { to: "/users", label: "Pengguna", icon: Users, roles: ["admin_apps","admin_sppg"] },
+  { to: "/settings", label: "Pengaturan SPPG", icon: SettingsIcon, roles: ["admin_apps","admin_sppg"] },
+  { divider: true, label: "Konfigurasi Sistem", roles: ["admin_apps"] },
+  { to: "/global-config", label: "Konfigurasi Global", icon: SettingsIcon, roles: ["admin_apps"] },
+  { divider: true, label: "Master & Persediaan", roles: ["admin_apps","admin_sppg","head_chef","kitchen_head","nutritionist","field_assistant","persiapan","tenaga_masak"] },
+  { to: "/master", label: "Master Bahan", icon: Database, roles: ["admin_apps","admin_sppg","head_chef","kitchen_head","nutritionist","field_assistant"] },
+  { to: "/item-hierarchy", label: "Hirarki Barang", icon: Database, roles: ["admin_apps","admin_sppg"] },
+  { to: "/inventory", label: "Stok & Opname", icon: Boxes, roles: ["admin_apps","admin_sppg","field_assistant","kitchen_head","head_chef","persiapan"] },
+  { to: "/procurement", label: "Belanja & Struk", icon: ShoppingBasket, roles: ["admin_apps","admin_sppg","field_assistant","accountant","kitchen_head"] },
+  { divider: true, label: "Dapur & Menu", roles: ["admin_apps","admin_sppg","head_chef","kitchen_head","nutritionist","persiapan","tenaga_masak","pemorsian","kebersihan","pencuci"] },
+  { to: "/recipes", label: "Resep & Gizi", icon: ChefHat, roles: ["admin_apps","admin_sppg","head_chef","kitchen_head","nutritionist"] },
+  { to: "/menu", label: "Menu & Cetak", icon: CalendarDays, roles: ["admin_apps","admin_sppg","head_chef","kitchen_head","nutritionist"] },
   { to: "/nutrition-calc", label: "Kalkulator Gizi", icon: Calculator, roles: ["nutritionist"] },
   { to: "/pemorsian", label: "Tugas Harian", icon: Camera, roles: ["pemorsian","persiapan","tenaga_masak","kebersihan","pencuci"] },
-  { divider: true, label: "Pengiriman", roles: ["admin","field_assistant","driver","kitchen_head","head_chef"] },
-  { to: "/destinations", label: "Tujuan Antar", icon: MapPin, roles: ["admin","field_assistant"] },
-  { to: "/deliveries", label: "Rencana Antar", icon: Truck, roles: ["admin","field_assistant","kitchen_head","head_chef"] },
-  { to: "/delivery-tracking", label: "Tracking Driver", icon: Navigation, roles: ["admin","driver","field_assistant"] },
-  { divider: true, label: "Keuangan & Akuntansi", roles: ["admin","accountant","kitchen_head"] },
-  { to: "/anggaran", label: "Anggaran", icon: PiggyBank, roles: ["admin","accountant","kitchen_head"] },
-  { divider: true, label: "Approval & Laporan", roles: ["admin","nutritionist","accountant","kitchen_head","head_chef","field_assistant"] },
-  { to: "/approval", label: "Persetujuan Menu", icon: BadgeCheck, roles: ["admin","kitchen_head"] },
-  { to: "/reports", label: "Laporan", icon: FileText, roles: ["admin","kitchen_head","accountant"] },
-  { to: "/audit", label: "Audit Trail", icon: ScrollText, roles: ["admin","kitchen_head","accountant"] },
+  { divider: true, label: "Pengiriman", roles: ["admin_apps","admin_sppg","field_assistant","driver","kitchen_head","head_chef"] },
+  { to: "/destinations", label: "Tujuan Antar", icon: MapPin, roles: ["admin_apps","admin_sppg","field_assistant"] },
+  { to: "/deliveries", label: "Rencana Antar", icon: Truck, roles: ["admin_apps","admin_sppg","field_assistant","kitchen_head","head_chef"] },
+  { to: "/delivery-tracking", label: "Tracking Driver", icon: Navigation, roles: ["admin_apps","admin_sppg","driver","field_assistant"] },
+  { divider: true, label: "Keuangan & Pembukuan", roles: ["admin_apps","admin_sppg","accountant","kitchen_head"] },
+  { to: "/anggaran", label: "Anggaran", icon: PiggyBank, roles: ["admin_apps","admin_sppg","accountant","kitchen_head"] },
+  { to: "/transactions", label: "Transaksi (D/K)", icon: PiggyBank, roles: ["admin_apps","admin_sppg","accountant"] },
+  { to: "/bku", label: "BKU", icon: ScrollText, roles: ["admin_apps","admin_sppg","accountant"] },
+  { to: "/sub-ledger", label: "Buku Pembantu", icon: ScrollText, roles: ["admin_apps","admin_sppg","accountant"] },
+  { divider: true, label: "Laporan & Approval", roles: ["admin_apps","admin_sppg","nutritionist","accountant","kitchen_head","head_chef","field_assistant"] },
+  { to: "/approval", label: "Persetujuan Menu", icon: BadgeCheck, roles: ["admin_apps","admin_sppg","kitchen_head"] },
+  { to: "/reports", label: "Laporan", icon: FileText, roles: ["admin_apps","admin_sppg","kitchen_head","accountant"] },
+  { to: "/audit", label: "Audit Trail", icon: ScrollText, roles: ["admin_apps","admin_sppg","kitchen_head","accountant"] },
   { divider: true, label: "Bantuan", roles: "*" },
   { to: "/panduan", label: "Panduan Penggunaan", icon: HelpCircle, roles: "*" },
 ];
 
 function RoleSwitcher() {
   const { user, activeRole, setActiveRole } = useAuth();
-  const roles = user?.role === "admin" ? Object.keys(ROLE_LABELS) : [user?.role].filter(Boolean);
+  const roles = user?.role === "admin_apps"
+    ? Object.keys(ROLE_LABELS)
+    : user?.role === "admin_sppg"
+    ? Object.keys(ROLE_LABELS).filter(r => r !== "admin_apps")
+    : [user?.role].filter(Boolean);
   const single = roles.length <= 1;
 
   if (single) {

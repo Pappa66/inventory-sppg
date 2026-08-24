@@ -46,7 +46,7 @@ export default function Page() {
   const [updateForms, setUpdateForms] = useState({});
   const [submitting, setSubmitting] = useState(null);
 
-  const canSeeAll = activeRole === "admin" || activeRole === "field_assistant";
+  const canSeeAll = activeRole === "admin_apps" || activeRole === "admin_sppg" || activeRole === "field_assistant";
 
   const load = () => {
     setLoading(true);

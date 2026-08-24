@@ -43,7 +43,7 @@ export async function PATCH(request, { params }) {
 export async function DELETE(request, { params }) {
   try {
     const user = await getTokenUser(request);
-    requireRoles("admin")(user);
+    requireRoles("admin_apps","admin_sppg")(user);
     const { id } = await params;
     const supabase = await createClient();
 

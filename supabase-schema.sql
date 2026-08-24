@@ -6,7 +6,7 @@ CREATE TABLE public.users (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   email TEXT UNIQUE NOT NULL,
   name TEXT NOT NULL,
-  role TEXT NOT NULL CHECK (role IN ('admin','accountant','kitchen_head','head_chef','field_assistant','nutritionist','driver','persiapan','tenaga_masak','pemorsian','kebersihan','pencuci')),
+  role TEXT NOT NULL CHECK (role IN ('admin_apps','admin_sppg','accountant','kitchen_head','head_chef','field_assistant','nutritionist','driver','persiapan','tenaga_masak','pemorsian','kebersihan','pencuci')),
   is_active BOOLEAN DEFAULT TRUE,
   password_hash TEXT NOT NULL,
   created_at TIMESTAMPTZ DEFAULT NOW()
@@ -243,3 +243,117 @@ CREATE TABLE public.daily_tasks (
 CREATE INDEX idx_daily_tasks_date ON daily_tasks(task_date);
 CREATE INDEX idx_daily_tasks_user ON daily_tasks(user_id);
 CREATE INDEX idx_daily_tasks_role ON daily_tasks(role);
+
+-- ============= GLOBAL CONFIG (Dikontrol oleh Admin Aplikasi) =============
+-- Menyimpan nilai dinamis: pajak %, insentif per porsi, harga satuan, kapasitas, dll
+CREATE TABLE public.global_config (
+  key TEXT PRIMARY KEY,
+  value TEXT NOT NULL,
+  description TEXT,
+  updated_by UUID REFERENCES users(id),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- ============= SETUP SPPG (Konfigurasi per SPPG) =============
+CREATE TABLE public.setup_sppg (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  nama_sppg TEXT NOT NULL,
+  id_sppg TEXT,
+  alamat TEXT,
+  nama_kepala TEXT,
+  nama_akuntan TEXT,
+  nama_yayasan TEXT,
+  rekening_va TEXT,
+  tahun_anggaran INT DEFAULT EXTRACT(YEAR FROM NOW()),
+  periode_start DATE,
+  periode_end DATE,
+  is_active BOOLEAN DEFAULT TRUE,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- ============= CHART OF ACCOUNTS (Daftar Akun) =============
+CREATE TABLE public.chart_of_accounts (
+  code TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  type TEXT NOT NULL CHECK (type IN ('ASET','KEWAJIBAN','MODAL','PENDAPATAN','BELANJA')),
+  parent_code TEXT REFERENCES chart_of_accounts(code),
+  is_active BOOLEAN DEFAULT TRUE,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- ============= BIWEEKLY PERIODS (Periode 2 Pekanan) =============
+CREATE TABLE public.biweekly_periods (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  period_name TEXT NOT NULL,
+  start_date DATE NOT NULL,
+  end_date DATE NOT NULL,
+  is_active BOOLEAN DEFAULT TRUE,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- ============= TRANSAKSIS (Input D/K dengan Kode Akun) =============
+CREATE TABLE public.transaksis (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  period_id UUID REFERENCES biweekly_periods(id),
+  transaction_date DATE NOT NULL,
+  account_code TEXT NOT NULL REFERENCES chart_of_accounts(code),
+  description TEXT NOT NULL,
+  debit FLOAT DEFAULT 0,
+  credit FLOAT DEFAULT 0,
+  source_table TEXT,
+  source_id UUID,
+  buku_pembantu TEXT CHECK (buku_pembantu IN ('BANK','PETTY_CASH','BAHAN_BAKU','OPERASIONAL','FASILITAS','PAJAK')),
+  notes TEXT,
+  created_by UUID REFERENCES users(id),
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+CREATE INDEX idx_transaksis_period ON transaksis(period_id);
+CREATE INDEX idx_transaksis_date ON transaksis(transaction_date);
+CREATE INDEX idx_transaksis_account ON transaksis(account_code);
+
+-- ============= ITEM HIERARCHIES (Hirarki Barang 3 Level) =============
+-- Level 1: Kelompok (KH, PH, PN, SY, BU, BB)
+-- Level 2: Sub-Kelompok
+-- Level 3: Barang (item detail)
+CREATE TABLE public.item_hierarchies (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  code TEXT UNIQUE NOT NULL,
+  name TEXT NOT NULL,
+  level INT NOT NULL CHECK (level IN (1, 2, 3)),
+  parent_code TEXT,
+  category TEXT,
+  unit TEXT,
+  zone TEXT CHECK (zone IN ('DRY','WET','FREEZER')),
+  is_active BOOLEAN DEFAULT TRUE,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+CREATE INDEX idx_item_hierarchies_parent ON item_hierarchies(parent_code);
+CREATE INDEX idx_item_hierarchies_level ON item_hierarchies(level);
+
+-- ============= ITEM OPENING BALANCES (Saldo Awal Barang) =============
+CREATE TABLE public.item_opening_balances (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  item_code TEXT NOT NULL REFERENCES item_hierarchies(code),
+  period_id UUID REFERENCES biweekly_periods(id),
+  opening_quantity FLOAT DEFAULT 0,
+  opening_value FLOAT DEFAULT 0,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(item_code, period_id)
+);
+
+-- ============= VOLUNTEER INCENTIVES (Insentif Relawan - DafNom) =============
+CREATE TABLE public.volunteer_incentives (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  period_id UUID REFERENCES biweekly_periods(id),
+  user_id UUID REFERENCES users(id),
+  jabatan TEXT NOT NULL,
+  jumlah_hari INT DEFAULT 0,
+  insentif_per_hari FLOAT DEFAULT 0,
+  total_insentif FLOAT DEFAULT 0,
+  is_paid BOOLEAN DEFAULT FALSE,
+  paid_at TIMESTAMPTZ,
+  notes TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+CREATE INDEX idx_volunteer_incentives_period ON volunteer_incentives(period_id);

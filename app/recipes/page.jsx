@@ -157,7 +157,7 @@ export default function Page() {
                   <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Instruksi (opsional)</label>
                   <textarea rows={3} className="w-full mt-1 px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={form.instructions} onChange={(e)=>setForm({...form, instructions:e.target.value})}/>
                 </div>
-                {activeRole === "nutritionist" || activeRole === "admin" ? (
+                {activeRole === "nutritionist" || activeRole === "admin_apps" || activeRole === "admin_sppg" ? (
                   <div className="col-span-2 border-t border-[#EAE4D8] pt-3">
                     <label className="text-xs uppercase tracking-widest text-[#5C5C5C] flex items-center gap-2"><Flame size={12}/> Profil Gizi per Porsi</label>
                     <div className="grid grid-cols-5 gap-2 mt-2">

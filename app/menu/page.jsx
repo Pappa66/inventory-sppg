@@ -171,7 +171,7 @@ export default function Page() {
                     })}
                     {recipes.filter(r => catFilter==="ALL" || r.menu_category===catFilter).length === 0 && <div className="text-xs text-[#5C5C5C]">Tidak ada resep untuk kategori ini.</div>}
                   </div>
-                  {m.id && m.status==="DRAFT" && m.recipe_ids?.length > 0 && (activeRole === "head_chef" || activeRole === "admin" || activeRole === "kitchen_head") && (
+                  {m.id && m.status==="DRAFT" && m.recipe_ids?.length > 0 && (activeRole === "head_chef" || activeRole === "admin_apps" || activeRole === "admin_sppg" || activeRole === "kitchen_head") && (
                     <button data-testid={`submit-review-${d.key}`} onClick={()=>submitForReview(m)} className="btn-outline w-full mt-3 text-xs py-1.5"><Send size={12}/> Ajukan ke Ahli Gizi</button>
                   )}
                 </div>

@@ -44,14 +44,35 @@ function useDashboardData(activeRole) {
   useEffect(() => {
     setLoading(true);
     setData({});
-    const role = activeRole || "admin";
+    const role = activeRole || "admin_sppg";
     const weekStart = thisMonday();
     const today = todayStr();
 
     const fetches = [];
 
-    /* ---- Admin ---- */
-    if (role === "admin") {
+    /* ---- Admin Aplikasi ---- */
+    if (role === "admin_apps") {
+      fetches.push(
+        api.get("/reports/financial")
+          .then(({ data }) => setData(d => ({ ...d, fin: data })))
+          .catch(() => {}),
+        api.get("/reports/low-stock")
+          .then(({ data }) => setData(d => ({ ...d, low: data || [] })))
+          .catch(() => {}),
+        api.get("/users")
+          .then(({ data }) => setData(d => ({ ...d, users: data || [] })))
+          .catch(() => {}),
+        api.get("/purchases")
+          .then(({ data }) => setData(d => ({ ...d, purchases: data || [] })))
+          .catch(() => {}),
+        api.get(`/delivery-plans?plan_date=${today}`)
+          .then(({ data }) => setData(d => ({ ...d, deliveryPlans: data || [] })))
+          .catch(() => {}),
+      );
+    }
+
+    /* ---- Admin SPPG ---- */
+    if (role === "admin_sppg") {
       fetches.push(
         api.get("/reports/financial")
           .then(({ data }) => setData(d => ({ ...d, fin: data })))
@@ -252,8 +273,8 @@ function buildCards(role, d) {
   );
 
   switch (role) {
-    /* ---------- ADMIN ---------- */
-    case "admin": {
+    /* ---------- ADMIN APLIKASI ---------- */
+    case "admin_apps": {
       const totalStock = (d.purchases || [])
         .filter(p => p.category === "STOCK")
         .reduce((sum, p) => sum + (p.amount_idr || 0), 0);
@@ -263,12 +284,32 @@ function buildCards(role, d) {
       );
 
       return [
-        { label: "Total Stok", value: totalStock, icon: Package, color: "#4A7C59", currency: true },
+        { label: "Total Stok", value: totalStock, icon: Package, color: "#1E40AF", currency: true },
+        { label: "Total Anggaran", value: s.grand_total || 0, icon: CircleDollarSign, color: "#1E40AF", currency: true },
+        { label: "Transaksi Hari Ini", value: todayPurchases.length, icon: ReceiptText, color: "#D97706", currency: false, suffix: " transaksi" },
+        { label: "Pengiriman Pending", value: pendingDeliveries, icon: Truck, color: "#C5533B", currency: false },
+        { label: "Low Stock", value: (d.low || []).length, icon: AlertTriangle, color: "#C5533B", currency: false },
+        { label: "User Aktif", value: activeUsers.length, icon: Users, color: "#1E40AF", currency: false, suffix: ` / ${d.users?.length || 0}` },
+      ];
+    }
+
+    /* ---------- ADMIN SPPG ---------- */
+    case "admin_sppg": {
+      const totalStock = (d.purchases || [])
+        .filter(p => p.category === "STOCK")
+        .reduce((sum, p) => sum + (p.amount_idr || 0), 0);
+      const activeUsers = (d.users || []).filter(u => u.is_active !== false);
+      const pendingDeliveries = (d.deliveryPlans || []).reduce(
+        (sum, plan) => sum + (plan.delivery_plan_items || []).length, 0
+      );
+
+      return [
+        { label: "Total Stok", value: totalStock, icon: Package, color: "#2D2D2D", currency: true },
         { label: "Total Anggaran", value: s.grand_total || 0, icon: CircleDollarSign, color: "#2D2D2D", currency: true },
         { label: "Transaksi Hari Ini", value: todayPurchases.length, icon: ReceiptText, color: "#D97706", currency: false, suffix: " transaksi" },
         { label: "Pengiriman Pending", value: pendingDeliveries, icon: Truck, color: "#C5533B", currency: false },
         { label: "Low Stock", value: (d.low || []).length, icon: AlertTriangle, color: "#C5533B", currency: false },
-        { label: "User Aktif", value: activeUsers.length, icon: Users, color: "#2C4251", currency: false, suffix: ` / ${d.users?.length || 0}` },
+        { label: "User Aktif", value: activeUsers.length, icon: Users, color: "#2D2D2D", currency: false, suffix: ` / ${d.users?.length || 0}` },
       ];
     }
 
@@ -561,13 +602,19 @@ function QuickLink({ href, label, icon: Icon }) {
 function QuickLinks({ role }) {
   const links = (() => {
     switch (role) {
-      case "admin":
+      case "admin_apps":
         return [
+          { href: "/global-config", label: "Konfigurasi Global", icon: SettingsIcon },
           { href: "/users", label: "Pengguna", icon: Users },
-          { href: "/master", label: "Master Bahan", icon: Database },
           { href: "/reports", label: "Laporan", icon: ScrollText },
           { href: "/audit", label: "Audit Trail", icon: ClipboardList },
-          { href: "/settings", label: "Pengaturan", icon: ScrollText },
+        ];
+      case "admin_sppg":
+        return [
+          { href: "/settings", label: "Pengaturan SPPG", icon: SettingsIcon },
+          { href: "/users", label: "Pengguna", icon: Users },
+          { href: "/item-hierarchy", label: "Hirarki Barang", icon: Database },
+          { href: "/reports", label: "Laporan", icon: ScrollText },
         ];
       case "accountant":
         return [
@@ -719,7 +766,7 @@ export default function DashboardPage() {
             )}
 
             {/* Role-specific detail sections */}
-            {role === "admin" && (data.low || []).length > 0 && (
+            {(role === "admin_apps" || role === "admin_sppg") && (data.low || []).length > 0 && (
               <LowStockList items={data.low} />
             )}
 

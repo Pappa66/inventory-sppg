@@ -30,7 +30,7 @@ export async function GET(request) {
 export async function POST(request) {
   try {
     const user = await getTokenUser(request);
-    requireRoles("admin")(user);
+    requireRoles("admin_apps","admin_sppg")(user);
     const body = await request.json();
     const supabase = await createClient();
 
