@@ -207,3 +207,52 @@ CREATE INDEX idx_delivery_plan_items_plan ON delivery_plan_items(plan_id);
 CREATE INDEX idx_delivery_assignments_plan ON delivery_assignments(plan_id);
 CREATE INDEX idx_delivery_assignments_driver ON delivery_assignments(driver_id);
 CREATE INDEX idx_delivery_logs_assignment ON delivery_logs(assignment_id);
+
+-- ============= ACCOUNTING TABLES =============
+
+-- 15. TRANSAKSIS (Double-entry bookkeeping)
+CREATE TABLE public.transaksis (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  transaction_date DATE NOT NULL,
+  evidence_number TEXT,
+  description TEXT NOT NULL,
+  debit_amount FLOAT DEFAULT 0,
+  credit_amount FLOAT DEFAULT 0,
+  auxiliary_book TEXT CHECK (auxiliary_book IN ('BANK','PETTY_CASH','BAHAN_BAKU','OPERASIONAL','FASILITAS','PAJAK')),
+  account_source TEXT,
+  account_dest TEXT,
+  account_code TEXT,
+  notes TEXT,
+  created_by UUID REFERENCES users(id),
+  created_by_name TEXT,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- 16. ANGGARAN_BENEFICIANRIES (13 jenis penerima)
+CREATE TABLE public.anggaran_beneficiaries (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  plan_date DATE NOT NULL,
+  balita INT DEFAULT 0,
+  paud_tk INT DEFAULT 0,
+  sd_1_3 INT DEFAULT 0,
+  sd_4_6 INT DEFAULT 0,
+  smp INT DEFAULT 0,
+  sma INT DEFAULT 0,
+  slb INT DEFAULT 0,
+  santri INT DEFAULT 0,
+  pend_tk INT DEFAULT 0,
+  bumil INT DEFAULT 0,
+  busui INT DEFAULT 0,
+  lainnya INT DEFAULT 0,
+  price_paket_a FLOAT DEFAULT 8000,
+  price_paket_b FLOAT DEFAULT 10000,
+  rab FLOAT DEFAULT 0,
+  actual FLOAT DEFAULT 0,
+  notes TEXT,
+  created_by UUID REFERENCES users(id),
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE INDEX idx_transaksis_date ON transaksis(transaction_date);
+CREATE INDEX idx_transaksis_book ON transaksis(auxiliary_book);
+CREATE INDEX idx_anggaran_date ON anggaran_beneficiaries(plan_date);

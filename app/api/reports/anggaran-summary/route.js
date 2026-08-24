@@ -1,0 +1,45 @@
+import { createClient } from "@/lib/supabase";
+import { getTokenUser, apiError, apiSuccess } from "@/lib/db-helpers";
+
+export async function GET(request) {
+  try {
+    const user = await getTokenUser(request);
+    const supabase = await createClient();
+    const { searchParams } = new URL(request.url);
+
+    let query = supabase.from("anggaran").select("*").order("plan_date", { ascending: true });
+
+    const from = searchParams.get("from");
+    if (from) query = query.gte("plan_date", from);
+
+    const to = searchParams.get("to");
+    if (to) query = query.lte("plan_date", to);
+
+    const { data, error } = await query;
+    if (error) return apiError(error.message);
+
+    const anggarans = data || [];
+
+    const summary = anggarans.map((a) => ({
+      plan_date: a.plan_date,
+      total_pakets: a.total_pakets || 0,
+      rab: a.rab || 0,
+      actual: a.actual_amount || 0,
+      selisih: (a.rab || 0) - (a.actual_amount || 0),
+    }));
+
+    const totals = summary.reduce(
+      (acc, s) => ({
+        total_pakets: acc.total_pakets + s.total_pakets,
+        rab: acc.rab + s.rab,
+        actual: acc.actual + s.actual,
+        selisih: acc.selisih + s.selisih,
+      }),
+      { total_pakets: 0, rab: 0, actual: 0, selisih: 0 }
+    );
+
+    return apiSuccess({ summary, totals });
+  } catch (e) {
+    return apiError(e.message, 401);
+  }
+}

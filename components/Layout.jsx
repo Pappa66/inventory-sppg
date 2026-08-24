@@ -8,23 +8,33 @@ import { ROLE_LABELS, ROLE_COLORS } from "@/lib/format";
 import {
   LayoutDashboard, Users, Database, Boxes, ShoppingBasket, CalendarDays,
   ChefHat, BarChart3, FileText, ScrollText, LogOut, Leaf, BadgeCheck,
-  Menu, X, Settings as SettingsIcon, MapPin, Truck, Navigation
+  Menu, X, Settings as SettingsIcon, MapPin, Truck, Navigation,
+  Receipt, BookOpen, PiggyBank
 } from "lucide-react";
 
 const ALL_NAV = [
   { to: "/", label: "Dasbor", icon: LayoutDashboard, roles: "*" },
   { to: "/users", label: "Pengguna", icon: Users, roles: ["admin"] },
+  { to: "/settings", label: "Pengaturan", icon: SettingsIcon, roles: ["admin"] },
+  { divider: true, label: "Master & Persediaan", roles: ["admin","head_chef","kitchen_head","nutritionist","field_assistant"] },
   { to: "/master", label: "Master Bahan", icon: Database, roles: ["admin","head_chef","kitchen_head","nutritionist","field_assistant"] },
   { to: "/inventory", label: "Stok & Opname", icon: Boxes, roles: ["admin","field_assistant","kitchen_head","head_chef"] },
   { to: "/procurement", label: "Belanja & Struk", icon: ShoppingBasket, roles: ["admin","field_assistant","accountant","kitchen_head"] },
+  { divider: true, label: "Menu & Dapur", roles: ["admin","head_chef","kitchen_head","nutritionist"] },
   { to: "/recipes", label: "Resep & Gizi", icon: ChefHat, roles: ["admin","head_chef","kitchen_head","nutritionist"] },
   { to: "/menu", label: "Menu & Cetak", icon: CalendarDays, roles: ["admin","head_chef","kitchen_head","nutritionist"] },
-  { to: "/destinations", label: "Tujuan Antar", icon: MapPin, roles: ["admin","field_assistant","kitchen_head"] },
+  { divider: true, label: "Pengiriman", roles: ["admin","field_assistant","driver","kitchen_head","head_chef"] },
+  { to: "/destinations", label: "Tujuan Antar", icon: MapPin, roles: ["admin","field_assistant"] },
   { to: "/deliveries", label: "Rencana Antar", icon: Truck, roles: ["admin","field_assistant","kitchen_head","head_chef"] },
-  { to: "/delivery-tracking", label: "Tracking Driver", icon: Navigation, roles: ["admin","driver","field_assistant","kitchen_head"] },
+  { to: "/delivery-tracking", label: "Tracking Driver", icon: Navigation, roles: ["admin","driver","field_assistant"] },
+  { divider: true, label: "Keuangan & Akuntansi", roles: ["admin","accountant","kitchen_head"] },
+  { to: "/transactions", label: "Transaksi", icon: Receipt, roles: ["admin","accountant"] },
+  { to: "/bku", label: "BKU", icon: BookOpen, roles: ["admin","accountant"] },
+  { to: "/anggaran", label: "Anggaran", icon: PiggyBank, roles: ["admin","accountant","field_assistant"] },
+  { divider: true, label: "Approval & Laporan", roles: ["admin","nutritionist","accountant","kitchen_head","head_chef","field_assistant"] },
+  { to: "/approval", label: "Persetujuan Menu", icon: BadgeCheck, roles: ["admin","nutritionist","head_chef"] },
   { to: "/reports", label: "Laporan", icon: FileText, roles: ["admin","kitchen_head","accountant","head_chef","nutritionist","field_assistant"] },
   { to: "/audit", label: "Audit Trail", icon: ScrollText, roles: ["admin","accountant","kitchen_head","nutritionist"] },
-  { to: "/settings", label: "Pengaturan", icon: SettingsIcon, roles: ["admin"] },
 ];
 
 function RoleSwitcher() {
@@ -72,7 +82,10 @@ export default function Layout({ children }) {
   const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
   const role = activeRole || user?.role;
-  const items = ALL_NAV.filter((n) => n.roles === "*" || (role && n.roles.includes(role)));
+  const items = ALL_NAV.filter((n) => {
+    if (n.divider) return n.roles === "*" || (role && n.roles.includes(role));
+    return n.roles === "*" || (role && n.roles.includes(role));
+  });
 
   useEffect(() => { setMobileOpen(false); }, [pathname]);
 
@@ -94,7 +107,10 @@ export default function Layout({ children }) {
           <button className="lg:hidden btn-ghost p-1" onClick={() => setMobileOpen(false)} aria-label="Tutup menu"><X size={18} /></button>
         </div>
         <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
-          {items.map((it) => {
+          {items.map((it, idx) => {
+            if (it.divider) {
+              return <div key={`div-${idx}`} className="text-[10px] uppercase tracking-widest text-[#5C5C5C] mt-4 mb-1 px-3">{it.label}</div>;
+            }
             const isActive = pathname === it.to || (it.to !== "/" && pathname.startsWith(it.to));
             return (
               <Link
