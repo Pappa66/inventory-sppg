@@ -5,8 +5,14 @@ export async function GET(request) {
   try {
     await getTokenUser(request);
     const supabase = await createClient();
-    const { data } = await supabase.from("opnames").select("*").order("created_at", { ascending: false });
-    return apiSuccess(data || []);
+    const { data } = await supabase.from("opnames").select("*, items(name, unit)").order("created_at", { ascending: false });
+    const enriched = (data || []).map(o => ({
+      ...o,
+      item_name: o.items?.name || "—",
+      unit: o.items?.unit || "",
+      selisih: o.system_quantity != null ? o.counted_quantity - o.system_quantity : null,
+    }));
+    return apiSuccess(enriched);
   } catch (e) {
     return apiError(e.message, 401);
   }
@@ -18,11 +24,19 @@ export async function POST(request) {
     const body = await request.json();
     const supabase = await createClient();
 
+    // Get current stock from stock_lots
+    let system_quantity = null;
+    if (body.lot_id) {
+      const { data: lot } = await supabase.from("stock_lots").select("actual_quantity").eq("id", body.lot_id).single();
+      if (lot) system_quantity = lot.actual_quantity;
+    }
+
     const opname = {
       id: crypto.randomUUID(),
       item_id: body.item_id,
       lot_id: body.lot_id || null,
       counted_quantity: body.counted_quantity,
+      system_quantity: system_quantity,
       note: body.note || "",
       zone: body.zone,
       temperature_c: body.temperature_c || null,
@@ -41,9 +55,10 @@ export async function POST(request) {
       if (lotErr) console.error("[OPNAME] stock_lot update error:", lotErr);
     }
 
+    const selisih = system_quantity != null ? body.counted_quantity - system_quantity : "N/A";
     await logAudit(supabase, {
       actor: user, action: "OPNAME", entity: "opnames", entity_id: opname.id,
-      zone: body.zone, note: `Counted: ${body.counted_quantity} (reason: ${body.reason || "routine"})`,
+      zone: body.zone, note: `Counted: ${body.counted_quantity}, System: ${system_quantity}, Selisih: ${selisih} (reason: ${body.reason || "routine"})`,
     });
 
     return apiSuccess(opname, 201);

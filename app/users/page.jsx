@@ -13,7 +13,7 @@ import Pagination from "@/components/Pagination";
 export default function Page() {
   const [users, setUsers] = useState([]);
   const [open, setOpen] = useState(false);
-  const [form, setForm] = useState({ email: "", name: "", role: "field_staff", password: "" });
+  const [form, setForm] = useState({ email: "", name: "", role: "driver", password: "" });
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const perPage = 15;
@@ -39,7 +39,7 @@ export default function Page() {
       await api.post("/users", form);
       toast.success("Pengguna ditambahkan");
       setOpen(false);
-      setForm({ email: "", name: "", role: "field_staff", password: "" });
+      setForm({ email: "", name: "", role: "driver", password: "" });
       load();
     } catch (er) { toast.error(formatErr(er)); }
   };

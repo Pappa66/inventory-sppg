@@ -6,7 +6,7 @@ CREATE TABLE public.users (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   email TEXT UNIQUE NOT NULL,
   name TEXT NOT NULL,
-  role TEXT NOT NULL CHECK (role IN ('admin','accountant','kitchen_head','head_chef','field_assistant','field_staff','nutritionist')),
+  role TEXT NOT NULL CHECK (role IN ('admin','accountant','kitchen_head','head_chef','field_assistant','nutritionist','driver')),
   is_active BOOLEAN DEFAULT TRUE,
   password_hash TEXT NOT NULL,
   created_at TIMESTAMPTZ DEFAULT NOW()
@@ -36,6 +36,9 @@ CREATE TABLE public.stock_lots (
   received_at TIMESTAMPTZ DEFAULT NOW(),
   note TEXT,
   zone TEXT CHECK (zone IN ('DRY','WET','FREEZER')),
+  taken_by UUID REFERENCES users(id),
+  taken_at TIMESTAMPTZ,
+  taken_reason TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
@@ -45,6 +48,7 @@ CREATE TABLE public.opnames (
   item_id UUID NOT NULL REFERENCES items(id),
   lot_id UUID REFERENCES stock_lots(id),
   counted_quantity FLOAT NOT NULL,
+  system_quantity FLOAT,
   note TEXT,
   zone TEXT NOT NULL CHECK (zone IN ('DRY','WET','FREEZER')),
   temperature_c FLOAT,
@@ -80,6 +84,7 @@ CREATE TABLE public.recipes (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name TEXT NOT NULL,
   servings INT DEFAULT 1,
+  menu_category TEXT CHECK (menu_category IN ('BALITA','PORTION_SMALL','PORTION_LARGE','BUMIL_BUSUI')),
   ingredients JSONB DEFAULT '[]',
   instructions TEXT DEFAULT '',
   calories_kcal FLOAT DEFAULT 0,
@@ -88,6 +93,7 @@ CREATE TABLE public.recipes (
   fats_g FLOAT DEFAULT 0,
   sodium_mg FLOAT DEFAULT 0,
   allergens TEXT[] DEFAULT '{}',
+  photo_url TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
@@ -95,9 +101,11 @@ CREATE TABLE public.recipes (
 CREATE TABLE public.menus (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   week_start TEXT NOT NULL,
-  day TEXT NOT NULL CHECK (day IN ('mon','tue','wed','thu','fri')),
+  day TEXT NOT NULL CHECK (day IN ('mon','tue','wed','thu','fri','sat','sun')),
   recipe_ids TEXT[] DEFAULT '{}',
   portions INT DEFAULT 1,
+  total_days INT DEFAULT 5,
+  active_days INT[] DEFAULT '{1,2,3,4,5}',
   status TEXT DEFAULT 'DRAFT' CHECK (status IN ('DRAFT','PENDING_REVIEW','APPROVED','REJECTED')),
   approved_by TEXT,
   approved_by_name TEXT,
@@ -135,3 +143,67 @@ CREATE INDEX idx_purchases_date ON purchases(purchased_at DESC);
 CREATE INDEX idx_menus_week ON menus(week_start);
 CREATE INDEX idx_audit_timestamp ON audit_trail(timestamp DESC);
 CREATE INDEX idx_audit_actor ON audit_trail(actor);
+
+-- ============= NEW TABLES FOR DELIVERY SYSTEM =============
+
+-- 10. DESTINATIONS (Master data tujuan antar)
+CREATE TABLE public.destinations (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name TEXT NOT NULL,
+  address TEXT,
+  contact_person TEXT,
+  phone TEXT,
+  notes TEXT,
+  is_active BOOLEAN DEFAULT true,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- 11. DELIVERY_PLANS (Rencana antar per hari)
+CREATE TABLE public.delivery_plans (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  plan_date DATE NOT NULL,
+  created_by UUID REFERENCES users(id),
+  notes TEXT,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- 12. DELIVERY_PLAN_ITEMS (Porsi per tujuan per kategori)
+CREATE TABLE public.delivery_plan_items (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  plan_id UUID REFERENCES delivery_plans(id) ON DELETE CASCADE,
+  destination_id UUID REFERENCES destinations(id),
+  category TEXT NOT NULL CHECK (category IN ('BALITA','PORTION_SMALL','PORTION_LARGE','BUMIL_BUSUI')),
+  portions INTEGER NOT NULL DEFAULT 0,
+  notes TEXT,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- 13. DELIVERY_ASSIGNMENTS (Driver ditugaskan ke plan)
+CREATE TABLE public.delivery_assignments (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  plan_id UUID REFERENCES delivery_plans(id),
+  driver_id UUID REFERENCES users(id),
+  status TEXT DEFAULT 'PENDING' CHECK (status IN ('PENDING','IN_TRANSIT','COMPLETED')),
+  started_at TIMESTAMPTZ,
+  completed_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- 14. DELIVERY_LOGS (Status per tujuan + foto bukti)
+CREATE TABLE public.delivery_logs (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  assignment_id UUID REFERENCES delivery_assignments(id),
+  destination_id UUID REFERENCES destinations(id),
+  status TEXT NOT NULL CHECK (status IN ('NOT_DELIVERED','IN_TRANSIT','DELIVERED')),
+  photo_url TEXT,
+  notes TEXT,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- Indexes for new tables
+CREATE INDEX idx_destinations_active ON destinations(is_active);
+CREATE INDEX idx_delivery_plans_date ON delivery_plans(plan_date);
+CREATE INDEX idx_delivery_plan_items_plan ON delivery_plan_items(plan_id);
+CREATE INDEX idx_delivery_assignments_plan ON delivery_assignments(plan_id);
+CREATE INDEX idx_delivery_assignments_driver ON delivery_assignments(driver_id);
+CREATE INDEX idx_delivery_logs_assignment ON delivery_logs(assignment_id);

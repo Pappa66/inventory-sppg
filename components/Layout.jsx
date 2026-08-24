@@ -8,20 +8,21 @@ import { ROLE_LABELS, ROLE_COLORS } from "@/lib/format";
 import {
   LayoutDashboard, Users, Database, Boxes, ShoppingBasket, CalendarDays,
   ChefHat, BarChart3, FileText, ScrollText, LogOut, Leaf, BadgeCheck,
-  Menu, X, Settings as SettingsIcon
+  Menu, X, Settings as SettingsIcon, MapPin, Truck, Navigation
 } from "lucide-react";
 
 const ALL_NAV = [
   { to: "/", label: "Dasbor", icon: LayoutDashboard, roles: "*" },
   { to: "/users", label: "Pengguna", icon: Users, roles: ["admin"] },
-  { to: "/master", label: "Master Bahan", icon: Database, roles: ["admin","head_chef","kitchen_head","nutritionist"] },
-  { to: "/inventory", label: "Stok (FEFO)", icon: Boxes, roles: ["admin","field_staff","kitchen_head","head_chef"] },
+  { to: "/master", label: "Master Bahan", icon: Database, roles: ["admin","head_chef","kitchen_head","nutritionist","field_assistant"] },
+  { to: "/inventory", label: "Stok & Opname", icon: Boxes, roles: ["admin","field_assistant","kitchen_head","head_chef"] },
   { to: "/procurement", label: "Belanja & Struk", icon: ShoppingBasket, roles: ["admin","field_assistant","accountant","kitchen_head"] },
-  { to: "/menu", label: "Menu 5-Hari", icon: CalendarDays, roles: ["admin","head_chef","kitchen_head","nutritionist"] },
   { to: "/recipes", label: "Resep & Gizi", icon: ChefHat, roles: ["admin","head_chef","kitchen_head","nutritionist"] },
-  { to: "/approval", label: "Persetujuan Menu", icon: BadgeCheck, roles: ["admin","nutritionist","kitchen_head"] },
-  { to: "/tva", label: "TvA Selisih", icon: BarChart3, roles: ["admin","kitchen_head","head_chef","accountant"] },
-  { to: "/reports", label: "Laporan", icon: FileText, roles: ["admin","kitchen_head","accountant","head_chef","nutritionist"] },
+  { to: "/menu", label: "Menu & Cetak", icon: CalendarDays, roles: ["admin","head_chef","kitchen_head","nutritionist"] },
+  { to: "/destinations", label: "Tujuan Antar", icon: MapPin, roles: ["admin","field_assistant","kitchen_head"] },
+  { to: "/deliveries", label: "Rencana Antar", icon: Truck, roles: ["admin","field_assistant","kitchen_head","head_chef"] },
+  { to: "/delivery-tracking", label: "Tracking Driver", icon: Navigation, roles: ["admin","driver","field_assistant","kitchen_head"] },
+  { to: "/reports", label: "Laporan", icon: FileText, roles: ["admin","kitchen_head","accountant","head_chef","nutritionist","field_assistant"] },
   { to: "/audit", label: "Audit Trail", icon: ScrollText, roles: ["admin","accountant","kitchen_head","nutritionist"] },
   { to: "/settings", label: "Pengaturan", icon: SettingsIcon, roles: ["admin"] },
 ];

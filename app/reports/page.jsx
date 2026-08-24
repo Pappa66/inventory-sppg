@@ -3,8 +3,8 @@
 import React, { useEffect, useState } from "react";
 import Layout from "@/components/Layout";
 import { api } from "@/lib/api";
-import { fmtIDR, fmtDate, fmtDateTime, ZONE_COLORS, ZONE_LABELS } from "@/lib/format";
-import { FileDown, FileSpreadsheet, Share2, FileArchive } from "lucide-react";
+import { fmtIDR, fmtDate, fmtDateTime, ZONE_COLORS, ZONE_LABELS, MENU_CATEGORIES, DELIVERY_STATUSES } from "@/lib/format";
+import { FileDown, FileSpreadsheet, Share2, FileArchive, Truck } from "lucide-react";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import * as XLSX from "xlsx";
@@ -19,6 +19,7 @@ export default function Page() {
   const [fin, setFin] = useState(null);
   const [low, setLow] = useState([]);
   const [zoneStock, setZoneStock] = useState({ rows: [], by_zone: {} });
+  const [deliveryStatus, setDeliveryStatus] = useState(null);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
 
@@ -28,6 +29,7 @@ export default function Page() {
       api.get("/reports/financial").then(({data}) => setFin(data)),
       api.get("/reports/low-stock").then(({data}) => setLow(data)),
       api.get("/reports/stock-by-zone").then(({data}) => setZoneStock(data)),
+      api.get("/reports/delivery-status").then(({data}) => setDeliveryStatus(data)).catch(()=>{}),
     ]).finally(() => setLoading(false));
   }, []);
 
@@ -115,6 +117,104 @@ export default function Page() {
     XLSX.writeFile(wb, `SPPG-Laporan-${new Date().toISOString().slice(0,10)}.xlsx`);
   };
 
+  const exportBKU = async () => {
+    const purchasesR = await api.get("/purchases");
+    const purchases = purchasesR.data || [];
+    const rows = [];
+    let running = 0;
+    rows.push(["","","","","SALDO AWAL BULAN BERJALAN", fin?.summary?.grand_total || 0, 0, fin?.summary?.grand_total || 0]);
+    purchases.forEach(p => {
+      const total = (p.amount_idr || 0) + (p.transport_amount_idr || 0);
+      running += total;
+      rows.push(["", fmtDate(p.purchased_at), p.description, p.category, p.supplier || "", total, 0, running]);
+    });
+    const ws = XLSX.utils.aoa_to_sheet([
+      ["","","","","BUKU KAS UMUM (BKU)"],
+      [""],
+      ["","Nama SPPG",": SPPG Kadudampit"],
+      ["","Periode",`: ${fmtDate(new Date().toISOString())}`],
+      [""],
+      ["","Bulan","Tgl","No. Bukti","Uraian Transaksi","Debet","Kredit","Saldo"],
+      ...rows
+    ]);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "BKU");
+    XLSX.writeFile(wb, `SPPG-BKU-${new Date().toISOString().slice(0,10)}.xlsx`);
+  };
+
+  const exportStockDetail = async () => {
+    const lotsR = await api.get("/stock-lots");
+    const lots = lotsR.data || [];
+    const itemsR = await api.get("/items");
+    const items = itemsR.data || [];
+    const rows = [];
+    const grouped = {};
+    lots.forEach(l => {
+      if (!grouped[l.item_id]) grouped[l.item_id] = { name: l.item_name, unit: l.unit, category: l.category, incoming: 0, outgoing: 0, current: 0 };
+      grouped[l.item_id].incoming += l.quantity;
+      grouped[l.item_id].current += l.actual_quantity || l.quantity;
+    });
+    Object.values(grouped).forEach(g => {
+      rows.push([g.category, g.name, g.unit, 0, g.incoming, g.incoming - g.current, g.current, 0, 0]);
+    });
+    const ws = XLSX.utils.aoa_to_sheet([
+      ["LAPORAN STOCK BARANG (DETIL)"],
+      [""],
+      ["Periode",`: ${fmtDate(new Date().toISOString())}`],
+      [""],
+      ["Kode Brg","Nama Barang","Satuan","Saldo Awal","Masuk","Keluar","Saldo Akhir","Harga Beli Akhir","Jumlah"],
+      ...rows
+    ]);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Stock Detail");
+    XLSX.writeFile(wb, `SPPG-Stok-Detil-${new Date().toISOString().slice(0,10)}.xlsx`);
+  };
+
+  const exportAnggaran = async () => {
+    const plansR = await api.get("/delivery-plans");
+    const plans = plansR.data || [];
+    const rows = [];
+    plans.forEach(p => {
+      (p.delivery_plan_items || []).forEach(item => {
+        rows.push([fmtDate(p.plan_date), item.portions, item.category, item.portions * 8000, 0, 0, ""]);
+      });
+    });
+    const ws = XLSX.utils.aoa_to_sheet([
+      ["","","ANGGARAN BAHAN MAKANAN"],
+      [""],
+      ["","Hari/Tanggal","Jumlah Paket","Kategori","Harga Satuan","RAB","Aktual","Selisih","Keterangan"],
+      ...rows
+    ]);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Anggaran");
+    XLSX.writeFile(wb, `SPPG-Anggaran-${new Date().toISOString().slice(0,10)}.xlsx`);
+  };
+
+  const exportLR = async () => {
+    const s = fin?.summary || {};
+    const ws = XLSX.utils.aoa_to_sheet([
+      ["LAPORAN/RESUME PENERIMAAN DAN PENGELUARAN"],
+      [""],
+      ["Periode",`: ${fmtDate(new Date().toISOString())}`],
+      [""],
+      ["URAIAN","Jumlah"],
+      ["PENERIMAAN", ""],
+      ["Dana Bantuan Pemerintah", s.total_stock || 0],
+      ["TOTAL PENERIMAAN", s.total_stock || 0],
+      [""],
+      ["PENGELUARAN", ""],
+      ["Biaya Bahan Baku", s.total_stock || 0],
+      ["Biaya Operasional", s.total_opex || 0],
+      ["Biaya Transport", s.total_transport || 0],
+      ["TOTAL PENGELUARAN", s.grand_total || 0],
+      [""],
+      ["SURPLUS / (DEFISIT)", (s.total_stock || 0) - (s.grand_total || 0)],
+    ]);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Laba Rugi");
+    XLSX.writeFile(wb, `SPPG-Laba-Rugi-${new Date().toISOString().slice(0,10)}.xlsx`);
+  };
+
   const exportZonePDF = async () => {
     const doc = new jsPDF();
     const logo = await getLogo();
@@ -169,6 +269,10 @@ export default function Page() {
           <div className="flex flex-wrap gap-2">
             <button data-testid="export-pdf" onClick={exportPDF} className="btn-outline"><FileDown size={14}/> PDF</button>
             <button data-testid="export-xlsx" onClick={exportXLSX} className="btn-outline"><FileSpreadsheet size={14}/> Excel</button>
+            <button data-testid="export-bku" onClick={exportBKU} className="btn-outline"><FileSpreadsheet size={14}/> BKU</button>
+            <button data-testid="export-stock-detail" onClick={exportStockDetail} className="btn-outline"><FileSpreadsheet size={14}/> Stok Detail</button>
+            <button data-testid="export-anggaran" onClick={exportAnggaran} className="btn-outline"><FileSpreadsheet size={14}/> Anggaran</button>
+            <button data-testid="export-lr" onClick={exportLR} className="btn-outline"><FileSpreadsheet size={14}/> Laba Rugi</button>
             <button data-testid="share-wa" onClick={shareWA} className="btn-outline"><Share2 size={14}/> WA</button>
             <button data-testid="export-bpk" onClick={exportBpkPackage} disabled={generating} className="btn-primary" style={{background:"#2C4251"}}>
               <FileArchive size={14}/> {generating ? "Membuat..." : "Paket BPK · 1-Klik"}
@@ -221,6 +325,41 @@ export default function Page() {
               );
             })}
           </div>
+        </div>
+
+        <div className="card-soft overflow-hidden">
+          <div className="px-5 py-3 border-b border-[#EAE4D8] font-display font-bold flex items-center justify-between">
+            <span className="flex items-center gap-2"><Truck size={16}/> Status Pengiriman</span>
+          </div>
+          {deliveryStatus?.summary ? (
+            <div className="p-5">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+                {[
+                  ["Total Rencana", deliveryStatus.summary.total_plans, "#2C4251"],
+                  ["Terkirim", deliveryStatus.summary.delivered, "#4A7C59"],
+                  ["Dalam Perjalanan", deliveryStatus.summary.in_transit, "#D97706"],
+                  ["Belum Dikirim", deliveryStatus.summary.not_delivered + deliveryStatus.summary.pending, "#C5533B"],
+                ].map(([l,v,c]) => (
+                  <div key={l} className="rounded-md p-3" style={{background:`${c}10`}}>
+                    <div className="text-[10px] uppercase tracking-widest text-[#5C5C5C]">{l}</div>
+                    <div className="font-display font-bold text-xl mt-1" style={{color:c}}>{v}</div>
+                  </div>
+                ))}
+              </div>
+              {Object.keys(deliveryStatus.summary.by_category).length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {Object.entries(deliveryStatus.summary.by_category).map(([cat, info]) => {
+                    const catInfo = MENU_CATEGORIES[cat];
+                    return catInfo ? (
+                      <span key={cat} className="role-pill" style={{background:`${catInfo.color}1A`, color:catInfo.color}}>{catInfo.label}: {info.total_portions} porsi</span>
+                    ) : null;
+                  })}
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="p-5 text-center text-[#5C5C5C] text-sm">Belum ada data pengiriman.</div>
+          )}
         </div>
 
         <div className="card-soft overflow-hidden">

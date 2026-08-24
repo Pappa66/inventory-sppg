@@ -23,6 +23,7 @@ export async function POST(request) {
       id: crypto.randomUUID(),
       name: body.name,
       servings: body.servings || 1,
+      menu_category: body.menu_category || null,
       ingredients: body.ingredients || [],
       instructions: body.instructions || "",
       calories_kcal: body.calories_kcal || 0,
@@ -31,6 +32,7 @@ export async function POST(request) {
       fats_g: body.fats_g || 0,
       sodium_mg: body.sodium_mg || 0,
       allergens: body.allergens || [],
+      photo_url: body.photo_url || null,
       created_at: new Date().toISOString(),
     };
 

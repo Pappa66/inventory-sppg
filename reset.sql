@@ -11,8 +11,18 @@ ALTER TABLE public.recipes      DISABLE ROW LEVEL SECURITY;
 ALTER TABLE public.menus        DISABLE ROW LEVEL SECURITY;
 ALTER TABLE public.audit_trail  DISABLE ROW LEVEL SECURITY;
 ALTER TABLE public.settings     DISABLE ROW LEVEL SECURITY;
+ALTER TABLE public.destinations           DISABLE ROW LEVEL SECURITY;
+ALTER TABLE public.delivery_plans         DISABLE ROW LEVEL SECURITY;
+ALTER TABLE public.delivery_plan_items    DISABLE ROW LEVEL SECURITY;
+ALTER TABLE public.delivery_assignments   DISABLE ROW LEVEL SECURITY;
+ALTER TABLE public.delivery_logs          DISABLE ROW LEVEL SECURITY;
 
 -- ============= 1. HAPUS SEMUA DATA =============
+TRUNCATE TABLE delivery_logs CASCADE;
+TRUNCATE TABLE delivery_assignments CASCADE;
+TRUNCATE TABLE delivery_plan_items CASCADE;
+TRUNCATE TABLE delivery_plans CASCADE;
+TRUNCATE TABLE destinations CASCADE;
 TRUNCATE TABLE audit_trail CASCADE;
 TRUNCATE TABLE opnames CASCADE;
 TRUNCATE TABLE stock_lots CASCADE;
@@ -30,44 +40,45 @@ VALUES
   ('a0000001-0000-0000-0000-000000000002'::uuid, 'akuntan@sppg.id',   'Sri Akuntansi',    'accountant',      true, '$2a$10$Pz32qBguBXmHlFzQfE4uIuk8hWZEVNHcsS2dcrf2FcfCqGnh8iQW2', now()),
   ('a0000001-0000-0000-0000-000000000003'::uuid, 'kepala@sppg.id',    'Pak Kepala Dapur', 'kitchen_head',    true, '$2a$10$Pz32qBguBXmHlFzQfE4uIuk8hWZEVNHcsS2dcrf2FcfCqGnh8iQW2', now()),
   ('a0000001-0000-0000-0000-000000000004'::uuid, 'chef@sppg.id',      'Chef Wulan',       'head_chef',       true, '$2a$10$Pz32qBguBXmHlFzQfE4uIuk8hWZEVNHcsS2dcrf2FcfCqGnh8iQW2', now()),
-  ('a0000001-0000-0000-0000-000000000005'::uuid, 'asisten@sppg.id',   'Asisten Belanja',  'field_assistant', true, '$2a$10$Pz32qBguBXmHlFzQfE4uIuk8hWZEVNHcsS2dcrf2FcfCqGnh8iQW2', now()),
-  ('a0000001-0000-0000-0000-000000000006'::uuid, 'staf@sppg.id',      'Staf Gudang',      'field_staff',     true, '$2a$10$Pz32qBguBXmHlFzQfE4uIuk8hWZEVNHcsS2dcrf2FcfCqGnh8iQW2', now()),
-  ('a0000001-0000-0000-0000-000000000007'::uuid, 'ahligizi@sppg.id',  'Ahli Gizi Maya',   'nutritionist',    true, '$2a$10$Pz32qBguBXmHlFzQfE4uIuk8hWZEVNHcsS2dcrf2FcfCqGnh8iQW2', now())
+  ('a0000001-0000-0000-0000-000000000005'::uuid, 'asisten@sppg.id',   'Asisten Lapangan', 'field_assistant', true, '$2a$10$Pz32qBguBXmHlFzQfE4uIuk8hWZEVNHcsS2dcrf2FcfCqGnh8iQW2', now()),
+  ('a0000001-0000-0000-0000-000000000006'::uuid, 'ahligizi@sppg.id',  'Ahli Gizi Maya',   'nutritionist',    true, '$2a$10$Pz32qBguBXmHlFzQfE4uIuk8hWZEVNHcsS2dcrf2FcfCqGnh8iQW2', now()),
+  ('a0000001-0000-0000-0000-000000000007'::uuid, 'driver@sppg.id',    'Driver Budi',      'driver',          true, '$2a$10$Pz32qBguBXmHlFzQfE4uIuk8hWZEVNHcsS2dcrf2FcfCqGnh8iQW2', now()),
+  ('a0000001-0000-0000-0000-000000000008'::uuid, 'driver2@sppg.id',   'Driver Sari',      'driver',          true, '$2a$10$Pz32qBguBXmHlFzQfE4uIuk8hWZEVNHcsS2dcrf2FcfCqGnh8iQW2', now())
 ON CONFLICT (email) DO NOTHING;
 
--- ============= 3. ITEMS (30 bahan) =============
+-- ============= 3. ITEMS (30 bahan, 6 kategori) =============
 INSERT INTO public.items (id, name, unit, category, par_level, price_per_unit, zone, allergens, created_at, updated_at)
 VALUES
-  ('b0000001-0000-0000-0000-000000000001'::uuid, 'Beras Premium',     'kg',     'Karbo',   50,  15000, 'DRY',     '{}'::text[],         now(), now()),
-  ('b0000001-0000-0000-0000-000000000002'::uuid, 'Beras Merah',       'kg',     'Karbo',   10,  22000, 'DRY',     '{}'::text[],         now(), now()),
-  ('b0000001-0000-0000-0000-000000000003'::uuid, 'Kentang',           'kg',     'Karbo',   25,  10000, 'DRY',     '{}'::text[],         now(), now()),
-  ('b0000001-0000-0000-0000-000000000004'::uuid, 'Mie Telur',         'kg',     'Karbo',   15,  12000, 'DRY',     '{telur,gluten}'::text[], now(), now()),
-  ('b0000001-0000-0000-0000-000000000005'::uuid, 'Jagung Manis',      'kg',     'Karbo',   12,  15000, 'DRY',     '{}'::text[],         now(), now()),
-  ('b0000001-0000-0000-0000-000000000006'::uuid, 'Telur Ayam',        'kg',     'Protein', 20,  28000, 'WET',     '{telur}'::text[],    now(), now()),
-  ('b0000001-0000-0000-0000-000000000007'::uuid, 'Tempe',             'papan',  'Protein', 25,   7000, 'WET',     '{kedelai}'::text[],  now(), now()),
-  ('b0000001-0000-0000-0000-000000000008'::uuid, 'Tahu',              'papan',  'Protein', 20,   5000, 'WET',     '{kedelai}'::text[],  now(), now()),
-  ('b0000001-0000-0000-0000-000000000009'::uuid, 'Ayam Beku',         'kg',     'Protein', 15,  38000, 'FREEZER', '{}'::text[],         now(), now()),
-  ('b0000001-0000-0000-0000-000000000010'::uuid, 'Ikan Kembung',      'kg',     'Protein',  8,  35000, 'FREEZER', '{ikan}'::text[],     now(), now()),
-  ('b0000001-0000-0000-0000-000000000011'::uuid, 'Daging Sapi Giling','kg',     'Protein',  8,  55000, 'FREEZER', '{}'::text[],         now(), now()),
-  ('b0000001-0000-0000-0000-000000000012'::uuid, 'Ikan Asin',         'kg',     'Protein',  8,  20000, 'DRY',     '{ikan}'::text[],     now(), now()),
-  ('b0000001-0000-0000-0000-000000000013'::uuid, 'Susu UHT',          'liter',  'Protein', 20,  18000, 'WET',     '{susu}'::text[],     now(), now()),
-  ('b0000001-0000-0000-0000-000000000014'::uuid, 'Telur Puyuh',       'kg',     'Protein',  6,  35000, 'WET',     '{telur}'::text[],    now(), now()),
-  ('b0000001-0000-0000-0000-000000000015'::uuid, 'Bayam',             'ikat',   'Sayur',   30,   4000, 'WET',     '{}'::text[],         now(), now()),
-  ('b0000001-0000-0000-0000-000000000016'::uuid, 'Wortel',            'kg',     'Sayur',   15,  12000, 'WET',     '{}'::text[],         now(), now()),
-  ('b0000001-0000-0000-0000-000000000017'::uuid, 'Kangkung',          'ikat',   'Sayur',   25,   3000, 'WET',     '{}'::text[],         now(), now()),
-  ('b0000001-0000-0000-0000-000000000018'::uuid, 'Buncis',            'kg',     'Sayur',   12,  10000, 'WET',     '{}'::text[],         now(), now()),
-  ('b0000001-0000-0000-0000-000000000019'::uuid, 'Tomat',             'kg',     'Sayur',   15,   8000, 'WET',     '{}'::text[],         now(), now()),
-  ('b0000001-0000-0000-0000-000000000020'::uuid, 'Labu Kuning',       'kg',     'Sayur',   10,   8000, 'DRY',     '{}'::text[],         now(), now()),
-  ('b0000001-0000-0000-0000-000000000021'::uuid, 'Kol',               'kg',     'Sayur',   12,   7000, 'WET',     '{}'::text[],         now(), now()),
-  ('b0000001-0000-0000-0000-000000000022'::uuid, 'Bawang Merah',      'kg',     'Bumbu',   10,  25000, 'DRY',     '{}'::text[],         now(), now()),
-  ('b0000001-0000-0000-0000-000000000023'::uuid, 'Bawang Putih',      'kg',     'Bumbu',    8,  20000, 'DRY',     '{}'::text[],         now(), now()),
-  ('b0000001-0000-0000-0000-000000000024'::uuid, 'Cabe Merah',        'kg',     'Bumbu',    5,  35000, 'WET',     '{}'::text[],         now(), now()),
-  ('b0000001-0000-0000-0000-000000000025'::uuid, 'Cabe Rawit',        'kg',     'Bumbu',    3,  45000, 'WET',     '{}'::text[],         now(), now()),
-  ('b0000001-0000-0000-0000-000000000026'::uuid, 'Gula Pasir',        'kg',     'Bumbu',   15,  15000, 'DRY',     '{}'::text[],         now(), now()),
-  ('b0000001-0000-0000-0000-000000000027'::uuid, 'Garam',             'kg',     'Bumbu',    5,   5000, 'DRY',     '{}'::text[],         now(), now()),
-  ('b0000001-0000-0000-0000-000000000028'::uuid, 'Kecap Manis',       'botol',  'Bumbu',   10,  12000, 'DRY',     '{kedelai}'::text[],  now(), now()),
-  ('b0000001-0000-0000-0000-000000000029'::uuid, 'Minyak Goreng',     'liter',  'Bumbu',   12,  18000, 'DRY',     '{}'::text[],         now(), now()),
-  ('b0000001-0000-0000-0000-000000000030'::uuid, 'Santan Instan',     'liter',  'Bumbu',    8,  15000, 'DRY',     '{}'::text[],         now(), now())
+  ('b0000001-0000-0000-0000-000000000001'::uuid, 'Beras Premium',     'kg',     'KH',   50,  15000, 'DRY',     '{}'::text[],         now(), now()),
+  ('b0000001-0000-0000-0000-000000000002'::uuid, 'Beras Merah',       'kg',     'KH',   10,  22000, 'DRY',     '{}'::text[],         now(), now()),
+  ('b0000001-0000-0000-0000-000000000003'::uuid, 'Kentang',           'kg',     'KH',   25,  10000, 'DRY',     '{}'::text[],         now(), now()),
+  ('b0000001-0000-0000-0000-000000000004'::uuid, 'Mie Telur',         'kg',     'KH',   15,  12000, 'DRY',     '{telur,gluten}'::text[], now(), now()),
+  ('b0000001-0000-0000-0000-000000000005'::uuid, 'Jagung Manis',      'kg',     'KH',   12,  15000, 'DRY',     '{}'::text[],         now(), now()),
+  ('b0000001-0000-0000-0000-000000000006'::uuid, 'Telur Ayam',        'kg',     'PH',   20,  28000, 'WET',     '{telur}'::text[],    now(), now()),
+  ('b0000001-0000-0000-0000-000000000007'::uuid, 'Tempe',             'papan',  'PN',   25,   7000, 'WET',     '{kedelai}'::text[],  now(), now()),
+  ('b0000001-0000-0000-0000-000000000008'::uuid, 'Tahu',              'papan',  'PN',   20,   5000, 'WET',     '{kedelai}'::text[],  now(), now()),
+  ('b0000001-0000-0000-0000-000000000009'::uuid, 'Ayam Beku',         'kg',     'PH',   15,  38000, 'FREEZER', '{}'::text[],         now(), now()),
+  ('b0000001-0000-0000-0000-000000000010'::uuid, 'Ikan Kembung',      'kg',     'PH',    8,  35000, 'FREEZER', '{ikan}'::text[],     now(), now()),
+  ('b0000001-0000-0000-0000-000000000011'::uuid, 'Daging Sapi Giling','kg',     'PH',    8,  55000, 'FREEZER', '{}'::text[],         now(), now()),
+  ('b0000001-0000-0000-0000-000000000012'::uuid, 'Ikan Asin',         'kg',     'PH',    8,  20000, 'DRY',     '{ikan}'::text[],     now(), now()),
+  ('b0000001-0000-0000-0000-000000000013'::uuid, 'Susu UHT',          'liter',  'PH',   20,  18000, 'WET',     '{susu}'::text[],     now(), now()),
+  ('b0000001-0000-0000-0000-000000000014'::uuid, 'Telur Puyuh',       'kg',     'PH',    6,  35000, 'WET',     '{telur}'::text[],    now(), now()),
+  ('b0000001-0000-0000-0000-000000000015'::uuid, 'Bayam',             'ikat',   'SY',   30,   4000, 'WET',     '{}'::text[],         now(), now()),
+  ('b0000001-0000-0000-0000-000000000016'::uuid, 'Wortel',            'kg',     'SY',   15,  12000, 'WET',     '{}'::text[],         now(), now()),
+  ('b0000001-0000-0000-0000-000000000017'::uuid, 'Kangkung',          'ikat',   'SY',   25,   3000, 'WET',     '{}'::text[],         now(), now()),
+  ('b0000001-0000-0000-0000-000000000018'::uuid, 'Buncis',            'kg',     'SY',   12,  10000, 'WET',     '{}'::text[],         now(), now()),
+  ('b0000001-0000-0000-0000-000000000019'::uuid, 'Tomat',             'kg',     'SY',   15,   8000, 'WET',     '{}'::text[],         now(), now()),
+  ('b0000001-0000-0000-0000-000000000020'::uuid, 'Labu Kuning',       'kg',     'SY',   10,   8000, 'DRY',     '{}'::text[],         now(), now()),
+  ('b0000001-0000-0000-0000-000000000021'::uuid, 'Kol',               'kg',     'SY',   12,   7000, 'WET',     '{}'::text[],         now(), now()),
+  ('b0000001-0000-0000-0000-000000000022'::uuid, 'Bawang Merah',      'kg',     'BB',   10,  25000, 'DRY',     '{}'::text[],         now(), now()),
+  ('b0000001-0000-0000-0000-000000000023'::uuid, 'Bawang Putih',      'kg',     'BB',    8,  20000, 'DRY',     '{}'::text[],         now(), now()),
+  ('b0000001-0000-0000-0000-000000000024'::uuid, 'Cabe Merah',        'kg',     'BB',    5,  35000, 'WET',     '{}'::text[],         now(), now()),
+  ('b0000001-0000-0000-0000-000000000025'::uuid, 'Cabe Rawit',        'kg',     'BB',    3,  45000, 'WET',     '{}'::text[],         now(), now()),
+  ('b0000001-0000-0000-0000-000000000026'::uuid, 'Gula Pasir',        'kg',     'BB',   15,  15000, 'DRY',     '{}'::text[],         now(), now()),
+  ('b0000001-0000-0000-0000-000000000027'::uuid, 'Garam',             'kg',     'BB',    5,   5000, 'DRY',     '{}'::text[],         now(), now()),
+  ('b0000001-0000-0000-0000-000000000028'::uuid, 'Kecap Manis',       'botol',  'BB',   10,  12000, 'DRY',     '{kedelai}'::text[],  now(), now()),
+  ('b0000001-0000-0000-0000-000000000029'::uuid, 'Minyak Goreng',     'liter',  'BB',   12,  18000, 'DRY',     '{}'::text[],         now(), now()),
+  ('b0000001-0000-0000-0000-000000000030'::uuid, 'Santan Instan',     'liter',  'BB',    8,  15000, 'DRY',     '{}'::text[],         now(), now())
 ON CONFLICT (id) DO NOTHING;
 
 -- ============= 4. STOCK LOTS (various expiry, zones, quantities) =============

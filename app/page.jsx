@@ -9,7 +9,8 @@ import { SkeletonCards } from "@/components/Skeleton";
 import { fmtIDR, ROLE_LABELS, ROLE_COLORS } from "@/lib/format";
 import {
   Package, AlertTriangle, TrendingUp, Wallet, Database,
-  ShoppingBasket, ChefHat, CalendarDays, BadgeCheck, ScrollText
+  ShoppingBasket, ChefHat, CalendarDays, BadgeCheck, ScrollText,
+  MapPin, Truck, Navigation
 } from "lucide-react";
 
 export default function DashboardPage() {
@@ -74,11 +75,10 @@ export default function DashboardPage() {
           { label: "Transaksi", ...ct(s.total_count || 0), icon: Wallet, color: "#C5533B" },
           { label: "Belum Validasi", ...ct((s.total_count || 0) - (s.verified_count || 0)), icon: AlertTriangle, color: "#C5533B" },
         ];
-      case "field_staff":
+      case "driver":
         return [
-          { label: "Low Stock", ...ct(low.length), icon: AlertTriangle, color: "#8B6F3A" },
-          { label: "Total Bahan", ...ct(items.length), icon: Package, color: "#8B6F3A" },
-          { label: "Opname Terakhir", ...ct("—"), icon: Database, color: "#8B6F3A" },
+          { label: "Total Bahan", ...ct(items.length), icon: Package, color: "#0891B2" },
+          { label: "Low Stock", ...ct(low.length), icon: AlertTriangle, color: "#C5533B" },
         ];
       case "nutritionist":
         return [
@@ -176,16 +176,20 @@ export default function DashboardPage() {
             </>
           )}
           {role === "field_assistant" && (
-            <QuickLink href="/procurement" label="Belanja & Struk" icon={ShoppingBasket} />
+            <>
+              <QuickLink href="/procurement" label="Belanja & Struk" icon={ShoppingBasket} />
+              <QuickLink href="/inventory" label="Stok & Opname" icon={Package} />
+              <QuickLink href="/destinations" label="Tujuan Antar" icon={MapPin} />
+              <QuickLink href="/deliveries" label="Rencana Antar" icon={Truck} />
+            </>
           )}
-          {role === "field_staff" && (
-            <QuickLink href="/inventory" label="Stok (FEFO)" icon={Package} />
+          {role === "driver" && (
+            <QuickLink href="/delivery-tracking" label="Tracking Driver" icon={Navigation} />
           )}
           {role === "nutritionist" && (
             <>
-              <QuickLink href="/approval" label="Persetujuan" icon={BadgeCheck} />
-              <QuickLink href="/menu" label="Menu" icon={CalendarDays} />
               <QuickLink href="/recipes" label="Resep & Gizi" icon={ChefHat} />
+              <QuickLink href="/menu" label="Menu & Cetak" icon={CalendarDays} />
             </>
           )}
         </div>

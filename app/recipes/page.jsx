@@ -3,15 +3,15 @@
 import React, { useEffect, useMemo, useState } from "react";
 import Layout from "@/components/Layout";
 import { api, formatErr } from "@/lib/api";
-import { COMMON_ALLERGENS } from "@/lib/format";
+import { COMMON_ALLERGENS, MENU_CATEGORIES } from "@/lib/format";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
-import { Plus, Flame } from "lucide-react";
+import { Plus, Flame, Camera } from "lucide-react";
 import { SkeletonCards } from "@/components/Skeleton";
 import Pagination from "@/components/Pagination";
 
-const EMPTY = { name: "", servings: 100, ingredients: [], instructions: "",
-  calories_kcal: 0, protein_g: 0, carbs_g: 0, fats_g: 0, sodium_mg: 0, allergens: [] };
+const EMPTY = { name: "", servings: 100, menu_category: null, ingredients: [], instructions: "",
+  calories_kcal: 0, protein_g: 0, carbs_g: 0, fats_g: 0, sodium_mg: 0, allergens: [], photo_url: "" };
 
 const CAN_EDIT = ["admin", "head_chef", "nutritionist", "kitchen_head"];
 
@@ -63,15 +63,23 @@ export default function Page() {
           <SkeletonCards count={6} />
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {paginatedRecipes.map(r => (
-              <div key={r.id} className="card-soft p-4" data-testid={`recipe-${r.id}`}>
-                <div className="flex items-start justify-between">
-                  <div>
-                    <div className="font-display font-bold text-lg">{r.name}</div>
-                    <div className="text-xs audit-ts text-[#5C5C5C]">{r.servings} porsi</div>
+            {paginatedRecipes.map(r => {
+              const catInfo = r.menu_category ? MENU_CATEGORIES[r.menu_category] : null;
+              return (
+                <div key={r.id} className="card-soft p-4" data-testid={`recipe-${r.id}`}>
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-2">
+                      {r.photo_url && <img src={r.photo_url} alt={r.name} className="w-12 h-12 rounded-md object-cover"/>}
+                      <div>
+                        <div className="font-display font-bold text-lg">{r.name}</div>
+                        <div className="text-xs audit-ts text-[#5C5C5C] flex items-center gap-2">
+                          {r.servings} porsi
+                          {catInfo && <span className="role-pill" style={{background:`${catInfo.color}1A`, color:catInfo.color}}>{catInfo.label}</span>}
+                        </div>
+                      </div>
+                    </div>
+                    {CAN_EDIT.includes(activeRole) && <button onClick={()=>{setEditing(r); setForm({name:r.name, servings:r.servings, menu_category:r.menu_category||null, ingredients:r.ingredients||[], instructions:r.instructions||"", calories_kcal:r.calories_kcal||0, protein_g:r.protein_g||0, carbs_g:r.carbs_g||0, fats_g:r.fats_g||0, sodium_mg:r.sodium_mg||0, allergens:r.allergens||[], photo_url:r.photo_url||""}); setOpen(true);}} className="btn-ghost text-xs">Edit</button>}
                   </div>
-                  {CAN_EDIT.includes(activeRole) && <button onClick={()=>{setEditing(r); setForm({name:r.name, servings:r.servings, ingredients:r.ingredients||[], instructions:r.instructions||"", calories_kcal:r.calories_kcal||0, protein_g:r.protein_g||0, carbs_g:r.carbs_g||0, fats_g:r.fats_g||0, sodium_mg:r.sodium_mg||0, allergens:r.allergens||[]}); setOpen(true);}} className="btn-ghost text-xs">Edit</button>}
-                </div>
                 <div className="grid grid-cols-5 gap-1 mt-3 text-center">
                   {[["Kkal", r.calories_kcal, "#D97706"],["Prot", r.protein_g, "#4A7C59"],["Karbo", r.carbs_g, "#2C4251"],["Lemak", r.fats_g, "#C5533B"],["Na (mg)", r.sodium_mg, "#5C5C5C"]].map(([l,v,c],i)=>(
                     <div key={i} className="rounded-md p-1.5" style={{background:`${c}10`}}>
@@ -91,8 +99,9 @@ export default function Page() {
                     return <li key={i} className="flex justify-between"><span>{it?.name || "—"}</span><span className="audit-ts text-[#5C5C5C]">{ing.quantity} {ing.unit || it?.unit}</span></li>;
                   })}
                 </ul>
-              </div>
-            ))}
+                </div>
+              );
+            })}
             {recipes.length === 0 && <div className="col-span-full text-center text-[#5C5C5C] py-10">Belum ada resep. Buat resep pertama.</div>}
           </div>
         )}
@@ -110,6 +119,20 @@ export default function Page() {
                 <div>
                   <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Porsi standar</label>
                   <input type="number" className="w-full mt-1 px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={form.servings} onChange={(e)=>setForm({...form, servings:parseInt(e.target.value)||1})}/>
+                </div>
+                <div>
+                  <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Kategori Menu</label>
+                  <select className="w-full mt-1 px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={form.menu_category||""} onChange={(e)=>setForm({...form, menu_category:e.target.value||null})}>
+                    <option value="">— Tanpa kategori —</option>
+                    {Object.entries(MENU_CATEGORIES).map(([k,v])=>(
+                      <option key={k} value={k}>{v.label}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="col-span-2">
+                  <label className="text-xs uppercase tracking-widest text-[#5C5C5C] flex items-center gap-2"><Camera size={12}/> Foto Menu (URL)</label>
+                  <input data-testid="recipe-photo" type="url" placeholder="https://..." className="w-full mt-1 px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={form.photo_url||""} onChange={(e)=>setForm({...form, photo_url:e.target.value})}/>
+                  {form.photo_url && <img src={form.photo_url} alt="Preview" className="mt-2 w-32 h-24 rounded-md object-cover"/>}
                 </div>
                 <div className="col-span-2">
                   <div className="flex items-center justify-between mt-2">

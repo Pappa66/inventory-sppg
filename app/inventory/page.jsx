@@ -3,10 +3,10 @@
 import React, { useEffect, useMemo, useState } from "react";
 import Layout from "@/components/Layout";
 import { api, formatErr } from "@/lib/api";
-import { fmtDateTime, ZONES, ZONE_COLORS, ZONE_LABELS } from "@/lib/format";
+import { fmtDateTime, ZONES, ZONE_COLORS, ZONE_LABELS, ITEM_CATEGORIES } from "@/lib/format";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
-import { Plus, ClipboardCheck, Thermometer, Droplets } from "lucide-react";
+import { Plus, ClipboardCheck, Thermometer, Droplets, HandPlatter } from "lucide-react";
 import { SkeletonTable } from "@/components/Skeleton";
 import Pagination from "@/components/Pagination";
 
@@ -16,8 +16,10 @@ export default function Page() {
   const [items, setItems] = useState([]);
   const [openLot, setOpenLot] = useState(false);
   const [openOpname, setOpenOpname] = useState(null);
+  const [openTaken, setOpenTaken] = useState(null);
   const [lotForm, setLotForm] = useState({ item_id: "", quantity: 0, expiry_date: "" });
   const [opnameForm, setOpnameForm] = useState({ counted_quantity: 0, zone: "DRY", temperature_c: "", humidity_pct: "", reason: "Routine" });
+  const [takenForm, setTakenForm] = useState({ quantity: 0, reason: "COOKING" });
   const [zoneFilter, setZoneFilter] = useState("ALL");
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
@@ -68,8 +70,22 @@ export default function Page() {
         humidity_pct: opnameForm.humidity_pct === "" ? null : parseFloat(opnameForm.humidity_pct),
         reason: opnameForm.reason,
       });
-      toast.success("Opname tercatat. Versi sebelumnya tetap tersimpan.");
+      toast.success("Opname tercatat. Selisih dihitung otomatis.");
       setOpenOpname(null); load();
+    } catch (er) { toast.error(formatErr(er)); }
+  };
+
+  const submitTaken = async (e) => {
+    e.preventDefault();
+    if (takenForm.quantity <= 0) return toast.error("Jumlah harus lebih dari 0");
+    try {
+      await api.post("/stock-taken", {
+        lot_id: openTaken.id,
+        quantity: takenForm.quantity,
+        reason: takenForm.reason,
+      });
+      toast.success(`Berhasil mengambil ${takenForm.quantity} ${openTaken.unit}`);
+      setOpenTaken(null); setTakenForm({ quantity: 0, reason: "COOKING" }); load();
     } catch (er) { toast.error(formatErr(er)); }
   };
 
@@ -98,7 +114,7 @@ export default function Page() {
                 </button>
               ))}
             </div>
-            {(activeRole === "field_staff" || activeRole === "admin" || activeRole === "kitchen_head" || activeRole === "head_chef") && (
+            {(activeRole === "field_assistant" || activeRole === "admin" || activeRole === "kitchen_head" || activeRole === "head_chef") && (
               <button data-testid="add-lot-btn" onClick={()=>setOpenLot(true)} className="btn-primary"><Plus size={16}/> Tambah Lot</button>
             )}
           </div>
@@ -113,32 +129,39 @@ export default function Page() {
                 <thead className="bg-[#EAE4D8] text-[#5C5C5C] text-xs uppercase tracking-wider">
                   <tr>
                     <th className="text-left py-3 px-4">Bahan</th>
+                    <th className="text-left py-3 px-4">Kategori</th>
                     <th className="text-left py-3 px-4">Zona</th>
                     <th className="text-right py-3 px-4">Awal</th>
                     <th className="text-right py-3 px-4">Aktual</th>
                     <th className="text-left py-3 px-4">Kadaluarsa</th>
-                    <th className="text-left py-3 px-4">Diterima</th>
                     <th className="text-left py-3 px-4">Status</th>
-                    <th className="text-right py-3 px-4">Opname</th>
+                    <th className="text-right py-3 px-4">Aksi</th>
                   </tr>
                 </thead>
                 <tbody>
                   {paginated.map((l) => {
                   const s = statusFor(l);
                   const z = l.zone || "DRY";
+                  const cat = l.category || "BB";
+                  const catInfo = ITEM_CATEGORIES[cat] || ITEM_CATEGORIES.BB;
                   return (
                     <tr key={l.id} className="border-b border-[#EAE4D8] last:border-0">
                       <td className="py-3 px-4 font-semibold">{l.item_name}</td>
+                      <td className="py-3 px-4"><span className="role-pill" style={{background:`${catInfo.color}1A`, color:catInfo.color}}>{catInfo.label}</span></td>
                       <td className="py-3 px-4"><span className="role-pill" style={{background:`${ZONE_COLORS[z]}1A`, color:ZONE_COLORS[z]}}>{ZONE_LABELS[z]}</span></td>
                       <td className="py-3 px-4 text-right audit-ts">{l.quantity} {l.unit}</td>
                       <td className="py-3 px-4 text-right audit-ts font-semibold">{l.actual_quantity} {l.unit}</td>
                       <td className="py-3 px-4 audit-ts">{l.expiry_date}</td>
-                      <td className="py-3 px-4 audit-ts text-xs">{fmtDateTime(l.received_at)}</td>
                       <td className="py-3 px-4"><span className="role-pill" style={{background:`${s.color}1A`, color:s.color}}>{s.label}</span></td>
                       <td className="py-3 px-4 text-right">
-                        {(activeRole === "field_staff" || activeRole === "admin" || activeRole === "kitchen_head" || activeRole === "head_chef") &&
-                          <button data-testid={`opname-${l.id}`} onClick={()=>{setOpenOpname(l); setOpnameForm({counted_quantity:l.actual_quantity, zone:l.zone||"DRY", temperature_c:"", humidity_pct:"", reason:"Routine"});}} className="btn-ghost text-xs"><ClipboardCheck size={14}/> Opname</button>
-                        }
+                        <div className="flex justify-end gap-1">
+                          {(activeRole === "field_assistant" || activeRole === "admin" || activeRole === "kitchen_head" || activeRole === "head_chef") && (
+                            <>
+                              <button data-testid={`taken-${l.id}`} onClick={()=>{setOpenTaken(l); setTakenForm({quantity:0, reason:"COOKING"});}} className="btn-ghost text-xs text-[#D97706]"><HandPlatter size={14}/> Ambil</button>
+                              <button data-testid={`opname-${l.id}`} onClick={()=>{setOpenOpname(l); setOpnameForm({counted_quantity:l.actual_quantity, zone:l.zone||"DRY", temperature_c:"", humidity_pct:"", reason:"Routine"});}} className="btn-ghost text-xs"><ClipboardCheck size={14}/> Opname</button>
+                            </>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   );
@@ -151,11 +174,16 @@ export default function Page() {
               {paginated.map((l) => {
               const s = statusFor(l);
               const z = l.zone || "DRY";
+              const cat = l.category || "BB";
+              const catInfo = ITEM_CATEGORIES[cat] || ITEM_CATEGORIES.BB;
               return (
                 <div key={l.id} className="card-soft p-4 space-y-2">
                   <div className="flex justify-between items-start">
                     <div className="font-semibold">{l.item_name}</div>
-                    <span className="role-pill text-xs" style={{background:`${ZONE_COLORS[z]}1A`, color:ZONE_COLORS[z]}}>{ZONE_LABELS[z]}</span>
+                    <div className="flex gap-1">
+                      <span className="role-pill text-xs" style={{background:`${catInfo.color}1A`, color:catInfo.color}}>{catInfo.label}</span>
+                      <span className="role-pill text-xs" style={{background:`${ZONE_COLORS[z]}1A`, color:ZONE_COLORS[z]}}>{ZONE_LABELS[z]}</span>
+                    </div>
                   </div>
                   <div className="grid grid-cols-2 gap-2 text-sm">
                     <div>
@@ -173,9 +201,14 @@ export default function Page() {
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="role-pill text-xs" style={{background:`${s.color}1A`, color:s.color}}>{s.label}</span>
-                    {(activeRole === "field_staff" || activeRole === "admin" || activeRole === "kitchen_head" || activeRole === "head_chef") &&
-                      <button data-testid={`opname-${l.id}`} onClick={()=>{setOpenOpname(l); setOpnameForm({counted_quantity:l.actual_quantity, zone:l.zone||"DRY", temperature_c:"", humidity_pct:"", reason:"Routine"});}} className="btn-ghost text-xs"><ClipboardCheck size={14}/> Opname</button>
-                    }
+                    <div className="flex gap-1">
+                      {(activeRole === "field_assistant" || activeRole === "admin" || activeRole === "kitchen_head" || activeRole === "head_chef") && (
+                        <>
+                          <button data-testid={`taken-${l.id}`} onClick={()=>{setOpenTaken(l); setTakenForm({quantity:0, reason:"COOKING"});}} className="btn-ghost text-xs text-[#D97706]"><HandPlatter size={14}/> Ambil</button>
+                          <button data-testid={`opname-${l.id}`} onClick={()=>{setOpenOpname(l); setOpnameForm({counted_quantity:l.actual_quantity, zone:l.zone||"DRY", temperature_c:"", humidity_pct:"", reason:"Routine"});}} className="btn-ghost text-xs"><ClipboardCheck size={14}/> Opname</button>
+                        </>
+                      )}
+                    </div>
                   </div>
                 </div>
               );
@@ -231,6 +264,15 @@ export default function Page() {
               </div>
               <label className="text-xs uppercase tracking-widest text-[#5C5C5C] mt-4 block">Hitungan fisik aktual ({openOpname.unit})</label>
               <input data-testid="opname-qty" required type="number" step="0.01" className="w-full mt-1 px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={opnameForm.counted_quantity} onChange={(e)=>setOpnameForm(p=>({...p, counted_quantity:parseFloat(e.target.value)||0}))}/>
+              <div className="mt-2 p-2 rounded bg-[#EAE4D8] text-sm">
+                <span className="text-[#5C5C5C]">Stok sistem: </span>
+                <span className="font-semibold">{openOpname.actual_quantity} {openOpname.unit}</span>
+                {opnameForm.counted_quantity > 0 && (
+                  <span className={opnameForm.counted_quantity !== openOpname.actual_quantity ? "text-[#C5533B] ml-2" : "text-[#4A7C59] ml-2"}>
+                    → Selisih: {opnameForm.counted_quantity - openOpname.actual_quantity} {openOpname.unit}
+                  </span>
+                )}
+              </div>
               {opnameForm.zone === "DRY" ? (
                 <div className="mt-3">
                   <label className="text-xs uppercase tracking-widest text-[#5C5C5C] flex items-center gap-2"><Droplets size={12}/> Kelembapan (%) · ideal &lt; 65%</label>
@@ -251,6 +293,33 @@ export default function Page() {
               <div className="flex justify-end gap-2 mt-5">
                 <button type="button" onClick={()=>setOpenOpname(null)} className="btn-ghost">Batal</button>
                 <button data-testid="save-opname" type="submit" className="btn-primary">Catat Opname</button>
+              </div>
+            </form>
+          </div>
+        )}
+
+        {openTaken && (
+          <div className="fixed inset-0 z-40 bg-black/40 grid place-items-center p-4" onClick={()=>setOpenTaken(null)}>
+            <form onClick={(e)=>e.stopPropagation()} onSubmit={submitTaken} className="card-soft p-6 w-full max-w-md">
+              <h2 className="font-display text-2xl font-bold">Pengambilan Barang</h2>
+              <p className="text-[#5C5C5C] text-sm mt-1">{openTaken.item_name} · stok tersedia: <span className="font-semibold">{openTaken.actual_quantity} {openTaken.unit}</span></p>
+              <label className="text-xs uppercase tracking-widest text-[#5C5C5C] mt-4 block">Jumlah yang diambil ({openTaken.unit})</label>
+              <input data-testid="taken-qty" required type="number" step="0.01" min="0.01" max={openTaken.actual_quantity} className="w-full mt-1 px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={takenForm.quantity} onChange={(e)=>setTakenForm(p=>({...p, quantity:parseFloat(e.target.value)||0}))}/>
+              {takenForm.quantity > 0 && (
+                <div className="mt-2 p-2 rounded bg-[#EAE4D8] text-sm">
+                  <span className="text-[#5C5C5C]">Sisa setelah diambil: </span>
+                  <span className="font-semibold">{openTaken.actual_quantity - takenForm.quantity} {openTaken.unit}</span>
+                </div>
+              )}
+              <label className="text-xs uppercase tracking-widest text-[#5C5C5C] mt-3 block">Alasan Pengambilan</label>
+              <select data-testid="taken-reason" className="w-full mt-1 px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={takenForm.reason} onChange={(e)=>setTakenForm(p=>({...p, reason:e.target.value}))}>
+                <option value="COOKING">Masak Hari Ini</option>
+                <option value="PREP">Persiapan</option>
+                <option value="OTHER">Lainnya</option>
+              </select>
+              <div className="flex justify-end gap-2 mt-5">
+                <button type="button" onClick={()=>setOpenTaken(null)} className="btn-ghost">Batal</button>
+                <button data-testid="save-taken" type="submit" className="btn-primary" style={{background:"#D97706"}}>Ambil Barang</button>
               </div>
             </form>
           </div>

@@ -11,7 +11,7 @@ export async function PATCH(request, { params }) {
 
     const { data: old } = await supabase.from("menus").select("*").eq("id", id).single();
 
-    const allowedFields = ["week_start", "day", "recipe_ids", "portions"];
+    const allowedFields = ["week_start", "day", "recipe_ids", "portions", "total_days", "active_days"];
     const updates = {};
     for (const k of allowedFields) {
       if (body[k] !== undefined) updates[k] = body[k];
