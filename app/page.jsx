@@ -13,7 +13,7 @@ import {
   MapPin, Truck, Navigation, Users, ClipboardList, Camera,
   UtensilsCrossed, Scale, FileCheck, CircleDollarSign,
   CheckCircle2, Clock, ReceiptText, Stamp,
-  HandPlatter, CalendarCheck, HeartPulse,
+  HandPlatter, CalendarCheck, HeartPulse, ClipboardCheck, FileText,
 } from "lucide-react";
 
 /* ------------------------------------------------------------------ */
@@ -163,6 +163,51 @@ function useDashboardData(activeRole) {
           .catch(() => {}),
         api.get(`/reports/delivery-status?plan_date=${today}`)
           .then(({ data }) => setData(d => ({ ...d, deliveryStatus: data })))
+          .catch(() => {}),
+      );
+    }
+
+    /* ---- Persiapan ---- */
+    if (role === "persiapan") {
+      fetches.push(
+        api.get("/stock-lots")
+          .then(({ data }) => setData(d => ({ ...d, lots: data || [] })))
+          .catch(() => {}),
+        api.get("/stock-taken")
+          .then(({ data }) => setData(d => ({ ...d, stockTaken: data || [] })))
+          .catch(() => {}),
+        api.get(`/menus?week_start=${weekStart}`)
+          .then(({ data }) => setData(d => ({ ...d, menus: data || [] })))
+          .catch(() => {}),
+      );
+    }
+
+    /* ---- Pengolahan ---- */
+    if (role === "pengolahan") {
+      fetches.push(
+        api.get("/recipes")
+          .then(({ data }) => setData(d => ({ ...d, recipes: data || [] })))
+          .catch(() => {}),
+        api.get("/stock-taken")
+          .then(({ data }) => setData(d => ({ ...d, stockTaken: data || [] })))
+          .catch(() => {}),
+        api.get(`/menus?week_start=${weekStart}`)
+          .then(({ data }) => setData(d => ({ ...d, menus: data || [] })))
+          .catch(() => {}),
+      );
+    }
+
+    /* ---- Pemeriksa ---- */
+    if (role === "pemeriksa") {
+      fetches.push(
+        api.get("/reports/low-stock")
+          .then(({ data }) => setData(d => ({ ...d, low: data || [] })))
+          .catch(() => {}),
+        api.get("/reports/delivery-status")
+          .then(({ data }) => setData(d => ({ ...d, deliveryStatus: data })))
+          .catch(() => {}),
+        api.get("/purchases")
+          .then(({ data }) => setData(d => ({ ...d, purchases: data || [] })))
           .catch(() => {}),
       );
     }
@@ -330,6 +375,54 @@ function buildCards(role, d) {
       ];
     }
 
+    /* ---------- PERSIAPAN ---------- */
+    case "persiapan": {
+      const totalLots = (d.lots || []).length;
+      const todayTaken = (d.stockTaken || []).filter(
+        t => (t.taken_at || "").slice(0, 10) === today
+      );
+      const menusToday = (d.menus || []).filter(m => m.day === ["mon","tue","wed","thu","fri"][new Date().getDay() - 1]);
+      const totalPortions = menusToday.reduce((sum, m) => sum + (m.portions || 0), 0);
+
+      return [
+        { label: "Bahan Tersedia", value: totalLots, icon: Package, color: "#16A34A", currency: false, suffix: " lot" },
+        { label: "Pengambilan Hari Ini", value: todayTaken.length, icon: HandPlatter, color: "#D97706", currency: false, suffix: " item diambil" },
+        { label: "Menu Hari Ini", value: menusToday.length, icon: CalendarDays, color: "#16A34A", currency: false },
+        { label: "Total Porsi", value: totalPortions, icon: UtensilsCrossed, color: "#2C4251", currency: false, suffix: " porsi" },
+      ];
+    }
+
+    /* ---------- PENGOLAHAN ---------- */
+    case "pengolahan": {
+      const recipeCount = (d.recipes || []).length;
+      const todayTaken = (d.stockTaken || []).filter(
+        t => (t.taken_at || "").slice(0, 10) === today
+      );
+      const menusToday = (d.menus || []).filter(m => m.day === ["mon","tue","wed","thu","fri"][new Date().getDay() - 1]);
+      const totalPortions = menusToday.reduce((sum, m) => sum + (m.portions || 0), 0);
+
+      return [
+        { label: "Resep Tersedia", value: recipeCount, icon: ChefHat, color: "#EA580C", currency: false },
+        { label: "Bahan Diambil", value: todayTaken.length, icon: HandPlatter, color: "#D97706", currency: false, suffix: " item" },
+        { label: "Menu Hari Ini", value: menusToday.length, icon: CalendarDays, color: "#EA580C", currency: false },
+        { label: "Target Porsi", value: totalPortions, icon: UtensilsCrossed, color: "#2C4251", currency: false, suffix: " porsi" },
+      ];
+    }
+
+    /* ---------- PEMERIKSA ---------- */
+    case "pemeriksa": {
+      const lowStock = (d.low || []).length;
+      const delSummary = d.deliveryStatus?.summary || {};
+      const unverified = (d.purchases || []).filter(p => !p.verified);
+
+      return [
+        { label: "Stok Menipis", value: lowStock, icon: AlertTriangle, color: "#C5533B", currency: false, suffix: " item" },
+        { label: "Pengiriman Terkirim", value: delSummary.delivered || 0, icon: CheckCircle2, color: "#4A7C59", currency: false, suffix: ` / ${delSummary.total_destinations || 0}` },
+        { label: "Belanja Pending", value: unverified.length, icon: ClipboardList, color: "#D97706", currency: false },
+        { label: "Cross-Check", value: "Harian", icon: ClipboardCheck, color: "#7C3AED", currency: false },
+      ];
+    }
+
     default:
       return [];
   }
@@ -482,6 +575,24 @@ function QuickLinks({ role }) {
       case "driver":
         return [
           { href: "/delivery-tracking", label: "Tracking Pengantaran", icon: Navigation },
+        ];
+      case "persiapan":
+        return [
+          { href: "/inventory", label: "Stok & Pengambilan", icon: Package },
+          { href: "/recipes", label: "Resep", icon: ChefHat },
+          { href: "/menu", label: "Menu Hari Ini", icon: CalendarDays },
+        ];
+      case "pengolahan":
+        return [
+          { href: "/recipes", label: "Resep & Gizi", icon: ChefHat },
+          { href: "/menu", label: "Menu & Porsi", icon: CalendarDays },
+          { href: "/inventory", label: "Stok Bahan", icon: Package },
+        ];
+      case "pemeriksa":
+        return [
+          { href: "/cross-check", label: "Cross-Check Stok", icon: ClipboardCheck },
+          { href: "/inventory", label: "Stok & Opname", icon: Package },
+          { href: "/reports", label: "Laporan", icon: FileText },
         ];
       default:
         return [];

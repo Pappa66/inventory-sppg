@@ -6,7 +6,7 @@ CREATE TABLE public.users (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   email TEXT UNIQUE NOT NULL,
   name TEXT NOT NULL,
-  role TEXT NOT NULL CHECK (role IN ('admin','accountant','kitchen_head','head_chef','field_assistant','nutritionist','driver')),
+  role TEXT NOT NULL CHECK (role IN ('admin','accountant','kitchen_head','head_chef','field_assistant','nutritionist','driver','persiapan','pengolahan','pemeriksa')),
   is_active BOOLEAN DEFAULT TRUE,
   password_hash TEXT NOT NULL,
   created_at TIMESTAMPTZ DEFAULT NOW()
@@ -256,3 +256,24 @@ CREATE TABLE public.anggaran_beneficiaries (
 CREATE INDEX idx_transaksis_date ON transaksis(transaction_date);
 CREATE INDEX idx_transaksis_book ON transaksis(auxiliary_book);
 CREATE INDEX idx_anggaran_date ON anggaran_beneficiaries(plan_date);
+
+-- 17. STOCK_CROSS_CHECKS (Aslap cross-check harian)
+CREATE TABLE public.stock_cross_checks (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  check_date DATE NOT NULL,
+  item_id UUID NOT NULL REFERENCES items(id),
+  opening_quantity FLOAT NOT NULL,
+  received_quantity FLOAT DEFAULT 0,
+  used_quantity FLOAT DEFAULT 0,
+  closing_quantity FLOAT NOT NULL,
+  actual_closing FLOAT,
+  selisih FLOAT GENERATED ALWAYS AS (actual_closing - closing_quantity) STORED,
+  zone TEXT CHECK (zone IN ('DRY','WET','FREEZER')),
+  notes TEXT,
+  checked_by UUID REFERENCES users(id),
+  checked_by_name TEXT,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE INDEX idx_cross_check_date ON stock_cross_checks(check_date);
+CREATE INDEX idx_cross_check_item ON stock_cross_checks(item_id);

@@ -18,8 +18,10 @@ ALTER TABLE public.delivery_assignments   DISABLE ROW LEVEL SECURITY;
 ALTER TABLE public.delivery_logs          DISABLE ROW LEVEL SECURITY;
 ALTER TABLE public.transaksis             DISABLE ROW LEVEL SECURITY;
 ALTER TABLE public.anggaran_beneficiaries DISABLE ROW LEVEL SECURITY;
+ALTER TABLE public.stock_cross_checks     DISABLE ROW LEVEL SECURITY;
 
 -- ============= 1. HAPUS SEMUA DATA =============
+TRUNCATE TABLE stock_cross_checks CASCADE;
 TRUNCATE TABLE anggaran_beneficiaries CASCADE;
 TRUNCATE TABLE transaksis CASCADE;
 TRUNCATE TABLE delivery_logs CASCADE;
@@ -47,7 +49,10 @@ VALUES
   ('a0000001-0000-0000-0000-000000000005'::uuid, 'asisten@sppg.id',   'Asisten Lapangan', 'field_assistant', true, '$2a$10$Pz32qBguBXmHlFzQfE4uIuk8hWZEVNHcsS2dcrf2FcfCqGnh8iQW2', now()),
   ('a0000001-0000-0000-0000-000000000006'::uuid, 'ahligizi@sppg.id',  'Ahli Gizi Maya',   'nutritionist',    true, '$2a$10$Pz32qBguBXmHlFzQfE4uIuk8hWZEVNHcsS2dcrf2FcfCqGnh8iQW2', now()),
   ('a0000001-0000-0000-0000-000000000007'::uuid, 'driver@sppg.id',    'Driver Budi',      'driver',          true, '$2a$10$Pz32qBguBXmHlFzQfE4uIuk8hWZEVNHcsS2dcrf2FcfCqGnh8iQW2', now()),
-  ('a0000001-0000-0000-0000-000000000008'::uuid, 'driver2@sppg.id',   'Driver Sari',      'driver',          true, '$2a$10$Pz32qBguBXmHlFzQfE4uIuk8hWZEVNHcsS2dcrf2FcfCqGnh8iQW2', now())
+  ('a0000001-0000-0000-0000-000000000008'::uuid, 'driver2@sppg.id',   'Driver Sari',      'driver',          true, '$2a$10$Pz32qBguBXmHlFzQfE4uIuk8hWZEVNHcsS2dcrf2FcfCqGnh8iQW2', now()),
+  ('a0000001-0000-0000-0000-000000000010'::uuid, 'persiapan@sppg.id', 'Rina Persiapan',   'persiapan',       true, '$2a$10$Pz32qBguBXmHlFzQfE4uIuk8hWZEVNHcsS2dcrf2FcfCqGnh8iQW2', now()),
+  ('a0000001-0000-0000-0000-000000000011'::uuid, 'pengolahan@sppg.id','Sari Pengolahan',  'pengolahan',      true, '$2a$10$Pz32qBguBXmHlFzQfE4uIuk8hWZEVNHcsS2dcrf2FcfCqGnh8iQW2', now()),
+  ('a0000001-0000-0000-0000-000000000012'::uuid, 'pemeriksa@sppg.id','Toni Pemeriksa',   'pemeriksa',       true, '$2a$10$Pz32qBguBXmHlFzQfE4uIuk8hWZEVNHcsS2dcrf2FcfCqGnh8iQW2', now())
 ON CONFLICT (email) DO NOTHING;
 
 -- ============= 3. ITEMS (30 bahan, 6 kategori) =============
