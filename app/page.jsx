@@ -11,9 +11,9 @@ import {
   Package, AlertTriangle, TrendingUp, Wallet, Database,
   ShoppingBasket, ChefHat, CalendarDays, BadgeCheck, ScrollText,
   MapPin, Truck, Navigation, Users, ClipboardList, Camera,
-  UtensilsCrossed, Scale, FileCheck, CircleDollarSign,
+  UtensilsCrossed, Scale, FileCheck, CircleDollarSign, Calculator,
   CheckCircle2, Clock, ReceiptText, Stamp,
-  HandPlatter, CalendarCheck, HeartPulse, ClipboardCheck, FileText,
+  HandPlatter, CalendarCheck, HeartPulse, ClipboardCheck, FileText, HelpCircle,
 } from "lucide-react";
 
 /* ------------------------------------------------------------------ */
@@ -600,6 +600,7 @@ function QuickLinks({ role }) {
           { href: "/recipes", label: "Resep & Gizi", icon: ChefHat },
           { href: "/menu", label: "Menu", icon: CalendarDays },
           { href: "/approval", label: "Persetujuan", icon: BadgeCheck },
+          { href: "/nutrition-calc", label: "Kalkulator Gizi", icon: Calculator },
         ];
       case "driver":
         return [
@@ -619,15 +620,18 @@ function QuickLinks({ role }) {
         ];
       case "pemorsian":
         return [
+          { href: "/pemorsian", label: "Tugas Harian", icon: Camera },
           { href: "/menu", label: "Menu Hari Ini", icon: CalendarDays },
           { href: "/inventory", label: "Stok & Pengambilan", icon: Package },
         ];
       case "kebersihan":
         return [
+          { href: "/pemorsian", label: "Tugas Harian", icon: Camera },
           { href: "/inventory", label: "Stok & Opname", icon: Package },
         ];
       case "pencuci":
         return [
+          { href: "/pemorsian", label: "Tugas Harian", icon: Camera },
           { href: "/inventory", label: "Stok & Opname", icon: Package },
         ];
       default:

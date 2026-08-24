@@ -223,3 +223,23 @@ CREATE TABLE public.anggaran_beneficiaries (
   created_at TIMESTAMPTZ DEFAULT now()
 );
 CREATE INDEX idx_anggaran_date ON anggaran_beneficiaries(plan_date);
+
+-- ============= DAILY TASKS (Tugas Harian Relawan) =============
+
+-- 16. DAILY_TASKS (Input tugas harian semua relawan)
+CREATE TABLE public.daily_tasks (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  task_date DATE NOT NULL,
+  user_id UUID NOT NULL REFERENCES users(id),
+  role TEXT NOT NULL,
+  task_type TEXT NOT NULL CHECK (task_type IN ('pemorsian','persiapan','masak','kebersihan','pencuci')),
+  category TEXT CHECK (category IN ('BALITA','PORTION_SMALL','PORTION_LARGE','BUMIL_BUSUI')),
+  portions INT DEFAULT 0,
+  photo_url TEXT,
+  description TEXT,
+  status TEXT DEFAULT 'SELESAI' CHECK (status IN ('SELESAI','BELUM_SELESAI')),
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+CREATE INDEX idx_daily_tasks_date ON daily_tasks(task_date);
+CREATE INDEX idx_daily_tasks_user ON daily_tasks(user_id);
+CREATE INDEX idx_daily_tasks_role ON daily_tasks(role);

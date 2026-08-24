@@ -9,7 +9,7 @@ import {
   LayoutDashboard, Users, Database, Boxes, ShoppingBasket, CalendarDays,
   ChefHat, BarChart3, FileText, ScrollText, LogOut, Leaf, BadgeCheck,
   Menu, X, Settings as SettingsIcon, MapPin, Truck, Navigation,
-  PiggyBank, HelpCircle
+  PiggyBank, HelpCircle, Camera, Calculator
 } from "lucide-react";
 
 const ALL_NAV = [
@@ -20,9 +20,11 @@ const ALL_NAV = [
   { to: "/master", label: "Master Bahan", icon: Database, roles: ["admin","head_chef","kitchen_head","nutritionist","field_assistant"] },
   { to: "/inventory", label: "Stok & Opname", icon: Boxes, roles: ["admin","field_assistant","kitchen_head","head_chef","persiapan"] },
   { to: "/procurement", label: "Belanja & Struk", icon: ShoppingBasket, roles: ["admin","field_assistant","accountant","kitchen_head"] },
-  { divider: true, label: "Dapur & Menu", roles: ["admin","head_chef","kitchen_head","nutritionist","persiapan","tenaga_masak","pemorsian"] },
+  { divider: true, label: "Dapur & Menu", roles: ["admin","head_chef","kitchen_head","nutritionist","persiapan","tenaga_masak","pemorsian","kebersihan","pencuci"] },
   { to: "/recipes", label: "Resep & Gizi", icon: ChefHat, roles: ["admin","head_chef","kitchen_head","nutritionist"] },
   { to: "/menu", label: "Menu & Cetak", icon: CalendarDays, roles: ["admin","head_chef","kitchen_head","nutritionist"] },
+  { to: "/nutrition-calc", label: "Kalkulator Gizi", icon: Calculator, roles: ["nutritionist"] },
+  { to: "/pemorsian", label: "Tugas Harian", icon: Camera, roles: ["pemorsian","persiapan","tenaga_masak","kebersihan","pencuci"] },
   { divider: true, label: "Pengiriman", roles: ["admin","field_assistant","driver","kitchen_head","head_chef"] },
   { to: "/destinations", label: "Tujuan Antar", icon: MapPin, roles: ["admin","field_assistant"] },
   { to: "/deliveries", label: "Rencana Antar", icon: Truck, roles: ["admin","field_assistant","kitchen_head","head_chef"] },
@@ -33,6 +35,8 @@ const ALL_NAV = [
   { to: "/approval", label: "Persetujuan Menu", icon: BadgeCheck, roles: ["admin","kitchen_head"] },
   { to: "/reports", label: "Laporan", icon: FileText, roles: ["admin","kitchen_head","accountant"] },
   { to: "/audit", label: "Audit Trail", icon: ScrollText, roles: ["admin","kitchen_head","accountant"] },
+  { divider: true, label: "Bantuan", roles: "*" },
+  { to: "/panduan", label: "Panduan Penggunaan", icon: HelpCircle, roles: "*" },
 ];
 
 function RoleSwitcher() {

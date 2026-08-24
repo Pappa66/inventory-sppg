@@ -16,9 +16,11 @@ ALTER TABLE public.delivery_plans         DISABLE ROW LEVEL SECURITY;
 ALTER TABLE public.delivery_plan_items    DISABLE ROW LEVEL SECURITY;
 ALTER TABLE public.delivery_assignments   DISABLE ROW LEVEL SECURITY;
 ALTER TABLE public.delivery_logs          DISABLE ROW LEVEL SECURITY;
+ALTER TABLE public.daily_tasks         DISABLE ROW LEVEL SECURITY;
 ALTER TABLE public.anggaran_beneficiaries DISABLE ROW LEVEL SECURITY;
 
 -- ============= 1. HAPUS SEMUA DATA =============
+TRUNCATE TABLE daily_tasks CASCADE;
 TRUNCATE TABLE anggaran_beneficiaries CASCADE;
 TRUNCATE TABLE delivery_logs CASCADE;
 TRUNCATE TABLE delivery_assignments CASCADE;
