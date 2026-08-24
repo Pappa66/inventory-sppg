@@ -14,6 +14,7 @@ import {
   UtensilsCrossed, Scale, FileCheck, CircleDollarSign, Calculator,
   CheckCircle2, Clock, ReceiptText, Stamp,
   HandPlatter, CalendarCheck, HeartPulse, ClipboardCheck, FileText, HelpCircle,
+  Settings as SettingsIcon,
 } from "lucide-react";
 
 /* ------------------------------------------------------------------ */
