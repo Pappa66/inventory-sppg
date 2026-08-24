@@ -21,6 +21,7 @@ const ALL_NAV = [
   { divider: true, label: "Master & Persediaan", roles: ["admin_apps","admin_sppg","head_chef","kitchen_head","nutritionist","field_assistant","persiapan","tenaga_masak"] },
   { to: "/master", label: "Master Bahan", icon: Database, roles: ["admin_apps","admin_sppg","head_chef","kitchen_head","nutritionist","field_assistant"] },
   { to: "/item-hierarchy", label: "Hirarki Barang", icon: Database, roles: ["admin_apps","admin_sppg"] },
+  { to: "/opening-balances", label: "Saldo Awal Barang", icon: Database, roles: ["admin_apps","admin_sppg"] },
   { to: "/inventory", label: "Stok & Opname", icon: Boxes, roles: ["admin_apps","admin_sppg","field_assistant","kitchen_head","head_chef","persiapan"] },
   { to: "/procurement", label: "Belanja & Struk", icon: ShoppingBasket, roles: ["admin_apps","admin_sppg","field_assistant","accountant","kitchen_head"] },
   { divider: true, label: "Dapur & Menu", roles: ["admin_apps","admin_sppg","head_chef","kitchen_head","nutritionist","persiapan","tenaga_masak","pemorsian","kebersihan","pencuci"] },
