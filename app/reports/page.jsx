@@ -1,225 +1,346 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import Layout from "@/components/Layout";
 import { api } from "@/lib/api";
-import { fmtIDR, fmtDate, fmtDateTime, ZONE_COLORS, ZONE_LABELS, MENU_CATEGORIES } from "@/lib/format";
-import { FileDown, FileSpreadsheet, Share2, Truck } from "lucide-react";
+import { fmtIDR, fmtDate, BENEFICIARY_TYPES } from "@/lib/format";
+import {
+  FileText, ScrollText, BookOpen, Users, Stamp, FileCheck,
+  Calendar, Download
+} from "lucide-react";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-import * as XLSX from "xlsx";
-import { SkeletonCards } from "@/components/Skeleton";
-import { useAuth } from "@/contexts/AuthContext";
 import { getLogo } from "@/lib/logo";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
 
-export default function Page() {
-  const { user } = useAuth();
-  const [fin, setFin] = useState(null);
-  const [low, setLow] = useState([]);
-  const [zoneStock, setZoneStock] = useState({ rows: [], by_zone: {} });
-  const [deliveryStatus, setDeliveryStatus] = useState(null);
+const REPORT_TABS = [
+  { key: "lr", label: "LR - Laporan Resume", icon: FileText, color: "#4A7C59" },
+  { key: "lpa", label: "LPA - Laporan 2 Pekanan", icon: Calendar, color: "#D97706" },
+  { key: "catatan", label: "Catatan Harian", icon: ScrollText, color: "#2C4251" },
+  { key: "dafnom", label: "DafNom - Insentif Relawan", icon: Users, color: "#6D28D9" },
+  { key: "sptj", label: "SPTJ - Pernyataan Tanggung Jawab", icon: Stamp, color: "#C5533B" },
+  { key: "bapsd", label: "BAPSD - Berita Acara", icon: FileCheck, color: "#0891B2" },
+];
+
+export default function ReportsPage() {
+  const { user, activeRole } = useAuth();
+  const [activeTab, setActiveTab] = useState("lr");
+  const [transaksi, setTransaksi] = useState([]);
+  const [anggaran, setAnggaran] = useState([]);
+  const [periods, setPeriods] = useState([]);
+  const [selectedPeriod, setSelectedPeriod] = useState("");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     setLoading(true);
     Promise.all([
-      api.get("/reports/financial").then(({data}) => setFin(data)),
-      api.get("/reports/low-stock").then(({data}) => setLow(data)),
-      api.get("/reports/stock-by-zone").then(({data}) => setZoneStock(data)),
-      api.get("/reports/delivery-status").then(({data}) => setDeliveryStatus(data)).catch(()=>{}),
+      api.get("/transactions").then(r => setTransaksi(r.data || [])),
+      api.get("/anggaran-periods").then(r => setAnggaran(r.data || [])),
+      api.get("/biweekly-periods").then(r => {
+        setPeriods(r.data || []);
+        if (r.data?.length) setSelectedPeriod(r.data[0].id);
+      }),
     ]).finally(() => setLoading(false));
   }, []);
 
-  const exportPDF = async () => {
+  // LR Data: group transactions by account type
+  const lrData = useMemo(() => {
+    const pemasukan = transaksi.filter(t => ["1300"].includes(t.account_code));
+    const pengeluaran = transaksi.filter(t => ["2100", "2200", "2300", "3100"].includes(t.account_code));
+    const totalPemasukan = pemasukan.reduce((s, t) => s + (t.debit || 0) - (t.credit || 0), 0);
+    const totalPengeluaran = pengeluaran.reduce((s, t) => s + (t.credit || 0) - (t.debit || 0), 0);
+    return { pemasukan, pengeluaran, totalPemasukan, totalPengeluaran, saldo: totalPemasukan - totalPengeluaran };
+  }, [transaksi]);
+
+  // LPA Data: same as LR but filtered by period
+  const lpaData = useMemo(() => {
+    if (!selectedPeriod) return lrData;
+    const period = periods.find(p => p.id === selectedPeriod);
+    if (!period) return lrData;
+    const periodTx = transaksi.filter(t => t.transaction_date >= period.start_date && t.transaction_date <= period.end_date);
+    const pemasukan = periodTx.filter(t => ["1300"].includes(t.account_code));
+    const pengeluaran = periodTx.filter(t => ["2100", "2200", "2300", "3100"].includes(t.account_code));
+    const totalPemasukan = pemasukan.reduce((s, t) => s + (t.debit || 0) - (t.credit || 0), 0);
+    const totalPengeluaran = pengeluaran.reduce((s, t) => s + (t.credit || 0) - (t.debit || 0), 0);
+    return { pemasukan, pengeluaran, totalPemasukan, totalPengeluaran, saldo: totalPemasukan - totalPengeluaran };
+  }, [transaksi, selectedPeriod, periods, lrData]);
+
+  // Catatan: daily expenses
+  const catatanData = useMemo(() => {
+    const dailyMap = {};
+    for (const t of transaksi.filter(t => ["2100", "2200", "2300"].includes(t.account_code))) {
+      const date = t.transaction_date;
+      if (!dailyMap[date]) dailyMap[date] = { items: [], total: 0 };
+      dailyMap[date].items.push(t);
+      dailyMap[date].total += (t.credit || 0) - (t.debit || 0);
+    }
+    return dailyMap;
+  }, [transaksi]);
+
+  // DafNom: volunteer incentives
+  const dafnomData = [
+    { jabatan: "Kepala SPPG", jumlah: 1, insentif: 0 },
+    { jabatan: "Pengawas Gizi", jumlah: 1, insentif: 0 },
+    { jabatan: "Pengawas Keuangan", jumlah: 1, insentif: 0 },
+    { jabatan: "Asisten Lapangan", jumlah: 1, insentif: 0 },
+    { jabatan: "Tenaga Persiapan", jumlah: 2, insentif: 0 },
+    { jabatan: "Tenaga Masak", jumlah: 4, insentif: 0 },
+    { jabatan: "Tenaga Pemorsian", jumlah: 2, insentif: 0 },
+    { jabatan: "Petugas Kebersihan", jumlah: 2, insentif: 0 },
+    { jabatan: "Pencuci Ompreng", jumlah: 2, insentif: 0 },
+    { jabatan: "Driver", jumlah: 2, insentif: 0 },
+    { jabatan: "Kader Gizi", jumlah: 5, insentif: 0 },
+  ];
+
+  const exportPDF = async (tab) => {
     const doc = new jsPDF();
     const logo = await getLogo();
     let titleY = 18;
     if (logo) {
       titleY = 36;
-      const fmt = logo.startsWith("data:image/png") ? "PNG" : "JPEG";
-      try { doc.addImage(logo, fmt, 14, 8, 40, 0); } catch { try { doc.addImage(logo, "PNG", 14, 8, 40, 0); } catch {} }
+      try { doc.addImage(logo, "PNG", 14, 8, 40, 0); } catch {}
     }
-    doc.setFontSize(16);
-    doc.text("LAPORAN KEUANGAN · SPPG MBG", 14, titleY);
+    doc.setFontSize(14);
+    doc.text(`LAPORAN ${REPORT_TABS.find(t => t.key === tab)?.label || ""}`, 14, titleY);
+    doc.setFontSize(9);
+    doc.text(`Dicetak: ${new Date().toLocaleDateString("id-ID")}`, 14, titleY + 6);
 
-    doc.setFontSize(10);
-    doc.text(`Tanggal cetak: ${fmtDateTime(new Date().toISOString())}`, 14, titleY + 6);
-    const s = fin?.summary || {};
-    const sy = titleY + 12;
-    doc.text(`Total STOCK: ${fmtIDR(s.total_stock)}   |   OPEX: ${fmtIDR(s.total_opex)}   |   Transport: ${fmtIDR(s.total_transport)}`, 14, sy);
-    doc.text(`Grand Total: ${fmtIDR(s.grand_total)}   |   Tervalidasi: ${s.verified_count}/${s.total_count}`, 14, sy + 6);
-    autoTable(doc, {
-      startY: sy + 12,
-      head: [["Tanggal","Kategori","Deskripsi","Manual","Struk","Transport","Validasi"]],
-      body: (fin?.rows||[]).map(p => [
-        fmtDate(p.purchased_at), p.category, p.description,
-        fmtIDR(p.amount_idr), fmtIDR(p.receipt_total_idr||0), fmtIDR(p.transport_amount_idr||0),
-        p.verified ? "OK" : "—"
-      ]),
-      styles: { fontSize: 8 }, headStyles: { fillColor: [74,124,89] },
-    });
-    doc.save(`SPPG-Keuangan-${new Date().toISOString().slice(0,10)}.pdf`);
-  };
+    if (tab === "lr" || tab === "lpa") {
+      const data = tab === "lr" ? lrData : lpaData;
+      autoTable(doc, {
+        startY: titleY + 12,
+        head: [["Keterangan", "Jumlah"]],
+        body: [
+          ["Total Pemasukan", fmtIDR(data.totalPemasukan)],
+          ["Total Pengeluaran", fmtIDR(data.totalPengeluaran)],
+          ["Saldo", fmtIDR(data.saldo)],
+        ],
+      });
+    }
 
-  const exportXLSX = () => {
-    const rows = (fin?.rows||[]).map(p => ({
-      Tanggal: fmtDate(p.purchased_at),
-      Kategori: p.category,
-      Deskripsi: p.description,
-      Supplier: p.supplier || "",
-      "Manual (Rp)": p.amount_idr,
-      "Struk (Rp)": p.receipt_total_idr || 0,
-      "Transport (Rp)": p.transport_amount_idr || 0,
-      Validasi: p.verified ? "OK" : "—",
-      "Dibuat oleh": p.created_by_name,
-    }));
-    const ws = XLSX.utils.json_to_sheet(rows);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Keuangan");
-    if (low.length) {
-      const ws2 = XLSX.utils.json_to_sheet(low);
-      XLSX.utils.book_append_sheet(wb, ws2, "Low-Stock");
-    }
-    if (zoneStock.rows?.length) {
-      const ws3 = XLSX.utils.json_to_sheet(zoneStock.rows);
-      XLSX.utils.book_append_sheet(wb, ws3, "Stok-by-Zone");
-    }
-    XLSX.writeFile(wb, `SPPG-Laporan-${new Date().toISOString().slice(0,10)}.xlsx`);
-  };
-
-  const shareWA = () => {
-    const s = fin?.summary || {};
-    let detail = "";
-    if (low.length > 0) {
-      detail = "\n\n*⚠ STOK MENIPIS:*\n" + low.slice(0, 10).map(l =>
-        `• ${l.item_name}: ${l.current}/${l.par_level} ${l.unit} (kurang ${l.shortage})`
-      ).join("\n");
-      if (low.length > 10) detail += `\n...dan ${low.length - 10} bahan lainnya`;
-    }
-    const txt = `*LAPORAN SPPG · MBG*\n${fmtDate(new Date().toISOString())}\n\nSTOCK: ${fmtIDR(s.total_stock)}\nOPEX: ${fmtIDR(s.total_opex)}\nTransport: ${fmtIDR(s.total_transport)}\n*Total: ${fmtIDR(s.grand_total)}*\nValidasi: ${s.verified_count}/${s.total_count}\nLow-Stok: ${low.length} bahan${detail}`;
-    const waUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(txt)}`;
-    const win = window.open(waUrl, "_blank");
-    if (!win) window.location.href = waUrl;
+    doc.save(`laporan-${tab}-${new Date().toISOString().slice(0,10)}.pdf`);
+    toast.success("PDF berhasil diunduh");
   };
 
   return (
     <Layout>
-      <div className="space-y-6" data-testid="reports-page">
-        <div className="flex items-center justify-between flex-wrap gap-3">
-          <div>
-            <h1 className="font-display text-4xl font-bold">Laporan</h1>
-            <p className="text-[#5C5C5C] mt-1">Ringkasan keuangan & stok rendah. Ekspor PDF/Excel siap cetak.</p>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <button data-testid="export-pdf" onClick={exportPDF} className="btn-outline"><FileDown size={14}/> PDF</button>
-            <button data-testid="export-xlsx" onClick={exportXLSX} className="btn-outline"><FileSpreadsheet size={14}/> Excel</button>
-            <button data-testid="share-wa" onClick={shareWA} className="btn-outline"><Share2 size={14}/> WA</button>
-          </div>
+      <div className="space-y-6">
+        <div>
+          <h1 className="font-display text-4xl font-bold">Laporan</h1>
+          <p className="text-[#5C5C5C] mt-1">LR, LPA, Catatan, DafNom, SPTJ, BAPSD</p>
         </div>
 
-        {loading ? (
-          <SkeletonCards count={4} />
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            {[
-              ["STOCK", fin?.summary?.total_stock, "#4A7C59"],
-              ["OPEX", fin?.summary?.total_opex, "#D97706"],
-              ["Transport", fin?.summary?.total_transport, "#2C4251"],
-              ["Grand Total", fin?.summary?.grand_total, "#1F1F1F"],
-            ].map(([l,v,c]) => (
-              <div key={l} className="card-soft p-5">
-                <div className="text-[11px] uppercase tracking-widest text-[#5C5C5C]">{l}</div>
-                <div className="font-display font-bold text-2xl mt-2 audit-ts" style={{color:c}}>{fmtIDR(v||0)}</div>
-              </div>
-            ))}
+        {/* Tab Navigation */}
+        <div className="flex gap-2 overflow-x-auto pb-2">
+          {REPORT_TABS.map(tab => {
+            const Icon = tab.icon;
+            return (
+              <button
+                key={tab.key}
+                onClick={() => setActiveTab(tab.key)}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${
+                  activeTab === tab.key
+                    ? "text-white shadow-md"
+                    : "bg-white text-[#5C5C5C] hover:bg-[#F9F6F0] border border-[#EAE4D8]"
+                }`}
+                style={activeTab === tab.key ? { background: tab.color } : {}}
+              >
+                <Icon size={14} /> {tab.label}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Period Selector for LPA */}
+        {activeTab === "lpa" && (
+          <div className="card-soft p-4 flex items-center gap-4">
+            <label className="text-sm font-medium">Periode:</label>
+            <select value={selectedPeriod} onChange={e => setSelectedPeriod(e.target.value)} className="px-3 py-2 rounded-md border border-[#EAE4D8] bg-white text-sm">
+              {periods.map(p => <option key={p.id} value={p.id}>{p.period_name}</option>)}
+            </select>
           </div>
         )}
 
-        <div className="card-soft overflow-hidden">
-          <div className="px-5 py-3 border-b border-[#EAE4D8] font-display font-bold flex items-center justify-between">
-            <span>Stok per Zona Penyimpanan</span>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-[#EAE4D8]">
-            {["DRY","WET","FREEZER"].map(z => {
-              const rows = zoneStock.by_zone?.[z] || [];
-              return (
-                <div key={z} className="p-4" data-testid={`zone-card-${z}`}>
-                  <div className="flex items-center justify-between">
-                    <div className="font-display font-bold" style={{color:ZONE_COLORS[z]}}>{ZONE_LABELS[z]}</div>
-                    <span className="audit-ts text-xs text-[#5C5C5C]">{rows.length} lot</span>
+        {loading ? (
+          <div className="card-soft p-12 text-center"><div className="animate-spin w-8 h-8 border-2 border-[#4A7C59] border-t-transparent rounded-full mx-auto" /></div>
+        ) : (
+          <>
+            {/* LR Tab */}
+            {activeTab === "lr" && (
+              <div className="space-y-4">
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="card-soft p-5">
+                    <div className="text-xs uppercase tracking-widest text-[#5C5C5C]">Pemasukan</div>
+                    <div className="font-display text-2xl font-bold mt-1 text-[#4A7C59]">{fmtIDR(lrData.totalPemasukan)}</div>
                   </div>
-                  <div className="mt-3 space-y-1 max-h-60 overflow-y-auto">
-                    {rows.map(r => (
-                      <div key={r.lot_id} className="text-sm flex justify-between border-b border-[#EAE4D8] py-1.5 last:border-0">
-                        <span>{r.item_name}</span>
-                        <span className="audit-ts text-[#5C5C5C]">{r.actual_quantity} {r.unit}</span>
-                      </div>
-                    ))}
-                    {rows.length === 0 && <div className="text-xs text-[#5C5C5C]">Belum ada stok di zona ini.</div>}
+                  <div className="card-soft p-5">
+                    <div className="text-xs uppercase tracking-widest text-[#5C5C5C]">Pengeluaran</div>
+                    <div className="font-display text-2xl font-bold mt-1 text-[#C5533B]">{fmtIDR(lrData.totalPengeluaran)}</div>
+                  </div>
+                  <div className="card-soft p-5">
+                    <div className="text-xs uppercase tracking-widest text-[#5C5C5C]">Saldo</div>
+                    <div className={`font-display text-2xl font-bold mt-1 ${lrData.saldo >= 0 ? "text-[#4A7C59]" : "text-[#C5533B]"}`}>{fmtIDR(lrData.saldo)}</div>
                   </div>
                 </div>
-              );
-            })}
-          </div>
-        </div>
+                <div className="card-soft overflow-hidden">
+                  <table className="w-full text-sm">
+                    <thead className="bg-[#EAE4D8] text-xs uppercase tracking-wider">
+                      <tr><th className="text-left py-3 px-4">Tanggal</th><th className="text-left py-3 px-4">Kode</th><th className="text-left py-3 px-4">Keterangan</th><th className="text-right py-3 px-4">Debet</th><th className="text-right py-3 px-4">Kredit</th></tr>
+                    </thead>
+                    <tbody>
+                      {transaksi.slice(0, 20).map(t => (
+                        <tr key={t.id} className="border-b border-[#EAE4D8] hover:bg-[#F9F6F0]">
+                          <td className="py-2 px-4">{t.transaction_date}</td>
+                          <td className="py-2 px-4"><span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#EAE4D8]">{t.account_code}</span></td>
+                          <td className="py-2 px-4 max-w-[200px] truncate">{t.description}</td>
+                          <td className="py-2 px-4 text-right text-[#4A7C59]">{t.debit ? fmtIDR(t.debit) : "—"}</td>
+                          <td className="py-2 px-4 text-right text-[#C5533B]">{t.credit ? fmtIDR(t.credit) : "—"}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                <button onClick={() => exportPDF("lr")} className="btn-outline flex items-center gap-2"><Download size={14}/> Export PDF</button>
+              </div>
+            )}
 
-        <div className="card-soft overflow-hidden">
-          <div className="px-5 py-3 border-b border-[#EAE4D8] font-display font-bold flex items-center justify-between">
-            <span className="flex items-center gap-2"><Truck size={16}/> Status Pengiriman</span>
-          </div>
-          {deliveryStatus?.summary ? (
-            <div className="p-5">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
-                {[
-                  ["Total Rencana", deliveryStatus.summary.total_plans, "#2C4251"],
-                  ["Terkirim", deliveryStatus.summary.delivered, "#4A7C59"],
-                  ["Dalam Perjalanan", deliveryStatus.summary.in_transit, "#D97706"],
-                  ["Belum Dikirim", deliveryStatus.summary.not_delivered + deliveryStatus.summary.pending, "#C5533B"],
-                ].map(([l,v,c]) => (
-                  <div key={l} className="rounded-md p-3" style={{background:`${c}10`}}>
-                    <div className="text-[10px] uppercase tracking-widest text-[#5C5C5C]">{l}</div>
-                    <div className="font-display font-bold text-xl mt-1" style={{color:c}}>{v}</div>
+            {/* LPA Tab */}
+            {activeTab === "lpa" && (
+              <div className="space-y-4">
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="card-soft p-5">
+                    <div className="text-xs uppercase tracking-widest text-[#5C5C5C]">Pemasukan 2 Pekan</div>
+                    <div className="font-display text-2xl font-bold mt-1 text-[#4A7C59]">{fmtIDR(lpaData.totalPemasukan)}</div>
+                  </div>
+                  <div className="card-soft p-5">
+                    <div className="text-xs uppercase tracking-widest text-[#5C5C5C]">Pengeluaran 2 Pekan</div>
+                    <div className="font-display text-2xl font-bold mt-1 text-[#C5533B]">{fmtIDR(lpaData.totalPengeluaran)}</div>
+                  </div>
+                  <div className="card-soft p-5">
+                    <div className="text-xs uppercase tracking-widest text-[#5C5C5C]">Saldo 2 Pekan</div>
+                    <div className={`font-display text-2xl font-bold mt-1 ${lpaData.saldo >= 0 ? "text-[#4A7C59]" : "text-[#C5533B]"}`}>{fmtIDR(lpaData.saldo)}</div>
+                  </div>
+                </div>
+                <button onClick={() => exportPDF("lpa")} className="btn-outline flex items-center gap-2"><Download size={14}/> Export PDF</button>
+              </div>
+            )}
+
+            {/* Catatan Tab */}
+            {activeTab === "catatan" && (
+              <div className="space-y-4">
+                {Object.entries(catatanData).sort(([a],[b]) => b.localeCompare(a)).map(([date, data]) => (
+                  <div key={date} className="card-soft overflow-hidden">
+                    <div className="px-5 py-3 border-b border-[#EAE4D8] bg-[#F9F6F0] flex justify-between">
+                      <span className="font-display font-bold">{new Date(date).toLocaleDateString("id-ID", { dateStyle: "full" })}</span>
+                      <span className="font-bold">Total: {fmtIDR(data.total)}</span>
+                    </div>
+                    <table className="w-full text-sm">
+                      <tbody>
+                        {data.items.map(t => (
+                          <tr key={t.id} className="border-b border-[#EAE4D8] last:border-0">
+                            <td className="py-2 px-4"><span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#EAE4D8]">{t.account_code}</span></td>
+                            <td className="py-2 px-4 flex-1">{t.description}</td>
+                            <td className="py-2 px-4 text-right text-[#C5533B] font-semibold">{fmtIDR(t.credit || 0)}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
                 ))}
+                <button onClick={() => exportPDF("catatan")} className="btn-outline flex items-center gap-2"><Download size={14}/> Export PDF</button>
               </div>
-              {Object.keys(deliveryStatus.summary.by_category).length > 0 && (
-                <div className="flex flex-wrap gap-2">
-                  {Object.entries(deliveryStatus.summary.by_category).map(([cat, info]) => {
-                    const catInfo = MENU_CATEGORIES[cat];
-                    return catInfo ? (
-                      <span key={cat} className="role-pill" style={{background:`${catInfo.color}1A`, color:catInfo.color}}>{catInfo.label}: {info.total_portions} porsi</span>
-                    ) : null;
-                  })}
-                </div>
-              )}
-            </div>
-          ) : (
-            <div className="p-5 text-center text-[#5C5C5C] text-sm">Belum ada data pengiriman.</div>
-          )}
-        </div>
+            )}
 
-        <div className="card-soft overflow-hidden">
-          <div className="px-5 py-3 border-b border-[#EAE4D8] font-display font-bold">Detail Transaksi</div>
-          <table className="w-full text-sm">
-            <thead className="bg-[#EAE4D8] text-[#5C5C5C] text-xs uppercase tracking-wider">
-              <tr><th className="text-left py-3 px-4">Tanggal</th><th className="text-left py-3 px-4">Kat.</th><th className="text-left py-3 px-4">Deskripsi</th><th className="text-right py-3 px-4">Manual</th><th className="text-right py-3 px-4">Struk</th><th className="text-right py-3 px-4">Transport</th><th className="text-left py-3 px-4">Validasi</th></tr>
-            </thead>
-            <tbody>
-              {(fin?.rows||[]).map(p => (
-                <tr key={p.id} className="border-b border-[#EAE4D8] last:border-0">
-                  <td className="py-3 px-4 audit-ts text-xs">{fmtDate(p.purchased_at)}</td>
-                  <td className="py-3 px-4"><span className="tag" style={{background: p.category==="STOCK"?"#4A7C59"+"1A":"#D97706"+"1A", color: p.category==="STOCK"?"#4A7C59":"#D97706"}}>{p.category}</span></td>
-                  <td className="py-3 px-4">{p.description}</td>
-                  <td className="py-3 px-4 text-right audit-ts">{fmtIDR(p.amount_idr)}</td>
-                  <td className="py-3 px-4 text-right audit-ts">{fmtIDR(p.receipt_total_idr||0)}</td>
-                  <td className="py-3 px-4 text-right audit-ts">{fmtIDR(p.transport_amount_idr||0)}</td>
-                  <td className="py-3 px-4">{p.verified ? <span className="tag bg-[#2C4251]/10 text-[#2C4251]">OK</span> : <span className="text-[#5C5C5C] text-xs">menunggu</span>}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+            {/* DafNom Tab */}
+            {activeTab === "dafnom" && (
+              <div className="space-y-4">
+                <div className="card-soft overflow-hidden">
+                  <div className="px-5 py-3 border-b border-[#EAE4D8] bg-[#F9F6F0] font-display font-bold">
+                    Daftar Nominatif Insentif Relawan
+                  </div>
+                  <table className="w-full text-sm">
+                    <thead className="bg-[#EAE4D8] text-xs uppercase tracking-wider">
+                      <tr><th className="text-left py-3 px-4">No</th><th className="text-left py-3 px-4">Jabatan</th><th className="text-right py-3 px-4">Jumlah Orang</th><th className="text-right py-3 px-4">Insentif/Hari</th><th className="text-right py-3 px-4">Total</th></tr>
+                    </thead>
+                    <tbody>
+                      {dafnomData.map((d, i) => (
+                        <tr key={i} className="border-b border-[#EAE4D8] last:border-0 hover:bg-[#F9F6F0]">
+                          <td className="py-3 px-4">{i + 1}</td>
+                          <td className="py-3 px-4 font-medium">{d.jabatan}</td>
+                          <td className="py-3 px-4 text-right">{d.jumlah}</td>
+                          <td className="py-3 px-4 text-right">{fmtIDR(d.insentif)}</td>
+                          <td className="py-3 px-4 text-right font-semibold">{fmtIDR(d.jumlah * d.insentif)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                <button onClick={() => exportPDF("dafnom")} className="btn-outline flex items-center gap-2"><Download size={14}/> Export PDF</button>
+              </div>
+            )}
+
+            {/* SPTJ Tab */}
+            {activeTab === "sptj" && (
+              <div className="card-soft p-8 max-w-2xl">
+                <div className="text-center mb-8">
+                  <h2 className="font-display text-xl font-bold uppercase">Surat Pernyataan Tanggung Jawab</h2>
+                  <p className="text-sm text-[#5C5C5C] mt-1">(Lampiran 30j)</p>
+                </div>
+                <div className="space-y-4 text-sm leading-relaxed">
+                  <p>Saya yang bertanda tangan di bawah ini:</p>
+                  <div className="pl-4 space-y-1">
+                    <p>Nama: <span className="font-bold border-b border-[#EAE4D8] inline-block min-w-[200px]">___________________</span></p>
+                    <p>Jabatan: <span className="font-bold">Kepala SPPG</span></p>
+                    <p>Program: <span className="font-bold">Makan Bergizi Gratis</span></p>
+                  </div>
+                  <p className="mt-4">Dengan ini menyatakan bahwa:</p>
+                  <ol className="list-decimal pl-8 space-y-2">
+                    <li>Dana yang diterima dari Pemerintah telah digunakan sesuai ketentuan yang berlaku.</li>
+                    <li>Penyaluran bantuan pangan telah dilakukan kepada penerima manfaat yang berhak.</li>
+                    <li>Laporan pertanggungjawaban yang disampaikan adalah benar dan dapat dipertanggungjawabkan.</li>
+                  </ol>
+                  <p className="mt-4">Demikian surat pernyataan ini saya buat dengan sebenar-benarnya.</p>
+                  <div className="flex justify-end mt-8">
+                    <div className="text-center">
+                      <p className="text-sm">___________________, ___/___/2026</p>
+                      <p className="font-bold mt-8 border-b border-[#EAE4D8] inline-block min-w-[150px]">Kepala SPPG</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* BAPSD Tab */}
+            {activeTab === "bapsd" && (
+              <div className="card-soft p-8 max-w-2xl">
+                <div className="text-center mb-8">
+                  <h2 className="font-display text-xl font-bold uppercase">Berita Acara Pengalihan Sisa Dana</h2>
+                  <p className="text-sm text-[#5C5C5C] mt-1">(Lampiran 30n)</p>
+                </div>
+                <div className="space-y-4 text-sm leading-relaxed">
+                  <p>Pada hari ini, _________ bulan _________ tahun 2026, telah dilakukan pengalihan sisa dana bantuan pangan.</p>
+                  <div className="pl-4 space-y-2">
+                    <p>Sisa dana yang dialihkan: <span className="font-bold border-b border-[#EAE4D8] inline-block min-w-[150px]">Rp ___________</span></p>
+                    <p>Disalurkan ke: <span className="font-bold border-b border-[#EAE4D8] inline-block min-w-[200px]">___________________</span></p>
+                    <p>Alasan pengalihan: <span className="font-bold border-b border-[#EAE4D8] inline-block min-w-[200px]">___________________</span></p>
+                  </div>
+                  <p className="mt-4">Berita acara ini dibuat sebagai dasar pertanggungjawaban penggunaan dana bantuan pangan.</p>
+                  <div className="flex justify-between mt-8">
+                    <div className="text-center">
+                      <p className="text-sm">Mengetahui,</p>
+                      <p className="font-bold mt-8 border-b border-[#EAE4D8] inline-block min-w-[150px]">Pengawas Gizi</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-sm">Kepala SPPG,</p>
+                      <p className="font-bold mt-8 border-b border-[#EAE4D8] inline-block min-w-[150px]">___________________</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </>
+        )}
       </div>
     </Layout>
   );
