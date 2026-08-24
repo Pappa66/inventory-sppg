@@ -1,7 +1,7 @@
 import { createClient } from "@/lib/supabase";
 import { getTokenUser, requireRoles, logAudit, apiError, apiSuccess } from "@/lib/db-helpers";
 
-const CAN_EDIT = ["admin", "field_assistant"];
+const CAN_EDIT = ["admin", "kitchen_head"];
 
 export async function PATCH(request, { params }) {
   try {
@@ -13,25 +13,16 @@ export async function PATCH(request, { params }) {
 
     const { data: old } = await supabase.from("anggaran").select("*").eq("id", id).single();
 
-    const updates = { ...body, updated_at: new Date().toISOString() };
+    const updates = { ...body };
     delete updates.id;
+    delete updates.created_at;
 
-    if (updates.balita != null || updates.paud_tk != null || updates.sd_1_3 != null || updates.sd_4_6 != null || updates.smp != null || updates.sma != null || updates.slb != null || updates.santri != null || updates.pend_tk != null || updates.bumil != null || updates.busui != null || updates.lainnya != null || updates.price_paket_a != null) {
-      const balita = updates.balita ?? old?.balita ?? 0;
-      const paud_tk = updates.paud_tk ?? old?.paud_tk ?? 0;
-      const sd_1_3 = updates.sd_1_3 ?? old?.sd_1_3 ?? 0;
-      const sd_4_6 = updates.sd_4_6 ?? old?.sd_4_6 ?? 0;
-      const smp = updates.smp ?? old?.smp ?? 0;
-      const sma = updates.sma ?? old?.sma ?? 0;
-      const slb = updates.slb ?? old?.slb ?? 0;
-      const santri = updates.santri ?? old?.santri ?? 0;
-      const pend_tk = updates.pend_tk ?? old?.pend_tk ?? 0;
-      const bumil = updates.bumil ?? old?.bumil ?? 0;
-      const busui = updates.busui ?? old?.busui ?? 0;
-      const lainnya = updates.lainnya ?? old?.lainnya ?? 0;
-      const price_paket_a = updates.price_paket_a ?? old?.price_paket_a ?? 0;
-      updates.total_pakets = balita + paud_tk + sd_1_3 + sd_4_6 + smp + sma + slb + santri + pend_tk + bumil + busui + lainnya;
-      updates.rab = updates.total_pakets * price_paket_a;
+    if (updates.total_portions != null || updates.price_per_portion != null) {
+      const total_portions = updates.total_portions ?? old?.total_portions ?? 0;
+      const price_per_portion = updates.price_per_portion ?? old?.price_per_portion ?? 15000;
+      updates.total_portions = total_portions;
+      updates.price_per_portion = price_per_portion;
+      updates.rab = total_portions * price_per_portion;
     }
 
     const { error } = await supabase.from("anggaran").update(updates).eq("id", id);
@@ -39,8 +30,8 @@ export async function PATCH(request, { params }) {
 
     await logAudit(supabase, {
       actor: user, action: "UPDATE_ANGGARAN", entity: "anggaran", entity_id: id,
-      before: { plan_date: old?.plan_date, total_pakets: old?.total_pakets, rab: old?.rab },
-      after: { plan_date: updates.plan_date || old?.plan_date, total_pakets: updates.total_pakets ?? old?.total_pakets, rab: updates.rab ?? old?.rab },
+      before: { plan_date: old?.plan_date, total_portions: old?.total_portions, rab: old?.rab },
+      after: { plan_date: updates.plan_date || old?.plan_date, total_portions: updates.total_portions ?? old?.total_portions, rab: updates.rab ?? old?.rab },
     });
 
     return apiSuccess({ ok: true });

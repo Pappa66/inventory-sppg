@@ -6,7 +6,7 @@ import { api } from "@/lib/api";
 import { getLogo, clearLogoCache } from "@/lib/logo";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
-import { Upload, Save, Building2, Truck as TruckIcon } from "lucide-react";
+import { Upload, Save, Building2, Truck as TruckIcon, Users, Clock } from "lucide-react";
 
 export default function Page() {
   const { user } = useAuth();
@@ -17,14 +17,27 @@ export default function Page() {
     sppg_name: "",
     sppg_address: "",
     default_transport_cost: 0,
+    price_balita_paud_sd13: 13000,
+    price_sd4_smp_sma_bumil_busui: 15000,
+    cooking_start_hour: 1,
+    distribution_start_hour: 9,
+    beneficiaries: "",
   });
 
   useEffect(() => {
     getLogo().then(setLogoPreview);
     api.get("/settings/logo").then(({ data }) => {
-      if (data?.sppg_name) setSettings(prev => ({ ...prev, sppg_name: data.sppg_name }));
-      if (data?.sppg_address) setSettings(prev => ({ ...prev, sppg_address: data.sppg_address }));
-      if (data?.default_transport_cost) setSettings(prev => ({ ...prev, default_transport_cost: data.default_transport_cost }));
+      if (data) setSettings(prev => ({
+        ...prev,
+        sppg_name: data.sppg_name || "",
+        sppg_address: data.sppg_address || "",
+        default_transport_cost: data.default_transport_cost || 0,
+        price_balita_paud_sd13: data.price_balita_paud_sd13 || 13000,
+        price_sd4_smp_sma_bumil_busui: data.price_sd4_smp_sma_bumil_busui || 15000,
+        cooking_start_hour: data.cooking_start_hour || 1,
+        distribution_start_hour: data.distribution_start_hour || 9,
+        beneficiaries: data.beneficiaries || "",
+      }));
     }).catch(() => {});
   }, []);
 
@@ -91,7 +104,7 @@ export default function Page() {
             <input type="file" accept="image/*" onChange={handleFile} className="hidden" disabled={uploading} />
           </label>
           <p className="text-xs text-[#5C5C5C] mt-3">
-            Logo akan tampil di semua laporan PDF (Keuangan, Stok per Zona, Paket BPK).
+            Logo akan tampil di semua laporan PDF.
           </p>
         </div>
 
@@ -103,7 +116,28 @@ export default function Page() {
           <textarea rows={2} className="w-full mt-1 px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={settings.sppg_address} onChange={(e)=>setSettings(p=>({...p, sppg_address:e.target.value}))} placeholder="Alamat lengkap SPPG"/>
           <label className="text-xs uppercase tracking-widest text-[#5C5C5C] mt-3 block flex items-center gap-2"><TruckIcon size={12}/> Default Biaya Transport (Rp)</label>
           <input type="number" className="w-full mt-1 px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={settings.default_transport_cost} onChange={(e)=>setSettings(p=>({...p, default_transport_cost:parseInt(e.target.value)||0}))}/>
-          <button onClick={saveSettings} disabled={saving} className="btn-primary mt-4"><Save size={14}/> {saving ? "Menyimpan..." : "Simpan Pengaturan"}</button>
+        </div>
+
+        <div className="card-soft p-6 max-w-md">
+          <h2 className="font-display font-bold text-lg mb-4 flex items-center gap-2"><Users size={18}/> Harga Porsi & Penerima Manfaat</h2>
+          <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Harga Porsi Balita / PAUD / SD 1-3 (Rp)</label>
+          <input type="number" className="w-full mt-1 px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={settings.price_balita_paud_sd13} onChange={(e)=>setSettings(p=>({...p, price_balita_paud_sd13:parseInt(e.target.value)||0}))}/>
+          <label className="text-xs uppercase tracking-widest text-[#5C5C5C] mt-3 block">Harga Porsi SD 4-6 / SMP / SMA / Bumil / Busui (Rp)</label>
+          <input type="number" className="w-full mt-1 px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={settings.price_sd4_smp_sma_bumil_busui} onChange={(e)=>setSettings(p=>({...p, price_sd4_smp_sma_bumil_busui:parseInt(e.target.value)||0}))}/>
+          <label className="text-xs uppercase tracking-widest text-[#5C5C5C] mt-3 block">Jumlah Penerima Manfaat (_opsional, untuk referensi)</label>
+          <textarea rows={3} className="w-full mt-1 px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0] text-sm" value={settings.beneficiaries} onChange={(e)=>setSettings(p=>({...p, beneficiaries:e.target.value}))} placeholder="Contoh: PAUD 200, SD1-3 150, SD4-6 120, SMP 80, SMA 60, Bumil 15, Busui 10"/>
+        </div>
+
+        <div className="card-soft p-6 max-w-md">
+          <h2 className="font-display font-bold text-lg mb-4 flex items-center gap-2"><Clock size={18}/> Jam Operasional</h2>
+          <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Jam Mulai Masak (0-23)</label>
+          <input type="number" min="0" max="23" className="w-full mt-1 px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={settings.cooking_start_hour} onChange={(e)=>setSettings(p=>({...p, cooking_start_hour:parseInt(e.target.value)||0}))}/>
+          <label className="text-xs uppercase tracking-widest text-[#5C5C5C] mt-3 block">Jam Mulai Distribusi (0-23)</label>
+          <input type="number" min="0" max="23" className="w-full mt-1 px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={settings.distribution_start_hour} onChange={(e)=>setSettings(p=>({...p, distribution_start_hour:parseInt(e.target.value)||0}))}/>
+        </div>
+
+        <div className="max-w-md">
+          <button onClick={saveSettings} disabled={saving} className="btn-primary"><Save size={14}/> {saving ? "Menyimpan..." : "Simpan Semua Pengaturan"}</button>
         </div>
       </div>
     </Layout>

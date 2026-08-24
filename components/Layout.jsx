@@ -9,33 +9,30 @@ import {
   LayoutDashboard, Users, Database, Boxes, ShoppingBasket, CalendarDays,
   ChefHat, BarChart3, FileText, ScrollText, LogOut, Leaf, BadgeCheck,
   Menu, X, Settings as SettingsIcon, MapPin, Truck, Navigation,
-  Receipt, BookOpen, PiggyBank, ClipboardCheck, Utensils, Scale
+  PiggyBank, HelpCircle
 } from "lucide-react";
 
 const ALL_NAV = [
   { to: "/", label: "Dasbor", icon: LayoutDashboard, roles: "*" },
   { to: "/users", label: "Pengguna", icon: Users, roles: ["admin"] },
   { to: "/settings", label: "Pengaturan", icon: SettingsIcon, roles: ["admin"] },
-  { divider: true, label: "Master & Persediaan", roles: ["admin","head_chef","kitchen_head","nutritionist","field_assistant","persiapan","pengolahan","pemeriksa"] },
+  { divider: true, label: "Master & Persediaan", roles: ["admin","head_chef","kitchen_head","nutritionist","field_assistant","persiapan","tenaga_masak"] },
   { to: "/master", label: "Master Bahan", icon: Database, roles: ["admin","head_chef","kitchen_head","nutritionist","field_assistant"] },
-  { to: "/inventory", label: "Stok & Opname", icon: Boxes, roles: ["admin","field_assistant","kitchen_head","head_chef","persiapan","pemeriksa"] },
+  { to: "/inventory", label: "Stok & Opname", icon: Boxes, roles: ["admin","field_assistant","kitchen_head","head_chef","persiapan"] },
   { to: "/procurement", label: "Belanja & Struk", icon: ShoppingBasket, roles: ["admin","field_assistant","accountant","kitchen_head"] },
-  { to: "/cross-check", label: "Cross-Check Harian", icon: ClipboardCheck, roles: ["admin","field_assistant","pemeriksa"] },
-  { divider: true, label: "Dapur & Menu", roles: ["admin","head_chef","kitchen_head","nutritionist","persiapan","pengolahan"] },
+  { divider: true, label: "Dapur & Menu", roles: ["admin","head_chef","kitchen_head","nutritionist","persiapan","tenaga_masak","pemorsian"] },
   { to: "/recipes", label: "Resep & Gizi", icon: ChefHat, roles: ["admin","head_chef","kitchen_head","nutritionist"] },
   { to: "/menu", label: "Menu & Cetak", icon: CalendarDays, roles: ["admin","head_chef","kitchen_head","nutritionist"] },
-  { divider: true, label: "Pengiriman", roles: ["admin","field_assistant","driver","kitchen_head","head_chef","pemeriksa"] },
+  { divider: true, label: "Pengiriman", roles: ["admin","field_assistant","driver","kitchen_head","head_chef"] },
   { to: "/destinations", label: "Tujuan Antar", icon: MapPin, roles: ["admin","field_assistant"] },
   { to: "/deliveries", label: "Rencana Antar", icon: Truck, roles: ["admin","field_assistant","kitchen_head","head_chef"] },
   { to: "/delivery-tracking", label: "Tracking Driver", icon: Navigation, roles: ["admin","driver","field_assistant"] },
   { divider: true, label: "Keuangan & Akuntansi", roles: ["admin","accountant","kitchen_head"] },
-  { to: "/transactions", label: "Transaksi", icon: Receipt, roles: ["admin","accountant"] },
-  { to: "/bku", label: "BKU", icon: BookOpen, roles: ["admin","accountant"] },
-  { to: "/anggaran", label: "Anggaran", icon: PiggyBank, roles: ["admin","accountant","field_assistant"] },
-  { divider: true, label: "Approval & Laporan", roles: ["admin","nutritionist","accountant","kitchen_head","head_chef","field_assistant","pemeriksa"] },
-  { to: "/approval", label: "Persetujuan Menu", icon: BadgeCheck, roles: ["admin","nutritionist","head_chef"] },
-  { to: "/reports", label: "Laporan", icon: FileText, roles: ["admin","kitchen_head","accountant","head_chef","nutritionist","field_assistant","pemeriksa"] },
-  { to: "/audit", label: "Audit Trail", icon: ScrollText, roles: ["admin","accountant","kitchen_head","nutritionist"] },
+  { to: "/anggaran", label: "Anggaran", icon: PiggyBank, roles: ["admin","accountant","kitchen_head"] },
+  { divider: true, label: "Approval & Laporan", roles: ["admin","nutritionist","accountant","kitchen_head","head_chef","field_assistant"] },
+  { to: "/approval", label: "Persetujuan Menu", icon: BadgeCheck, roles: ["admin","kitchen_head"] },
+  { to: "/reports", label: "Laporan", icon: FileText, roles: ["admin","kitchen_head","accountant"] },
+  { to: "/audit", label: "Audit Trail", icon: ScrollText, roles: ["admin","kitchen_head","accountant"] },
 ];
 
 function RoleSwitcher() {

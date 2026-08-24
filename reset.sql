@@ -16,14 +16,10 @@ ALTER TABLE public.delivery_plans         DISABLE ROW LEVEL SECURITY;
 ALTER TABLE public.delivery_plan_items    DISABLE ROW LEVEL SECURITY;
 ALTER TABLE public.delivery_assignments   DISABLE ROW LEVEL SECURITY;
 ALTER TABLE public.delivery_logs          DISABLE ROW LEVEL SECURITY;
-ALTER TABLE public.transaksis             DISABLE ROW LEVEL SECURITY;
 ALTER TABLE public.anggaran_beneficiaries DISABLE ROW LEVEL SECURITY;
-ALTER TABLE public.stock_cross_checks     DISABLE ROW LEVEL SECURITY;
 
 -- ============= 1. HAPUS SEMUA DATA =============
-TRUNCATE TABLE stock_cross_checks CASCADE;
 TRUNCATE TABLE anggaran_beneficiaries CASCADE;
-TRUNCATE TABLE transaksis CASCADE;
 TRUNCATE TABLE delivery_logs CASCADE;
 TRUNCATE TABLE delivery_assignments CASCADE;
 TRUNCATE TABLE delivery_plan_items CASCADE;
@@ -51,8 +47,10 @@ VALUES
   ('a0000001-0000-0000-0000-000000000007'::uuid, 'driver@sppg.id',    'Driver Budi',      'driver',          true, '$2a$10$Pz32qBguBXmHlFzQfE4uIuk8hWZEVNHcsS2dcrf2FcfCqGnh8iQW2', now()),
   ('a0000001-0000-0000-0000-000000000008'::uuid, 'driver2@sppg.id',   'Driver Sari',      'driver',          true, '$2a$10$Pz32qBguBXmHlFzQfE4uIuk8hWZEVNHcsS2dcrf2FcfCqGnh8iQW2', now()),
   ('a0000001-0000-0000-0000-000000000010'::uuid, 'persiapan@sppg.id', 'Rina Persiapan',   'persiapan',       true, '$2a$10$Pz32qBguBXmHlFzQfE4uIuk8hWZEVNHcsS2dcrf2FcfCqGnh8iQW2', now()),
-  ('a0000001-0000-0000-0000-000000000011'::uuid, 'pengolahan@sppg.id','Sari Pengolahan',  'pengolahan',      true, '$2a$10$Pz32qBguBXmHlFzQfE4uIuk8hWZEVNHcsS2dcrf2FcfCqGnh8iQW2', now()),
-  ('a0000001-0000-0000-0000-000000000012'::uuid, 'pemeriksa@sppg.id','Toni Pemeriksa',   'pemeriksa',       true, '$2a$10$Pz32qBguBXmHlFzQfE4uIuk8hWZEVNHcsS2dcrf2FcfCqGnh8iQW2', now())
+  ('a0000001-0000-0000-0000-000000000011'::uuid, 'masak@sppg.id',    'Sari Masak',      'tenaga_masak',    true, '$2a$10$Pz32qBguBXmHlFzQfE4uIuk8hWZEVNHcsS2dcrf2FcfCqGnh8iQW2', now()),
+  ('a0000001-0000-0000-0000-000000000012'::uuid, 'pemorsian@sppg.id','Dewi Pemorsian',  'pemorsian',       true, '$2a$10$Pz32qBguBXmHlFzQfE4uIuk8hWZEVNHcsS2dcrf2FcfCqGnh8iQW2', now()),
+  ('a0000001-0000-0000-0000-000000000013'::uuid, 'kebersihan@sppg.id','Siti Kebersihan', 'kebersihan',    true, '$2a$10$Pz32qBguBXmHlFzQfE4uIuk8hWZEVNHcsS2dcrf2FcfCqGnh8iQW2', now()),
+  ('a0000001-0000-0000-0000-000000000014'::uuid, 'pencuci@sppg.id',  'Budi Pencuci',    'pencuci',         true, '$2a$10$Pz32qBguBXmHlFzQfE4uIuk8hWZEVNHcsS2dcrf2FcfCqGnh8iQW2', now())
 ON CONFLICT (email) DO NOTHING;
 
 -- ============= 3. ITEMS (30 bahan, 6 kategori) =============
@@ -311,21 +309,11 @@ SELECT * FROM (VALUES
 INSERT INTO public.settings (key, value) VALUES ('dapur_name', 'SPPG MBG Dapur Contoh') ON CONFLICT (key) DO NOTHING;
 INSERT INTO public.settings (key, value) VALUES ('logo', '') ON CONFLICT (key) DO NOTHING;
 
--- ============= 11. TRANSAKSI SAMPLE =============
-INSERT INTO public.transaksis (id, transaction_date, evidence_number, description, debit_amount, credit_amount, auxiliary_book, account_source, account_dest, account_code, notes, created_by, created_by_name)
+-- ============= 11. ANGGARAN SAMPLE =============
+INSERT INTO public.anggaran_beneficiaries (id, plan_date, total_portions, price_per_portion, rab, actual, notes, created_by)
 VALUES
-  (gen_random_uuid(), CURRENT_DATE - 10, 'BKT-001', 'Pembelian Beras Premium 150kg', 1200000, 0, 'BAHAN_BAKU', 'Kas di Bank', 'Persediaan Bahan Baku', '1.1.01', 'Beras premium untuk minggu ini', 'a0000001-0000-0000-0000-000000000005', 'Asisten Belanja'),
-  (gen_random_uuid(), CURRENT_DATE - 8, 'BKT-002', 'Pembelian Telur Ayam 30kg', 450000, 0, 'BAHAN_BAKU', 'Kas di Bank', 'Persediaan Bahan Baku', '1.1.02', 'Telur ayam kampung', 'a0000001-0000-0000-0000-000000000005', 'Asisten Belanja'),
-  (gen_random_uuid(), CURRENT_DATE - 7, 'BKT-003', 'Pembelian Sayur Mix', 280000, 0, 'BAHAN_BAKU', 'Petty Cash', 'Persediaan Bahan Baku', '1.1.03', 'Sayur campur (bayam, wortel, kol)', 'a0000001-0000-0000-0000-000000000005', 'Asisten Belanja'),
-  (gen_random_uuid(), CURRENT_DATE - 5, 'BKT-004', 'Biaya Transport Belanja', 150000, 0, 'OPERASIONAL', 'Petty Cash', 'Biaya Operasional', '2.1.01', 'Transport pasar pagi', 'a0000001-0000-0000-0000-000000000005', 'Asisten Belanja'),
-  (gen_random_uuid(), CURRENT_DATE - 3, 'BKT-005', 'Pembelian Gas Elpiji 3kg x5', 75000, 0, 'OPERASIONAL', 'Petty Cash', 'Biaya Operasional', '2.1.02', 'Gas untuk memasak', 'a0000001-0000-0000-0000-000000000005', 'Asisten Belanja'),
-  (gen_random_uuid(), CURRENT_DATE - 1, 'BKT-006', 'Pembelian Minyak Goreng 20L', 320000, 0, 'BAHAN_BAKU', 'Kas di Bank', 'Persediaan Bahan Baku', '1.1.04', 'Minyak goreng merek Fortune', 'a0000001-0000-0000-0000-000000000005', 'Asisten Belanja');
-
--- ============= 12. ANGGARAN SAMPLE =============
-INSERT INTO public.anggaran_beneficiaries (id, plan_date, balita, paud_tk, sd_1_3, sd_4_6, smp, sma, slb, santri, pend_tk, bumil, busui, lainnya, price_paket_a, price_paket_b, rab, actual, notes, created_by)
-VALUES
-  (gen_random_uuid(), CURRENT_DATE - 6, 45, 60, 80, 70, 50, 40, 10, 30, 20, 15, 10, 5, 8000, 10000, 2760000, 2650000, 'Senin', 'a0000001-0000-0000-0000-000000000005'),
-  (gen_random_uuid(), CURRENT_DATE - 5, 45, 60, 80, 70, 50, 40, 10, 30, 20, 15, 10, 5, 8000, 10000, 2760000, 2700000, 'Selasa', 'a0000001-0000-0000-0000-000000000005'),
-  (gen_random_uuid(), CURRENT_DATE - 4, 45, 60, 80, 70, 50, 40, 10, 30, 20, 15, 10, 5, 8000, 10000, 2760000, 2720000, 'Rabu', 'a0000001-0000-0000-0000-000000000005'),
-  (gen_random_uuid(), CURRENT_DATE - 3, 45, 60, 80, 70, 50, 40, 10, 30, 20, 15, 10, 5, 8000, 10000, 2760000, 2680000, 'Kamis', 'a0000001-0000-0000-0000-000000000005'),
-  (gen_random_uuid(), CURRENT_DATE - 2, 45, 60, 80, 70, 50, 40, 10, 30, 20, 15, 10, 5, 8000, 10000, 2760000, 2710000, 'Jumat', 'a0000001-0000-0000-0000-000000000005');
+  (gen_random_uuid(), CURRENT_DATE - 6, 425, 15000, 6375000, 6200000, 'Senin', 'a0000001-0000-0000-0000-000000000005'),
+  (gen_random_uuid(), CURRENT_DATE - 5, 425, 15000, 6375000, 6300000, 'Selasa', 'a0000001-0000-0000-0000-000000000005'),
+  (gen_random_uuid(), CURRENT_DATE - 4, 425, 15000, 6375000, 6350000, 'Rabu', 'a0000001-0000-0000-0000-000000000005'),
+  (gen_random_uuid(), CURRENT_DATE - 3, 425, 15000, 6375000, 6280000, 'Kamis', 'a0000001-0000-0000-0000-000000000005'),
+  (gen_random_uuid(), CURRENT_DATE - 2, 425, 15000, 6375000, 6320000, 'Jumat', 'a0000001-0000-0000-0000-000000000005');

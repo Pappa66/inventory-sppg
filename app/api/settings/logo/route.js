@@ -1,14 +1,29 @@
 import { createClient } from "@/lib/supabase";
 import { getTokenUser, requireRoles, logAudit, apiError, apiSuccess } from "@/lib/db-helpers";
 
+const SETTINGS_KEYS = [
+  "logo", "sppg_name", "sppg_address", "default_transport_cost",
+  "price_balita_paud_sd13", "price_sd4_smp_sma_bumil_busui",
+  "cooking_start_hour", "distribution_start_hour", "beneficiaries",
+];
+
 export async function GET(request) {
   try {
     await getTokenUser(request);
     const supabase = await createClient();
-    const { data } = await supabase.from("settings").select("value").eq("key", "logo").single();
-    return apiSuccess({ logo: data?.value || null });
+    const { data } = await supabase.from("settings").select("key, value").in("key", SETTINGS_KEYS);
+    const result = {};
+    for (const row of data || []) {
+      const val = row.value;
+      if (["default_transport_cost", "price_balita_paud_sd13", "price_sd4_smp_sma_bumil_busui", "cooking_start_hour", "distribution_start_hour"].includes(row.key)) {
+        result[row.key] = parseInt(val) || 0;
+      } else {
+        result[row.key] = val;
+      }
+    }
+    return apiSuccess(result);
   } catch (e) {
-    return apiSuccess({ logo: null });
+    return apiSuccess({});
   }
 }
 
@@ -17,14 +32,23 @@ export async function POST(request) {
     const user = await getTokenUser(request);
     requireRoles("admin")(user);
     const body = await request.json();
-    if (!body.logo) return apiError("Logo tidak boleh kosong");
-
     const supabase = await createClient();
-    await supabase.from("settings").upsert({ key: "logo", value: body.logo });
+
+    const upserts = [];
+    for (const key of SETTINGS_KEYS) {
+      if (body[key] !== undefined) {
+        upserts.push({ key, value: String(body[key]) });
+      }
+    }
+
+    if (upserts.length > 0) {
+      const { error } = await supabase.from("settings").upsert(upserts);
+      if (error) return apiError(error.message);
+    }
 
     await logAudit(supabase, {
-      actor: user, action: "UPDATE_LOGO", entity: "settings", entity_id: "logo",
-      note: "Logo diperbarui",
+      actor: user, action: "UPDATE_SETTINGS", entity: "settings", entity_id: "global",
+      note: `Settings diperbarui: ${upserts.map(u => u.key).join(", ")}`,
     });
 
     return apiSuccess({ ok: true });

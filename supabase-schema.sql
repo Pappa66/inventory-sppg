@@ -6,7 +6,7 @@ CREATE TABLE public.users (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   email TEXT UNIQUE NOT NULL,
   name TEXT NOT NULL,
-  role TEXT NOT NULL CHECK (role IN ('admin','accountant','kitchen_head','head_chef','field_assistant','nutritionist','driver','persiapan','pengolahan','pemeriksa')),
+  role TEXT NOT NULL CHECK (role IN ('admin','accountant','kitchen_head','head_chef','field_assistant','nutritionist','driver','persiapan','tenaga_masak','pemorsian','kebersihan','pencuci')),
   is_active BOOLEAN DEFAULT TRUE,
   password_hash TEXT NOT NULL,
   created_at TIMESTAMPTZ DEFAULT NOW()
@@ -210,70 +210,16 @@ CREATE INDEX idx_delivery_logs_assignment ON delivery_logs(assignment_id);
 
 -- ============= ACCOUNTING TABLES =============
 
--- 15. TRANSAKSIS (Double-entry bookkeeping)
-CREATE TABLE public.transaksis (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  transaction_date DATE NOT NULL,
-  evidence_number TEXT,
-  description TEXT NOT NULL,
-  debit_amount FLOAT DEFAULT 0,
-  credit_amount FLOAT DEFAULT 0,
-  auxiliary_book TEXT CHECK (auxiliary_book IN ('BANK','PETTY_CASH','BAHAN_BAKU','OPERASIONAL','FASILITAS','PAJAK')),
-  account_source TEXT,
-  account_dest TEXT,
-  account_code TEXT,
-  notes TEXT,
-  created_by UUID REFERENCES users(id),
-  created_by_name TEXT,
-  created_at TIMESTAMPTZ DEFAULT now()
-);
-
--- 16. ANGGARAN_BENEFICIANRIES (13 jenis penerima)
+-- 15. ANGGARAN_BENEFICIARIES (total porsi per hari)
 CREATE TABLE public.anggaran_beneficiaries (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   plan_date DATE NOT NULL,
-  balita INT DEFAULT 0,
-  paud_tk INT DEFAULT 0,
-  sd_1_3 INT DEFAULT 0,
-  sd_4_6 INT DEFAULT 0,
-  smp INT DEFAULT 0,
-  sma INT DEFAULT 0,
-  slb INT DEFAULT 0,
-  santri INT DEFAULT 0,
-  pend_tk INT DEFAULT 0,
-  bumil INT DEFAULT 0,
-  busui INT DEFAULT 0,
-  lainnya INT DEFAULT 0,
-  price_paket_a FLOAT DEFAULT 8000,
-  price_paket_b FLOAT DEFAULT 10000,
+  total_portions INT DEFAULT 0,
+  price_per_portion FLOAT DEFAULT 15000,
   rab FLOAT DEFAULT 0,
   actual FLOAT DEFAULT 0,
   notes TEXT,
   created_by UUID REFERENCES users(id),
   created_at TIMESTAMPTZ DEFAULT now()
 );
-
-CREATE INDEX idx_transaksis_date ON transaksis(transaction_date);
-CREATE INDEX idx_transaksis_book ON transaksis(auxiliary_book);
 CREATE INDEX idx_anggaran_date ON anggaran_beneficiaries(plan_date);
-
--- 17. STOCK_CROSS_CHECKS (Aslap cross-check harian)
-CREATE TABLE public.stock_cross_checks (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  check_date DATE NOT NULL,
-  item_id UUID NOT NULL REFERENCES items(id),
-  opening_quantity FLOAT NOT NULL,
-  received_quantity FLOAT DEFAULT 0,
-  used_quantity FLOAT DEFAULT 0,
-  closing_quantity FLOAT NOT NULL,
-  actual_closing FLOAT,
-  selisih FLOAT GENERATED ALWAYS AS (actual_closing - closing_quantity) STORED,
-  zone TEXT CHECK (zone IN ('DRY','WET','FREEZER')),
-  notes TEXT,
-  checked_by UUID REFERENCES users(id),
-  checked_by_name TEXT,
-  created_at TIMESTAMPTZ DEFAULT now()
-);
-
-CREATE INDEX idx_cross_check_date ON stock_cross_checks(check_date);
-CREATE INDEX idx_cross_check_item ON stock_cross_checks(item_id);
