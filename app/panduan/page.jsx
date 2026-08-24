@@ -7,29 +7,44 @@ import {
   HelpCircle, Package, ChefHat, CalendarDays, Truck, ShoppingBasket,
   BadgeCheck, FileText, ScrollText, Users, Settings as SettingsIcon,
   Navigation, MapPin, Camera, Calculator, PiggyBank, Database,
-  ClipboardList, UtensilsCrossed, HandPlatter, ClipboardCheck, Scale,
+  ClipboardList, UtensilsCrossed, HandPlatter, ClipboardCheck, Scale, BookOpen,
 } from "lucide-react";
 import Link from "next/link";
 
 const GUIDES = {
-  admin: {
-    title: "Panduan Administrator",
-    color: "#2C4251",
+  admin_apps: {
+    title: "Panduan Admin Aplikasi",
+    color: "#1E40AF",
     sections: [
-      { icon: Users, label: "Manajemen Pengguna", desc: "Kelola akun pengguna, atur role dan hak akses setiap anggota tim SPPG." },
-      { icon: SettingsIcon, label: "Pengaturan Sistem", desc: "Atur nama dapur, logo, harga porsi, jam operasional, dan jumlah penerima manfaat." },
-      { icon: Database, label: "Master Data Bahan", desc: "Tambah, edit, dan hapus data bahan makanan beserta zona penyimpanan, par-level, dan harga." },
-      { icon: Package, label: "Stok & Opname", desc: "Pantau stok bahan, lakukan opname, dan lacak pengambilan barang oleh tim." },
-      { icon: ShoppingBasket, label: "Belanja & Verifikasi", desc: "Lihat semua pembelian, verifikasi struk, dan pantau pengeluaran." },
-      { icon: FileText, label: "Laporan", desc: "Export laporan keuangan, stok, dan pengiriman dalam format PDF, Excel, atau WhatsApp." },
-      { icon: ScrollText, label: "Audit Trail", desc: "Pantau semua aktivitas perubahan data di sistem untuk transparansi." },
-      { icon: PiggyBank, label: "Anggaran", desc: "Atur dan pantau anggaran harian berdasarkan jumlah porsi dan harga." },
+      { icon: SettingsIcon, label: "Konfigurasi Global", desc: "Atur nilai dinamis: harga satuan, persentase anggaran, pajak, insentif, kapasitas." },
+      { icon: Users, label: "Manajemen Pengguna", desc: "Kelola akun pengguna untuk semua SPPG, atur role dan hak akses." },
+      { icon: Database, label: "Hirarki Barang", desc: "Kelola struktur 3 level: Kelompok, Sub-Kelompok, Barang." },
+      { icon: FileText, label: "Laporan", desc: "Pantau laporan keuangan dan operasional dari semua SPPG." },
+      { icon: ScrollText, label: "Audit Trail", desc: "Pantau semua aktivitas perubahan data di seluruh sistem." },
     ],
     tips: [
-      "Pastikan semua pengguna sudah memiliki akun dengan role yang sesuai.",
-      "Periksa pengaturan harga porsi sesuai Juknis BGN terbaru.",
-      "Lakukan verifikasi pembelian secara berkala.",
-      "Pantau audit trail untuk memastikan tidak ada aktivitas mencurigakan.",
+      "Atur konfigurasi global sebelum SPPG mulai beroperasi.",
+      "Pastikan harga satuan sesuai dengan Juknis BGN terbaru.",
+      "Pantau persentase anggaran untuk memastikan keseimbangan.",
+      "Verifikasi insentif relawan secara berkala.",
+    ],
+  },
+  admin_sppg: {
+    title: "Panduan Admin SPPG",
+    color: "#2D2D2D",
+    sections: [
+      { icon: SettingsIcon, label: "Pengaturan SPPG", desc: "Atur data SPPG: nama, alamat, kepala, akuntan, yayasan, rekening, periode." },
+      { icon: Users, label: "Manajemen Pengguna", desc: "Kelola akun pengguna di SPPG ini." },
+      { icon: Database, label: "Master Data", desc: "Kelola bahan, hirarki barang, dan saldo awal." },
+      { icon: Package, label: "Stok & Opname", desc: "Pantau stok bahan dan lakukan opname." },
+      { icon: PiggyBank, label: "Anggaran", desc: "Input anggaran 3 section: Bahan, Operasional, Insentif." },
+      { icon: FileText, label: "Laporan", desc: "Export laporan LR, LPA, Catatan, DafNom, SPTJ, BAPSD." },
+    ],
+    tips: [
+      "Isi pengaturan SPPG sesuai Setup Excel sebelum beroperasi.",
+      "Pastikan saldo awal barang sudah diinput.",
+      "Input anggaran harian sesuai 3 section Excel.",
+      "Export laporan tepat waktu untuk pertanggungjawaban.",
     ],
   },
   accountant: {
@@ -37,15 +52,16 @@ const GUIDES = {
     color: "#D97706",
     sections: [
       { icon: ShoppingBasket, label: "Verifikasi Pembelian", desc: "Verifikasi struk dan bukti pembelian dari asisten lapangan." },
-      { icon: FileText, label: "Laporan Keuangan", desc: "Export laporan BKU, laba/rugi, dan ringkasan keuangan." },
-      { icon: ScrollText, label: "Audit Trail", desc: "Pantau semua transaksi keuangan yang tercatat di sistem." },
-      { icon: PiggyBank, label: "Anggaran", desc: "Input dan pantau RAB harian berdasarkan jumlah porsi aktual." },
+      { icon: PiggyBank, label: "Transaksi (D/K)", desc: "Input transaksi Debet/Kredit dengan 8 kode akun dan buku pembantu." },
+      { icon: ScrollText, label: "BKU", desc: "Lihat Buku Kas Umum otomatis dari semua transaksi." },
+      { icon: BookOpen, label: "Buku Pembantu", desc: "Pantau 6 buku pembantu: Bank, Petty Cash, Bahan Baku, Operasional, Fasilitas, Pajak." },
+      { icon: FileText, label: "Laporan", desc: "Export LR, LPA, Catatan Harian, DafNom untuk pertanggungjawaban." },
     ],
     tips: [
-      "Verifikasi pembelian setiap hari sebelum akhir jam kerja.",
-      "Pastikan semua struk memiliki bukti fisik yang sesuai.",
-      "Export laporan mingguan untuk arsip keuangan.",
-      "Gunakan anggaran sebagai referensi pengeluaran harian.",
+      "Input transaksi setiap hari sebelum akhir jam kerja.",
+      "Pastikan setiap transaksi memiliki buku pembantu yang benar.",
+      "Verifikasi pembelian secara berkala.",
+      "Export laporan 2 pekanan (LPA) tepat waktu.",
     ],
   },
   kitchen_head: {
@@ -56,7 +72,8 @@ const GUIDES = {
       { icon: ChefHat, label: "Kelola Resep", desc: "Pantau resep yang dibuat oleh head chef dan pastikan sesuai standar gizi." },
       { icon: CalendarDays, label: "Menu Mingguan", desc: "Pantau status menu mingguan dan pastikan sudah disetujui ahli gizi." },
       { icon: BadgeCheck, label: "Persetujuan Menu", desc: "Review dan setujui menu yang diajukan untuk memastikan kelayakan." },
-      { icon: HandPlatter, label: "Pengambilan Barang", desc: "Pantau pengambilan bahan dari gudang oleh tim dapur." },
+      { icon: PiggyBank, label: "Anggaran 3 Section", desc: "Input anggaran Bahan Makanan (11 kelompok), Operasional, dan Insentif Fasilitas." },
+      { icon: FileText, label: "Laporan", desc: "Pantau LR, LPA, dan pastikan laporan 2 pekanan tepat waktu." },
     ],
     tips: [
       "Pastikan menu mingguan sudah disetujui sebelum hari H.",
@@ -269,23 +286,30 @@ export default function PanduanPage() {
             <div><span className="font-semibold">RAB</span> — Rencana Anggaran Biaya</div>
             <div><span className="font-semibold">Juknis</span> — Petunjuk Teknis</div>
             <div><span className="font-semibold">BGN</span> — Badan Gizi Nasional</div>
+            <div><span className="font-semibold">LR</span> — Laporan Resume Penerimaan & Pengeluaran</div>
+            <div><span className="font-semibold">LPA</span> — Laporan Dua Pekanan Penggunaan Dana</div>
+            <div><span className="font-semibold">DafNom</span> — Daftar Nominatif Insentif Relawan</div>
+            <div><span className="font-semibold">SPTJ</span> — Surat Pernyataan Tanggung Jawab</div>
+            <div><span className="font-semibold">BAPSD</span> — Berita Acara Pengalihan Sisa Dana</div>
+            <div><span className="font-semibold">D/K</span> — Debet / Kredit (sistem pembukuan)</div>
           </div>
         </div>
 
         <div className="card-soft p-5">
-          <h2 className="font-display font-bold text-lg mb-3">Harga Porsi (Juknis BGN 2026)</h2>
+          <h2 className="font-display font-bold text-lg mb-3">Harga Satuan Porsi (Juknis BGN SK 401.1/2025)</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="p-4 rounded-lg bg-[#4A7C59]/10 border border-[#4A7C59]/20">
-              <div className="text-sm text-[#5C5C5C]">Balita / PAUD / SD 1-3</div>
-              <div className="font-display font-bold text-2xl text-[#4A7C59]">Rp 13.000</div>
+              <div className="text-sm text-[#5C5C5C]">Kelompok 1: Balita / PAUD / TK / RA / SD 1-3</div>
+              <div className="font-display font-bold text-2xl text-[#4A7C59]">Rp 8.000</div>
               <div className="text-xs text-[#5C5C5C] mt-1">per porsi per hari</div>
             </div>
             <div className="p-4 rounded-lg bg-[#D97706]/10 border border-[#D97706]/20">
-              <div className="text-sm text-[#5C5C5C]">SD 4-6 / SMP / SMA / Bumil / Busui</div>
-              <div className="font-display font-bold text-2xl text-[#D97706]">Rp 15.000</div>
+              <div className="text-sm text-[#5C5C5C]">Kelompok 2: SD 4-6 / SMP / SMA / SLB / Santri / Pend / Bumil / Busui</div>
+              <div className="font-display font-bold text-2xl text-[#D97706]">Rp 10.000</div>
               <div className="text-xs text-[#5C5C5C] mt-1">per porsi per hari</div>
             </div>
           </div>
+          <p className="text-xs text-[#5C5C5C] mt-3">Total alokasi per porsi: Rp 15.000 (Bahan Baku + Operasional + Insentif Fasilitas)</p>
         </div>
       </div>
     </Layout>
