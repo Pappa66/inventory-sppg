@@ -170,9 +170,57 @@ export default function StockDetailPage() {
         {loading ? (
           <div className="card-soft p-12 text-center"><div className="animate-spin w-8 h-8 border-2 border-[#4A7C59] border-t-transparent rounded-full mx-auto" /></div>
         ) : (
-          <div className="card-soft overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm min-w-[900px]">
+          <>
+            {/* Mobile card view */}
+            <div className="md:hidden space-y-3">
+              {filtered.length === 0 && <div className="card-soft p-10 text-center text-[#5C5C5C]">Tidak ada data.</div>}
+              {filtered.map(s => {
+                const status = getExpiryStatus(s.latest_expiry);
+                return (
+                  <div key={s.item_id} className="card-soft p-4 space-y-3">
+                    <div className="flex items-start justify-between">
+                      <div className="font-medium text-sm">{s.name}</div>
+                      <span className="text-[10px] px-2 py-0.5 rounded" style={{ background: status.color + "20", color: status.color }}>{status.label}</span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      <div>
+                        <div className="text-[#5C5C5C] uppercase tracking-wider text-[10px]">Kategori</div>
+                        <div><span className="px-2 py-0.5 rounded bg-[#EAE4D8]">{s.category}</span></div>
+                      </div>
+                      <div>
+                        <div className="text-[#5C5C5C] uppercase tracking-wider text-[10px]">Satuan</div>
+                        <div>{s.unit}</div>
+                      </div>
+                      <div>
+                        <div className="text-[#5C5C5C] uppercase tracking-wider text-[10px]">Zona</div>
+                        <div>{s.zone}</div>
+                      </div>
+                      <div>
+                        <div className="text-[#5C5C5C] uppercase tracking-wider text-[10px]">Lot</div>
+                        <div>{s.lots}</div>
+                      </div>
+                      <div>
+                        <div className="text-[#5C5C5C] uppercase tracking-wider text-[10px]">Qty Sistem</div>
+                        <div>{s.total_qty}</div>
+                      </div>
+                      <div>
+                        <div className="text-[#5C5C5C] uppercase tracking-wider text-[10px]">Qty Aktual</div>
+                        <div className="font-semibold text-[#4A7C59]">{s.actual_qty}</div>
+                      </div>
+                      <div className="col-span-2">
+                        <div className="text-[#5C5C5C] uppercase tracking-wider text-[10px]">Nilai</div>
+                        <div className="font-semibold">{fmtIDR(s.total_value)}</div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Desktop table view */}
+            <div className="hidden md:block card-soft overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm min-w-[900px]">
                 <thead className="bg-[#EAE4D8] text-[#5C5C5C] text-xs uppercase tracking-wider">
                   <tr>
                     <th className="text-left py-3 px-3">Nama Barang</th>
@@ -208,6 +256,7 @@ export default function StockDetailPage() {
               </table>
             </div>
           </div>
+          </>
         )}
       </div>
     </Layout>

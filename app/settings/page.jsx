@@ -90,7 +90,7 @@ export default function Page() {
         </div>
 
         {/* Logo - full width */}
-        <div className="card-soft p-6">
+        <div className="card-soft p-4 sm:p-6">
           <h2 className="font-display font-bold text-lg mb-4 flex items-center gap-2"><Upload size={18}/> Logo SPPG</h2>
           <div className="flex flex-col sm:flex-row items-start gap-4">
             {logoPreview ? (
@@ -116,7 +116,7 @@ export default function Page() {
         {/* Two-column layout for the rest */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Informasi SPPG */}
-          <div className="card-soft p-6">
+          <div className="card-soft p-4 sm:p-6">
             <h2 className="font-display font-bold text-lg mb-4 flex items-center gap-2"><Building2 size={18}/> Informasi SPPG</h2>
             <div className="space-y-4">
               <div>
@@ -135,7 +135,7 @@ export default function Page() {
           </div>
 
           {/* Struktur Organisasi */}
-          <div className="card-soft p-6">
+          <div className="card-soft p-4 sm:p-6">
             <h2 className="font-display font-bold text-lg mb-4 flex items-center gap-2"><User size={18}/> Struktur Organisasi</h2>
             <div className="space-y-4">
               <div>
@@ -154,7 +154,7 @@ export default function Page() {
           </div>
 
           {/* Keuangan & Periode */}
-          <div className="card-soft p-6">
+          <div className="card-soft p-4 sm:p-6">
             <h2 className="font-display font-bold text-lg mb-4 flex items-center gap-2"><CreditCard size={18}/> Keuangan & Periode</h2>
             <div className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -185,7 +185,7 @@ export default function Page() {
           </div>
 
           {/* Harga & Penerima Manfaat */}
-          <div className="card-soft p-6">
+          <div className="card-soft p-4 sm:p-6">
             <h2 className="font-display font-bold text-lg mb-4 flex items-center gap-2"><Users size={18}/> Harga Porsi & Penerima Manfaat</h2>
             <div className="space-y-4">
               <div>
@@ -204,7 +204,7 @@ export default function Page() {
           </div>
 
           {/* Jam Operasional */}
-          <div className="card-soft p-6">
+          <div className="card-soft p-4 sm:p-6">
             <h2 className="font-display font-bold text-lg mb-4 flex items-center gap-2"><Clock size={18}/> Jam Operasional</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>

@@ -98,7 +98,7 @@ function PhotoUpload({ label, desc, preview, onUpload, onRemove, required }) {
       {preview ? (
         <div className="relative inline-block">
           <img src={preview} alt={label} className="w-24 h-24 rounded-lg object-cover border border-[#EAE4D8]" />
-          <button type="button" onClick={onRemove} className="absolute -top-2 -right-2 bg-[#C5533B] text-white rounded-full p-0.5 shadow-md">
+          <button type="button" onClick={onRemove} className="absolute -top-2 -right-2 bg-[#C5533B] text-white rounded-full p-1 shadow-md">
             <X size={14} />
           </button>
           <div className="absolute bottom-1 left-1 bg-[#4A7C59] text-white text-[9px] px-1.5 py-0.5 rounded-full font-semibold">
@@ -374,7 +374,7 @@ export default function Page() {
 
         {open && (
           <div className="fixed inset-0 z-40 bg-black/40 grid place-items-center p-4 overflow-y-auto" onClick={() => setOpen(false)}>
-            <form onClick={(e) => e.stopPropagation()} onSubmit={submitTask} className="card-soft p-6 w-full max-w-lg my-8">
+            <form onClick={(e) => e.stopPropagation()} onSubmit={submitTask} className="card-soft p-4 sm:p-6 w-full max-w-lg my-8">
               <div className="flex items-center justify-between">
                 <h2 className="font-display text-2xl font-bold">Input Tugas {pageConfig.title}</h2>
                 <button type="button" onClick={() => setOpen(false)} className="btn-ghost p-1"><X size={20} /></button>
@@ -454,7 +454,7 @@ export default function Page() {
                       {photos[0] ? (
                         <div className="relative">
                           <img src={photos[0]} alt="Preview" className="w-28 h-20 rounded-md object-cover" />
-                          <button type="button" onClick={() => removePhoto(0)} className="absolute -top-2 -right-2 bg-[#C5533B] text-white rounded-full p-0.5">
+                          <button type="button" onClick={() => removePhoto(0)} className="absolute -top-2 -right-2 bg-[#C5533B] text-white rounded-full p-1">
                             <X size={14} />
                           </button>
                         </div>

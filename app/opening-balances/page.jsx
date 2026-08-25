@@ -128,7 +128,7 @@ export default function OpeningBalancesPage() {
         </div>
 
         {/* Filters */}
-        <div className="flex gap-3">
+        <div className="flex gap-3 flex-wrap">
           <div className="relative flex-1 max-w-sm">
             <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#5C5C5C]" />
             <input
@@ -155,7 +155,61 @@ export default function OpeningBalancesPage() {
             <div className="animate-spin w-8 h-8 border-2 border-[#4A7C59] border-t-transparent rounded-full mx-auto" />
           </div>
         ) : (
-          <div className="card-soft overflow-hidden">
+          <>
+          {/* Mobile Card View */}
+          <div className="md:hidden space-y-3">
+            {filtered.map((item) => (
+              <div key={item.id} className="card-soft p-4 space-y-3">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <span className="font-mono text-xs text-[#5C5C5C]">{item.code}</span>
+                    <h3 className="font-medium">{item.name}</h3>
+                  </div>
+                  <div className="flex gap-2">
+                    <span className="text-[10px] px-2 py-0.5 rounded bg-[#EAE4D8]">{item.category}</span>
+                    <span className="text-[10px] px-2 py-0.5 rounded bg-[#EAE4D8]">{item.zone}</span>
+                  </div>
+                </div>
+                <div className="text-xs text-[#5C5C5C]">
+                  Satuan: <span className="font-medium text-black">{item.unit}</span>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-[10px] uppercase tracking-wider text-[#5C5C5C] block mb-1">Saldo Qty</label>
+                    {canWrite ? (
+                      <input
+                        type="number"
+                        className="w-full px-2 py-1.5 rounded border border-[#EAE4D8] bg-white text-sm text-right"
+                        value={balances[item.code]?.quantity || ""}
+                        onChange={e => handleChange(item.code, "quantity", e.target.value)}
+                      />
+                    ) : (
+                      <span className="block text-right font-medium">{balances[item.code]?.quantity || 0}</span>
+                    )}
+                  </div>
+                  <div>
+                    <label className="text-[10px] uppercase tracking-wider text-[#5C5C5C] block mb-1">Saldo Nilai (Rp)</label>
+                    {canWrite ? (
+                      <input
+                        type="number"
+                        className="w-full px-2 py-1.5 rounded border border-[#EAE4D8] bg-white text-sm text-right"
+                        value={balances[item.code]?.value || ""}
+                        onChange={e => handleChange(item.code, "value", e.target.value)}
+                      />
+                    ) : (
+                      <span className="block text-right font-medium">Rp {(balances[item.code]?.value || 0).toLocaleString("id-ID")}</span>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+            {filtered.length === 0 && (
+              <div className="card-soft p-8 text-center text-[#5C5C5C]">Tidak ada data</div>
+            )}
+          </div>
+
+          {/* Table (Desktop) */}
+          <div className="hidden md:block card-soft overflow-hidden">
             <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
@@ -214,6 +268,7 @@ export default function OpeningBalancesPage() {
             </table>
             </div>
           </div>
+          </>
         )}
       </div>
     </Layout>

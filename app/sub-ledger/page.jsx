@@ -89,7 +89,7 @@ export default function SubLedgerPage() {
                 <BookOpen size={16} style={{ color: BUKU_PEMBANTU.find(b => b.value === activeTab)?.color }} />
                 {BUKU_PEMBANTU.find(b => b.value === activeTab)?.label}
               </div>
-              <div className="flex gap-4 text-sm">
+              <div className="flex flex-wrap gap-2 text-sm">
                 <span>D: <span className="font-bold text-[#4A7C59]">{fmtIDR(totals.debit)}</span></span>
                 <span>K: <span className="font-bold text-[#C5533B]">{fmtIDR(totals.credit)}</span></span>
                 <span>Saldo: <span className={`font-bold ${totals.debit - totals.credit >= 0 ? "text-[#4A7C59]" : "text-[#C5533B]"}`}>{fmtIDR(totals.debit - totals.credit)}</span></span>

@@ -223,7 +223,7 @@ export default function Page() {
 
         {openLot && (
           <div className="fixed inset-0 z-40 bg-black/40 grid place-items-center p-4" onClick={()=>setOpenLot(false)}>
-            <form onClick={(e)=>e.stopPropagation()} onSubmit={submitLot} className="card-soft p-6 w-full max-w-md">
+            <form onClick={(e)=>e.stopPropagation()} onSubmit={submitLot} className="card-soft p-4 sm:p-6 w-full max-w-md">
               <h2 className="font-display text-2xl font-bold">Tambah Lot Stok</h2>
               <div className="grid grid-cols-1 gap-3 mt-4">
                 <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Bahan</label>
@@ -252,7 +252,7 @@ export default function Page() {
 
         {openOpname && (
           <div className="fixed inset-0 z-40 bg-black/40 grid place-items-center p-4" onClick={()=>setOpenOpname(null)}>
-            <form onClick={(e)=>e.stopPropagation()} onSubmit={submitOpname} className="card-soft p-6 w-full max-w-lg">
+            <form onClick={(e)=>e.stopPropagation()} onSubmit={submitOpname} className="card-soft p-4 sm:p-6 w-full max-w-lg">
               <h2 className="font-display text-2xl font-bold">Opname Fisik</h2>
               <p className="text-[#5C5C5C] text-sm mt-1">{openOpname.item_name} · kadaluarsa <span className="audit-ts">{openOpname.expiry_date}</span></p>
               <label className="text-xs uppercase tracking-widest text-[#5C5C5C] mt-4 block">Pilih Zona Penyimpanan (wajib)</label>
@@ -300,7 +300,7 @@ export default function Page() {
 
         {openTaken && (
           <div className="fixed inset-0 z-40 bg-black/40 grid place-items-center p-4" onClick={()=>setOpenTaken(null)}>
-            <form onClick={(e)=>e.stopPropagation()} onSubmit={submitTaken} className="card-soft p-6 w-full max-w-md">
+            <form onClick={(e)=>e.stopPropagation()} onSubmit={submitTaken} className="card-soft p-4 sm:p-6 w-full max-w-md">
               <h2 className="font-display text-2xl font-bold">Pengambilan Barang</h2>
               <p className="text-[#5C5C5C] text-sm mt-1">{openTaken.item_name} · stok tersedia: <span className="font-semibold">{openTaken.actual_quantity} {openTaken.unit}</span></p>
               <label className="text-xs uppercase tracking-widest text-[#5C5C5C] mt-4 block">Jumlah yang diambil ({openTaken.unit})</label>

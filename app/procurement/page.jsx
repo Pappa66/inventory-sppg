@@ -120,7 +120,7 @@ export default function Page() {
 
         {open && (
           <div className="fixed inset-0 z-40 bg-black/40 grid place-items-center p-4 overflow-y-auto" onClick={()=>setOpen(false)}>
-            <form onClick={(e)=>e.stopPropagation()} onSubmit={submit} className="card-soft p-6 w-full max-w-2xl my-8" data-testid="purchase-form">
+            <form onClick={(e)=>e.stopPropagation()} onSubmit={submit} className="card-soft p-4 sm:p-6 w-full max-w-2xl my-8" data-testid="purchase-form">
               <h2 className="font-display text-2xl font-bold">Catat Belanja</h2>
               <div className="grid grid-cols-2 gap-3 mt-4">
                 <div className="col-span-2">
@@ -161,7 +161,7 @@ export default function Page() {
                     </div>
                     <div className="space-y-2 mt-2">
                       {form.items.map((row, i) => (
-                        <div key={i} className="grid grid-cols-12 gap-2">
+                        <div key={i} className="grid grid-cols-6 sm:grid-cols-12 gap-2">
                           <select className="col-span-6 px-2 py-2 rounded-md border border-[#EAE4D8] bg-[#F9F6F0] text-sm" value={row.item_id} onChange={(e)=>updItemRow(i,"item_id",e.target.value)}>
                             <option value="">— bahan —</option>
                             {items.map(it => <option key={it.id} value={it.id}>{it.name} ({it.unit})</option>)}
@@ -200,7 +200,7 @@ export default function Page() {
 
         {verifyOf && (
           <div className="fixed inset-0 z-40 bg-black/40 grid place-items-center p-4" onClick={()=>setVerifyOf(null)}>
-            <div onClick={(e)=>e.stopPropagation()} className="card-soft p-6 w-full max-w-lg">
+            <div onClick={(e)=>e.stopPropagation()} className="card-soft p-4 sm:p-6 w-full max-w-lg">
               <h2 className="font-display text-2xl font-bold">Validasi Akuntan</h2>
               <p className="text-[#5C5C5C] text-sm mt-1">{verifyOf.description}</p>
               <div className="grid grid-cols-2 gap-3 mt-4 text-sm">

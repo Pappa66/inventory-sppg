@@ -157,7 +157,42 @@ export default function TransactionsPage() {
         {loading ? (
           <div className="card-soft p-12 text-center"><div className="animate-spin w-8 h-8 border-2 border-[#4A7C59] border-t-transparent rounded-full mx-auto" /></div>
         ) : (
-          <div className="card-soft overflow-hidden">
+          <>
+          {/* Mobile Card View */}
+          <div className="md:hidden space-y-3">
+            {filtered.length === 0 && (
+              <div className="card-soft p-12 text-center text-[#5C5C5C]">Belum ada transaksi.</div>
+            )}
+            {filtered.map(t => (
+              <div key={t.id} className="card-soft p-4 space-y-3">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0">
+                    <div className="font-semibold text-sm truncate">{t.description || "—"}</div>
+                    <div className="text-xs text-[#5C5C5C] mt-0.5">{t.transaction_date}</div>
+                  </div>
+                  {canEdit && (
+                    <div className="flex gap-1 shrink-0">
+                      <button onClick={() => openEdit(t)} className="btn-ghost text-xs"><Pencil size={14}/></button>
+                      <button onClick={() => handleDelete(t.id)} className="btn-ghost text-xs text-[#C5533B]"><Trash2 size={14}/></button>
+                    </div>
+                  )}
+                </div>
+                <div className="flex flex-wrap gap-2 text-xs">
+                  <span className="font-mono px-2 py-0.5 rounded bg-[#EAE4D8]">{t.account_code}</span>
+                  <span className="text-[#5C5C5C]">{getAccountName(t.account_code)}</span>
+                  {t.buku_pembantu && <span className="text-[#5C5C5C]">| {t.buku_pembantu}</span>}
+                </div>
+                <div className="flex gap-4 text-sm font-semibold">
+                  {t.debit ? <span className="text-[#4A7C59]">Debet: {fmtIDR(t.debit)}</span> : null}
+                  {t.credit ? <span className="text-[#C5533B]">Kredit: {fmtIDR(t.credit)}</span> : null}
+                  {!t.debit && !t.credit && <span className="text-[#5C5C5C]">—</span>}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Desktop Table View */}
+          <div className="hidden md:block card-soft overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-sm min-w-[800px]">
                 <thead className="bg-[#EAE4D8] text-[#5C5C5C] text-xs uppercase tracking-wider">
@@ -198,12 +233,13 @@ export default function TransactionsPage() {
               </table>
             </div>
           </div>
+          </>
         )}
 
         {/* Form Modal */}
         {openForm && (
           <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4" onClick={() => setOpenForm(false)}>
-            <form onClick={e => e.stopPropagation()} onSubmit={submitForm} className="card-soft p-6 w-full max-w-md space-y-4">
+            <form onClick={e => e.stopPropagation()} onSubmit={submitForm} className="card-soft p-4 sm:p-6 w-full max-w-md space-y-4">
               <h2 className="font-display text-2xl font-bold">{editId ? "Edit Transaksi" : "Tambah Transaksi"}</h2>
               <div>
                 <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Tanggal</label>

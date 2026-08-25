@@ -249,7 +249,7 @@ export default function Page() {
         {/* Form Modal */}
         {openForm && (
           <div className="fixed inset-0 z-50 bg-black/40 flex items-start justify-center p-4 pt-10 overflow-y-auto" onClick={() => setOpenForm(false)}>
-            <form onClick={e => e.stopPropagation()} onSubmit={submitForm} className="card-soft p-6 w-full max-w-4xl space-y-6">
+            <form onClick={e => e.stopPropagation()} onSubmit={submitForm} className="card-soft p-4 sm:p-6 w-full max-w-4xl space-y-6">
               <h2 className="font-display text-2xl font-bold">{editId ? "Edit Anggaran" : "Tambah Anggaran"}</h2>
 
               {/* Tanggal */}

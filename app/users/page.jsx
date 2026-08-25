@@ -122,7 +122,7 @@ export default function Page() {
 
         {open && (
           <div className="fixed inset-0 z-40 bg-black/40 grid place-items-center p-4" onClick={()=>setOpen(false)}>
-            <form onClick={(e)=>e.stopPropagation()} onSubmit={create} className="card-soft p-6 w-full max-w-md" data-testid="user-create-modal">
+            <form onClick={(e)=>e.stopPropagation()} onSubmit={create} className="card-soft p-4 sm:p-6 w-full max-w-md" data-testid="user-create-modal">
               <h2 className="font-display text-2xl font-bold">Pengguna Baru</h2>
               <div className="grid grid-cols-1 gap-3 mt-4">
                 <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Nama</label>

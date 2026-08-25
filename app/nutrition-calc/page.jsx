@@ -158,7 +158,7 @@ export default function NutritionCalcPage() {
                   <p className="text-xs text-[#5C5C5C]">
                     {selectedRecipe.servings} porsi | Per porsi:
                   </p>
-                  <div className="grid grid-cols-5 gap-3 mt-3">
+                  <div className="grid grid-cols-3 sm:grid-cols-5 gap-3 mt-3">
                     {[
                       { label: "Kalori", val: perPortion.calories, unit: "kkal", color: "#D97706" },
                       { label: "Protein", val: perPortion.protein, unit: "g", color: "#4A7C59" },

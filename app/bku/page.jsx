@@ -128,13 +128,43 @@ export default function BKUPage() {
                       <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#4A7C59]/10 text-[#4A7C59]">{code}</span>
                       {getAccountName(code)}
                     </div>
-                    <div className="flex gap-4 text-sm">
+                    <div className="flex flex-wrap gap-2 text-sm">
                       <span>D: <span className="font-bold text-[#4A7C59]">{fmtIDR(tot.debit)}</span></span>
                       <span>K: <span className="font-bold text-[#C5533B]">{fmtIDR(tot.credit)}</span></span>
                       <span>Saldo: <span className={`font-bold ${tot.debit - tot.credit >= 0 ? "text-[#4A7C59]" : "text-[#C5533B]"}`}>{fmtIDR(tot.debit - tot.credit)}</span></span>
                     </div>
                   </div>
-                  <div className="overflow-x-auto">
+                  {/* Mobile card view */}
+                  <div className="md:hidden p-3 space-y-3">
+                    {(() => {
+                      const byDate = {};
+                      for (const t of items) {
+                        const d = t.transaction_date;
+                        if (!byDate[d]) byDate[d] = [];
+                        byDate[d].push(t);
+                      }
+                      return Object.entries(byDate).sort(([a], [b]) => a.localeCompare(b)).map(([date, rows]) => (
+                        <div key={date}>
+                          <div className="sticky top-0 bg-[#F9F6F0] text-xs font-bold uppercase tracking-wider text-[#5C5C5C] py-1 px-1 z-10 border-b border-[#EAE4D8]">{date}</div>
+                          <div className="space-y-2 pt-1">
+                            {rows.map(t => (
+                              <div key={t.id} className="card-soft p-3 space-y-1">
+                                <div className="text-sm font-medium truncate">{t.description}</div>
+                                <div className="flex gap-3 text-xs">
+                                  {t.debit ? <span className="font-semibold text-[#4A7C59]">D: {fmtIDR(t.debit)}</span> : null}
+                                  {t.credit ? <span className="font-semibold text-[#C5533B]">K: {fmtIDR(t.credit)}</span> : null}
+                                </div>
+                                {t.buku_pembantu && <div className="text-xs text-[#5C5C5C]">Buku Pembantu: {t.buku_pembantu}</div>}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ));
+                    })()}
+                  </div>
+
+                  {/* Desktop table */}
+                  <div className="hidden md:block overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="text-xs text-[#5C5C5C] uppercase tracking-wider border-b border-[#EAE4D8]">

@@ -407,6 +407,7 @@ export default function ReportsPage() {
                       <span className="font-display font-bold">{new Date(date).toLocaleDateString("id-ID", { dateStyle: "full" })}</span>
                       <span className="font-bold">Total: {fmtIDR(data.total)}</span>
                     </div>
+                    <div className="overflow-x-auto">
                     <table className="w-full text-sm">
                       <tbody>
                         {data.items.map(t => (
@@ -418,6 +419,7 @@ export default function ReportsPage() {
                         ))}
                       </tbody>
                     </table>
+                    </div>
                   </div>
                 ))}
                 <button onClick={() => exportPDF("catatan")} className="btn-outline flex items-center gap-2"><Download size={14}/> Export PDF</button>
@@ -431,6 +433,7 @@ export default function ReportsPage() {
                   <div className="px-5 py-3 border-b border-[#EAE4D8] bg-[#F9F6F0] font-display font-bold">
                     Daftar Nominatif Insentif Relawan
                   </div>
+                  <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead className="bg-[#EAE4D8] text-xs uppercase tracking-wider">
                       <tr><th className="text-left py-3 px-4">No</th><th className="text-left py-3 px-4">Jabatan</th><th className="text-right py-3 px-4">Jumlah Orang</th><th className="text-right py-3 px-4">Insentif/Hari</th><th className="text-right py-3 px-4">Total</th></tr>
@@ -447,6 +450,7 @@ export default function ReportsPage() {
                       ))}
                     </tbody>
                   </table>
+                  </div>
                 </div>
                 <button onClick={() => exportPDF("dafnom")} className="btn-outline flex items-center gap-2"><Download size={14}/> Export PDF</button>
               </div>

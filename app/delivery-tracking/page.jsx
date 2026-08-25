@@ -149,7 +149,7 @@ function UpdateFormInline({ planId, destIdx, dest, onUpdate, onCancel }) {
               key={s.key}
               type="button"
               onClick={() => setStatus(s.key)}
-              className={`px-3 py-1 rounded-full text-xs font-semibold transition-colors ${
+              className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-colors ${
                 status === s.key
                   ? "bg-[#4A7C59] text-white"
                   : "bg-white border border-[#EAE4D8] text-[#5C5C5C] hover:bg-[#EAE4D8]"
@@ -216,11 +216,11 @@ function UpdateFormInline({ planId, destIdx, dest, onUpdate, onCancel }) {
       )}
 
       <div className="flex justify-end gap-2 pt-1">
-        <button type="button" onClick={onCancel} className="btn-ghost text-xs">Batal</button>
+        <button type="button" onClick={onCancel} className="btn-ghost text-sm py-2">Batal</button>
         <button
           onClick={submit}
           disabled={submitting}
-          className="btn-primary text-xs disabled:opacity-50"
+          className="btn-primary text-sm py-2 disabled:opacity-50"
         >
           {submitting ? "Mengirim..." : "Update Status"}
         </button>

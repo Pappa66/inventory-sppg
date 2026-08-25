@@ -141,7 +141,7 @@ export default function Page() {
 
         {open && (
           <div className="fixed inset-0 z-40 bg-black/40 grid place-items-center p-4" onClick={()=>setOpen(false)}>
-            <form onClick={(e)=>e.stopPropagation()} onSubmit={save} className="card-soft p-6 w-full max-w-md">
+            <form onClick={(e)=>e.stopPropagation()} onSubmit={save} className="card-soft p-4 sm:p-6 w-full max-w-md">
               <h2 className="font-display text-2xl font-bold">{editing ? "Edit Bahan" : "Bahan Baru"}</h2>
               <div className="grid grid-cols-1 gap-3 mt-4">
                 <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Nama</label>
@@ -197,7 +197,7 @@ export default function Page() {
 
         {versions && (
           <div className="fixed inset-0 z-40 bg-black/40 grid place-items-center p-4" onClick={()=>setVersions(null)}>
-            <div onClick={(e)=>e.stopPropagation()} className="card-soft p-6 w-full max-w-2xl max-h-[85vh] overflow-y-auto">
+            <div onClick={(e)=>e.stopPropagation()} className="card-soft p-4 sm:p-6 w-full max-w-2xl max-h-[85vh] overflow-y-auto">
               <h2 className="font-display text-2xl font-bold">Riwayat Versi · {versions.item.name}</h2>
               <p className="text-[#5C5C5C] text-sm">Semua field ditampilkan. Yang diubah ditandai kuning dengan nilai lama → baru.</p>
               <div className="mt-4 relative pl-6">
