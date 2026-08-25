@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase";
-import { getTokenUser, apiError, apiSuccess } from "@/lib/db-helpers";
+import { getTokenUser, requireRoles, apiError, apiSuccess } from "@/lib/db-helpers";
 
 export async function GET(request) {
   try {
@@ -35,6 +35,7 @@ export async function POST(request) {
   try {
     const user = await getTokenUser(request);
     if (!user) return apiError("Unauthorized", 401);
+    requireRoles("admin_apps","admin_sppg","kitchen_head","head_chef")(user);
     const supabase = await createClient();
     const body = await request.json();
 

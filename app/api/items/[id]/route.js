@@ -1,7 +1,7 @@
 import { createClient } from "@/lib/supabase";
 import { getTokenUser, requireRoles, logAudit, apiError, apiSuccess } from "@/lib/db-helpers";
 
-const CAN_EDIT = ["admin", "kitchen_head", "head_chef"];
+const CAN_EDIT = ["admin_apps","admin_sppg", "kitchen_head", "head_chef"];
 
 export async function PATCH(request, { params }) {
   try {

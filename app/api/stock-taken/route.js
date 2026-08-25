@@ -6,7 +6,8 @@ import { getTokenUser, requireRoles, logAudit, apiError, apiSuccess } from "@/li
 
 export async function GET(request) {
   try {
-    await getTokenUser(request);
+    const user = await getTokenUser(request);
+    requireRoles("admin_apps","admin_sppg","field_assistant","kitchen_head","head_chef")(user);
     const supabase = await createClient();
     const { data } = await supabase.from("stock_lots")
       .select("*, items(name, unit)")
@@ -26,7 +27,7 @@ export async function GET(request) {
 export async function POST(request) {
   try {
     const user = await getTokenUser(request);
-    requireRoles("admin", "field_assistant", "kitchen_head", "head_chef")(user);
+    requireRoles("admin_apps","admin_sppg", "field_assistant", "kitchen_head", "head_chef")(user);
     const body = await request.json();
     const supabase = await createClient();
 

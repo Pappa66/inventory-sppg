@@ -9,7 +9,7 @@ const VALID_TRANSITIONS = {
 export async function PATCH(request, { params }) {
   try {
     const user = await getTokenUser(request);
-    requireRoles("admin", "field_assistant", "driver")(user);
+    requireRoles("admin_apps","admin_sppg", "field_assistant", "driver")(user);
 
     const { id } = await params;
     const body = await request.json();

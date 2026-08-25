@@ -1,7 +1,7 @@
 import { createClient } from "@/lib/supabase";
 import { getTokenUser, requireRoles, logAudit, apiError, apiSuccess } from "@/lib/db-helpers";
 
-const CAN_EDIT = ["admin", "head_chef", "nutritionist", "kitchen_head"];
+const CAN_EDIT = ["admin_apps","admin_sppg", "head_chef", "nutritionist", "kitchen_head"];
 
 export async function PATCH(request, { params }) {
   try {
@@ -34,7 +34,7 @@ export async function PATCH(request, { params }) {
 export async function DELETE(request, { params }) {
   try {
     const user = await getTokenUser(request);
-    requireRoles("admin", "head_chef", "kitchen_head")(user);
+    requireRoles("admin_apps","admin_sppg", "head_chef", "kitchen_head")(user);
     const { id } = await params;
     const supabase = await createClient();
     const { error } = await supabase.from("recipes").delete().eq("id", id);

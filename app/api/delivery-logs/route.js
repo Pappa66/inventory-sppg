@@ -33,7 +33,7 @@ export async function GET(request) {
 export async function POST(request) {
   try {
     const user = await getTokenUser(request);
-    requireRoles("admin", "field_assistant", "driver")(user);
+    requireRoles("admin_apps","admin_sppg", "field_assistant", "driver")(user);
 
     const body = await request.json();
     if (!body.assignment_id) return apiError("assignment_id wajib diisi");

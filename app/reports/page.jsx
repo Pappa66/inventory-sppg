@@ -36,7 +36,7 @@ const REPORT_TABS = [
 export default function ReportsPage() {
   const { user, activeRole } = useAuth();
 
-  if (!["admin_apps", "admin_sppg", "accountant"].includes(activeRole)) {
+  if (!["admin_apps", "admin_sppg", "accountant", "kitchen_head"].includes(activeRole)) {
     return (
       <Layout>
         <div className="flex items-center justify-center min-h-[50vh]">

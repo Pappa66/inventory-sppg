@@ -4,7 +4,7 @@ import { getTokenUser, requireRoles, logAudit, apiError, apiSuccess } from "@/li
 export async function PATCH(request, { params }) {
   try {
     const user = await getTokenUser(request);
-    requireRoles("admin", "field_staff", "kitchen_head", "head_chef")(user);
+    requireRoles("admin_apps","admin_sppg", "field_assistant", "kitchen_head", "head_chef")(user);
     const { id } = await params;
     const body = await request.json();
     const supabase = await createClient();

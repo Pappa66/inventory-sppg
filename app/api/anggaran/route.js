@@ -1,7 +1,7 @@
 import { createClient } from "@/lib/supabase";
 import { getTokenUser, requireRoles, logAudit, apiError, apiSuccess } from "@/lib/db-helpers";
 
-const CAN_EDIT = ["admin", "kitchen_head"];
+const CAN_EDIT = ["admin_apps","admin_sppg", "kitchen_head"];
 
 export async function GET(request) {
   try {
