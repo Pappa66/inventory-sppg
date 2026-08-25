@@ -128,7 +128,7 @@ export default function StockDetailPage() {
         </div>
 
         {/* Summary */}
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="card-soft p-4">
             <div className="text-xs uppercase tracking-widest text-[#5C5C5C]">Total Qty Sistem</div>
             <div className="font-display text-2xl font-bold mt-1">{totals.total_qty.toLocaleString("id-ID")}</div>

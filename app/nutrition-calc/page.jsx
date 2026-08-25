@@ -89,7 +89,7 @@ export default function NutritionCalcPage() {
     <Layout>
       <div className="space-y-6">
         <div>
-          <h1 className="font-display text-3xl font-bold">Kalkulator Gizi</h1>
+          <h1 className="font-display text-4xl font-bold">Kalkulator Gizi</h1>
           <p className="text-[#5C5C5C] mt-1">
             Periksa apakah menu memenuhi AKG untuk setiap kelompok sasaran
           </p>

@@ -302,7 +302,7 @@ export default function ReportsPage() {
             {/* LR Tab */}
             {activeTab === "lr" && (
               <div className="space-y-4">
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div className="card-soft p-5">
                     <div className="text-xs uppercase tracking-widest text-[#5C5C5C]">Pemasukan</div>
                     <div className="font-display text-2xl font-bold mt-1 text-[#4A7C59]">{fmtIDR(lrData.totalPemasukan)}</div>
@@ -316,7 +316,7 @@ export default function ReportsPage() {
                     <div className={`font-display text-2xl font-bold mt-1 ${lrData.saldo >= 0 ? "text-[#4A7C59]" : "text-[#C5533B]"}`}>{fmtIDR(lrData.saldo)}</div>
                   </div>
                 </div>
-                <div className="card-soft overflow-hidden">
+                <div className="card-soft overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead className="bg-[#EAE4D8] text-xs uppercase tracking-wider">
                       <tr><th className="text-left py-3 px-4">Tanggal</th><th className="text-left py-3 px-4">Kode</th><th className="text-left py-3 px-4">Keterangan</th><th className="text-right py-3 px-4">Debet</th><th className="text-right py-3 px-4">Kredit</th></tr>
@@ -341,7 +341,7 @@ export default function ReportsPage() {
             {/* LPA Tab */}
             {activeTab === "lpa" && (
               <div className="space-y-4">
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div className="card-soft p-5">
                     <div className="text-xs uppercase tracking-widest text-[#5C5C5C]">Pemasukan 2 Pekan</div>
                     <div className="font-display text-2xl font-bold mt-1 text-[#4A7C59]">{fmtIDR(lpaData.totalPemasukan)}</div>

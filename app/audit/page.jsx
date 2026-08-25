@@ -64,7 +64,7 @@ export default function Page() {
             <h1 className="font-display text-4xl font-bold">Audit Trail</h1>
             <p className="text-[#5C5C5C] mt-1">Format flat & human-readable. Siapa, apa, kapan — akurasi detik. Tidak ada penghapusan.</p>
           </div>
-          <input data-testid="audit-filter" placeholder="filter (entity/actor/action/zone)…" value={filter} onChange={(e)=>setFilter(e.target.value)} className="card-soft px-3 py-2 text-sm w-72"/>
+          <input data-testid="audit-filter" placeholder="filter (entity/actor/action/zone)…" value={filter} onChange={(e)=>setFilter(e.target.value)} className="card-soft px-3 py-2 text-sm w-full sm:w-72"/>
         </div>
 
         {loading ? (

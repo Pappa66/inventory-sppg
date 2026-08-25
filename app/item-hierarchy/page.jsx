@@ -78,7 +78,7 @@ export default function ItemHierarchyPage() {
               <span className="text-[10px] px-2 py-0.5 rounded bg-[#EAE4D8]">{item.zone}</span>
             )}
             {canWrite && (
-              <div className="opacity-0 group-hover:opacity-100 flex gap-1 transition-opacity">
+              <div className="md:opacity-0 md:group-hover:opacity-100 opacity-100 flex gap-1 transition-opacity">
                 <button onClick={() => setForm(item)} className="p-1 hover:bg-[#EAE4D8] rounded"><Edit2 size={12}/></button>
                 <button onClick={() => handleDelete(item.id)} className="p-1 hover:bg-red-50 text-red-500 rounded"><Trash2 size={12}/></button>
               </div>
@@ -142,7 +142,7 @@ export default function ItemHierarchyPage() {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="card-soft p-4 text-center">
             <Layers size={20} className="mx-auto mb-1" style={{ color: LEVEL_COLORS[1] }} />
             <div className="font-display font-bold text-2xl">{stats.level1}</div>
@@ -212,7 +212,7 @@ export default function ItemHierarchyPage() {
         {/* Form Modal */}
         {form && (
           <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4" onClick={() => setForm(null)}>
-            <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6 space-y-4" onClick={e => e.stopPropagation()}>
+            <div className="card-soft max-w-md w-full p-6 space-y-4" onClick={e => e.stopPropagation()}>
               <div className="flex items-center justify-between">
                 <h3 className="font-display font-bold text-lg">{form.id ? "Edit" : "Tambah"} Item Hierarki</h3>
                 <button onClick={() => setForm(null)} className="p-1 hover:bg-[#EAE4D8] rounded"><X size={18}/></button>

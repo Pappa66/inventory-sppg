@@ -197,7 +197,7 @@ export default function GlobalConfigPage() {
                   <p className="font-bold">Rp {Number(config.incentive_per_portion || 2000).toLocaleString("id-ID")}</p>
                 </div>
               </div>
-              <div className="mt-3 grid grid-cols-3 gap-4 text-sm border-t border-[#EAE4D8] pt-3">
+              <div className="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm border-t border-[#EAE4D8] pt-3">
                 <div>
                   <span className="text-[#5C5C5C]">Bahan Baku</span>
                   <p className="font-bold">{config.bahan_baku_percentage || 67}%</p>
@@ -213,15 +213,13 @@ export default function GlobalConfigPage() {
               </div>
             </div>
 
-            <div className="max-w-md">
-              <button
-                onClick={handleSave}
-                disabled={saving}
-                className="btn-primary"
-              >
-                <Save size={14} /> {saving ? "Menyimpan..." : "Simpan Konfigurasi"}
-              </button>
-            </div>
+            <button
+              onClick={handleSave}
+              disabled={saving}
+              className="btn-primary"
+            >
+              <Save size={14} /> {saving ? "Menyimpan..." : "Simpan Konfigurasi"}
+            </button>
           </>
         )}
       </div>

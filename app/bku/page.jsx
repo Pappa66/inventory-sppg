@@ -97,7 +97,7 @@ export default function BKUPage() {
         </div>
 
         {/* Grand Total */}
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="card-soft p-4">
             <div className="text-xs uppercase tracking-widest text-[#5C5C5C]">Total Debet</div>
             <div className="font-display text-2xl font-bold mt-1 text-[#4A7C59]">{fmtIDR(grandTotal.debit)}</div>
@@ -134,6 +134,7 @@ export default function BKUPage() {
                       <span>Saldo: <span className={`font-bold ${tot.debit - tot.credit >= 0 ? "text-[#4A7C59]" : "text-[#C5533B]"}`}>{fmtIDR(tot.debit - tot.credit)}</span></span>
                     </div>
                   </div>
+                  <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="text-xs text-[#5C5C5C] uppercase tracking-wider border-b border-[#EAE4D8]">
@@ -156,6 +157,7 @@ export default function BKUPage() {
                       ))}
                     </tbody>
                   </table>
+                  </div>
                 </div>
               );
             })}

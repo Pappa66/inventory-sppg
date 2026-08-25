@@ -156,6 +156,7 @@ export default function OpeningBalancesPage() {
           </div>
         ) : (
           <div className="card-soft overflow-hidden">
+            <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-[#EAE4D8] bg-[#F9F6F0]">
@@ -211,6 +212,7 @@ export default function OpeningBalancesPage() {
                 )}
               </tbody>
             </table>
+            </div>
           </div>
         )}
       </div>

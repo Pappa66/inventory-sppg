@@ -300,10 +300,10 @@ export default function Page() {
                 <div className="px-4 py-3 bg-[#D97706] text-white font-display font-bold text-sm flex items-center gap-2">
                   <DollarSign size={14}/> Section 2: Anggaran Operasional
                 </div>
-                <div className="p-4 grid grid-cols-3 gap-4">
-                  <div>
-                    <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Jumlah Paket</label>
-                    <input type="number" className="w-full mt-1 px-3 py-2 rounded-md border border-[#EAE4D8] bg-[#F9F6F0] text-sm" value={form.ops_jumlah_paket || ""} onChange={e => update("ops_jumlah_paket", parseInt(e.target.value) || 0)} />
+                <div className="p-4 grid grid-cols-1 sm:grid-cols-3 gap-4">
+                   <div>
+                     <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Jumlah Paket</label>
+                     <input type="number" className="w-full mt-1 px-3 py-2 rounded-md border border-[#EAE4D8] bg-[#F9F6F0] text-sm" value={form.ops_jumlah_paket || ""} onChange={e => update("ops_jumlah_paket", parseInt(e.target.value) || 0)} />
                   </div>
                   <div>
                     <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Harga Satuan (Rp)</label>
@@ -322,10 +322,10 @@ export default function Page() {
                 <div className="px-4 py-3 bg-[#6D28D9] text-white font-display font-bold text-sm flex items-center gap-2">
                   <Users size={14}/> Section 3: Anggaran Insentif Fasilitas
                 </div>
-                <div className="p-4 grid grid-cols-3 gap-4">
-                  <div>
-                    <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Jumlah Paket</label>
-                    <input type="number" className="w-full mt-1 px-3 py-2 rounded-md border border-[#EAE4D8] bg-[#F9F6F0] text-sm" value={form.ins_jumlah_paket || ""} onChange={e => update("ins_jumlah_paket", parseInt(e.target.value) || 0)} />
+                <div className="p-4 grid grid-cols-1 sm:grid-cols-3 gap-4">
+                   <div>
+                     <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Jumlah Paket</label>
+                     <input type="number" className="w-full mt-1 px-3 py-2 rounded-md border border-[#EAE4D8] bg-[#F9F6F0] text-sm" value={form.ins_jumlah_paket || ""} onChange={e => update("ins_jumlah_paket", parseInt(e.target.value) || 0)} />
                   </div>
                   <div>
                     <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Harga Satuan (Rp)</label>
@@ -340,7 +340,7 @@ export default function Page() {
               </div>
 
               {/* Total Summary */}
-              <div className="p-4 rounded-lg bg-[#EAE4D8] grid grid-cols-3 gap-4 text-sm">
+              <div className="p-4 rounded-lg bg-[#EAE4D8] grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
                 <div>Total RAB: <span className="font-bold text-lg">{fmtIDR(bahanRab + opsRab + insRab)}</span></div>
                 <div>Selisih: <span className={`font-bold text-lg ${(bahanRab + opsRab + insRab) - ((form.bahan_actual || 0) + (form.ops_actual || 0) + (form.ins_actual || 0)) >= 0 ? "text-[#4A7C59]" : "text-[#C5533B]"}`}>
                   {fmtIDR((bahanRab + opsRab + insRab) - ((form.bahan_actual || 0) + (form.ops_actual || 0) + (form.ins_actual || 0)))}
