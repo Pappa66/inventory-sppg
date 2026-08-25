@@ -22,6 +22,7 @@ export default function Page() {
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState(EMPTY);
+  const [photoPreview, setPhotoPreview] = useState(null);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const perPage = 15;
@@ -39,7 +40,7 @@ export default function Page() {
       if (editing) await api.patch(`/recipes/${editing.id}`, form);
       else await api.post("/recipes", form);
       toast.success("Resep tersimpan");
-      setOpen(false); setEditing(null); setForm(EMPTY); load();
+      setOpen(false); setEditing(null); setForm(EMPTY); setPhotoPreview(null); load();
     } catch (er) { toast.error(formatErr(er)); }
   };
 
@@ -56,7 +57,7 @@ export default function Page() {
             <h1 className="font-display text-4xl font-bold">Resep Standar</h1>
             <p className="text-[#5C5C5C] mt-1">Resep menjadi dasar perhitungan kebutuhan teoritis bahan.</p>
           </div>
-          {CAN_EDIT.includes(activeRole) && <button data-testid="add-recipe-btn" onClick={()=>{setEditing(null); setForm(EMPTY); setOpen(true);}} className="btn-primary"><Plus size={16}/> Resep Baru</button>}
+          {CAN_EDIT.includes(activeRole) && <button data-testid="add-recipe-btn" onClick={()=>{setEditing(null); setForm(EMPTY); setPhotoPreview(null); setOpen(true);}} className="btn-primary"><Plus size={16}/> Resep Baru</button>}
         </div>
 
         {loading ? (
@@ -78,7 +79,7 @@ export default function Page() {
                         </div>
                       </div>
                     </div>
-                    {CAN_EDIT.includes(activeRole) && <button onClick={()=>{setEditing(r); setForm({name:r.name, servings:r.servings, menu_category:r.menu_category||null, ingredients:r.ingredients||[], instructions:r.instructions||"", calories_kcal:r.calories_kcal||0, protein_g:r.protein_g||0, carbs_g:r.carbs_g||0, fats_g:r.fats_g||0, sodium_mg:r.sodium_mg||0, allergens:r.allergens||[], photo_url:r.photo_url||""}); setOpen(true);}} className="btn-ghost text-xs">Edit</button>}
+                    {CAN_EDIT.includes(activeRole) && <button onClick={()=>{setEditing(r); setForm({name:r.name, servings:r.servings, menu_category:r.menu_category||null, ingredients:r.ingredients||[], instructions:r.instructions||"", calories_kcal:r.calories_kcal||0, protein_g:r.protein_g||0, carbs_g:r.carbs_g||0, fats_g:r.fats_g||0, sodium_mg:r.sodium_mg||0, allergens:r.allergens||[], photo_url:r.photo_url||""}); setPhotoPreview(r.photo_url||null); setOpen(true);}} className="btn-ghost text-xs">Edit</button>}
                   </div>
                 <div className="grid grid-cols-5 gap-1 mt-3 text-center">
                   {[["Kkal", r.calories_kcal, "#D97706"],["Prot", r.protein_g, "#4A7C59"],["Karbo", r.carbs_g, "#2C4251"],["Lemak", r.fats_g, "#C5533B"],["Na (mg)", r.sodium_mg, "#5C5C5C"]].map(([l,v,c],i)=>(
@@ -130,9 +131,44 @@ export default function Page() {
                   </select>
                 </div>
                 <div className="col-span-2">
-                  <label className="text-xs uppercase tracking-widest text-[#5C5C5C] flex items-center gap-2"><Camera size={12}/> Foto Menu (URL)</label>
-                  <input data-testid="recipe-photo" type="url" placeholder="https://..." className="w-full mt-1 px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={form.photo_url||""} onChange={(e)=>setForm({...form, photo_url:e.target.value})}/>
-                  {form.photo_url && <img src={form.photo_url} alt="Preview" className="mt-2 w-32 h-24 rounded-md object-cover"/>}
+                  <label className="text-xs uppercase tracking-widest text-[#5C5C5C] flex items-center gap-2"><Camera size={12}/> Foto Menu</label>
+                  <div className="mt-1">
+                    <input
+                      data-testid="recipe-photo"
+                      type="file"
+                      accept="image/*"
+                      capture="environment"
+                      className="hidden"
+                      id="recipe-photo-input"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        const reader = new FileReader();
+                        reader.onload = (ev) => {
+                          const base64 = ev.target.result;
+                          setForm({...form, photo_url: base64});
+                          setPhotoPreview(base64);
+                        };
+                        reader.readAsDataURL(file);
+                      }}
+                    />
+                    <label
+                      htmlFor="recipe-photo-input"
+                      className="flex items-center justify-center gap-2 w-full px-4 py-8 rounded-md border-2 border-dashed border-[#EAE4D8] bg-[#F9F6F0] cursor-pointer hover:border-[#4A7C59] hover:bg-[#4A7C59]/5 transition-colors"
+                    >
+                      {(photoPreview || form.photo_url) ? (
+                        <div className="text-center">
+                          <img src={photoPreview || form.photo_url} alt="Preview" className="w-32 h-24 rounded-md object-cover mx-auto"/>
+                          <p className="text-xs text-[#5C5C5C] mt-2">Klik untuk mengganti foto</p>
+                        </div>
+                      ) : (
+                        <>
+                          <Camera size={24} className="text-[#4A7C59]"/>
+                          <span className="text-sm text-[#5C5C5C]">Pilih Foto / Ambil Foto</span>
+                        </>
+                      )}
+                    </label>
+                  </div>
                 </div>
                 <div className="col-span-2">
                   <div className="flex items-center justify-between mt-2">

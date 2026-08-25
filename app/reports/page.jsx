@@ -137,6 +137,7 @@ export default function ReportsPage() {
     const ml = 20, mr = 20, pw = 210;
     const sppgName = settings.sppg_name || "SPPG MBG";
     const kepala = settings.nama_kepala || "___________________";
+    const addr = settings.sppg_address || "___________________";
 
     let y = renderLetterhead(doc, settings, logo);
     y = renderLetterTitle(doc, "SURAT PERNYATAAN TANGGUNG JAWAB", "(Lampiran 30j Permenkes)", y, pw, ml, mr);
@@ -150,7 +151,6 @@ export default function ReportsPage() {
 
     // ── Identity block ──
     y = pv(doc, "Nama", kepala, ml + 3, y);
-    y = pv(doc, "NIP / NIK", "___________________", ml + 3, y);
     y = pv(doc, "Jabatan", `Kepala ${sppgName}`, ml + 3, y);
     y = pv(doc, "Program", "Makan Bergizi Gratis (MBG)", ml + 3, y);
     if (settings.id_sppg) y = pv(doc, "ID SPPG", settings.id_sppg, ml + 3, y);
@@ -184,12 +184,13 @@ export default function ReportsPage() {
     doc.text(closingLines, ml, y);
     y += closingLines.length * 4.5 + 10;
 
-    // ── Date ──
-    const addr = settings.sppg_address || "___________________";
-    doc.text(`${addr}, ${todayIndo()}`, ml, y);
+    // ── Date (right-aligned) ──
+    const dateStr = `${addr}, ${todayIndo()}`;
+    const dateW = doc.getStringUnitWidth(dateStr) * 10 / doc.internal.scaleFactor;
+    doc.text(dateStr, pw - mr, y, { align: "right" });
     y += 14;
 
-    // ── Signature ──
+    // ── Signature (no line, just name + jabatan) ──
     y = renderSignatureBlock(doc, settings, y, pw, [
       { label: "Kepala SPPG,", settingsKey: "nama_kepala", jabatan: `Kepala ${sppgName}` },
     ]);
@@ -211,11 +212,9 @@ export default function ReportsPage() {
     doc.setFontSize(10);
     doc.setFont("helvetica", "normal");
     doc.setTextColor(0x1F, 0x1F, 0x1F);
-    const opening1 = `Pada hari ini ${todayIndo()}, telah dilaksanakan penyaluran makanan siap distribusi`;
-    const opening2 = `program Makan Bergizi Gratis di ${sppgName}.`;
-    doc.text(opening1, ml, y);
+    doc.text(`Pada hari ini ${todayIndo()}, telah dilaksanakan penyaluran makanan siap distribusi`, ml, y);
     y += 5;
-    doc.text(opening2, ml, y);
+    doc.text(`program Makan Bergizi Gratis di ${sppgName}.`, ml, y);
     y += 10;
 
     // ── Section I ──
@@ -286,7 +285,7 @@ export default function ReportsPage() {
     doc.text("Demikian Berita Acara ini dibuat dengan sebenar-benarnya.", ml, y);
     y += 12;
 
-    // ── Dual signature ──
+    // ── Dual signature (no lines) ──
     y = renderSignatureBlock(doc, settings, y, pw, [
       { label: "Pengawas Gizi,", settingsKey: "nama_akuntan", jabatan: "Pengawas Gizi" },
       { label: `Kepala ${sppgName},`, settingsKey: "nama_kepala", jabatan: `Kepala ${sppgName}` },
@@ -463,12 +462,11 @@ export default function ReportsPage() {
                     <div className="flex items-start gap-4 pb-4 border-b-2 border-[#1F1F1F]">
                       <div className="w-14 h-14 rounded-lg bg-[#4A7C59] text-white grid place-items-center shrink-0 text-xl font-bold">S</div>
                       <div>
+                        {settings.nama_yayasan && <div className="text-[10px] text-[#5C5C5C]">{settings.nama_yayasan}</div>}
                         <div className="font-display font-bold text-lg">{settings.sppg_name || "SPPG MBG"}</div>
-                        <div className="text-xs text-[#5C5C5C]">{settings.sppg_address || "Alamat SPPG"}</div>
-                        <div className="text-[10px] text-[#999] mt-0.5">
-                          {settings.id_sppg && `ID: ${settings.id_sppg}`}
-                          {settings.id_sppg && settings.nama_yayasan && "  |  "}
-                          {settings.nama_yayasan && `Yayasan: ${settings.nama_yayasan}`}
+                        <div className="text-[10px] text-[#5C5C5C]">
+                          {settings.sppg_address || "Alamat SPPG"}
+                          {settings.id_sppg && `  |  ID: ${settings.id_sppg}`}
                         </div>
                       </div>
                     </div>
@@ -487,7 +485,6 @@ export default function ReportsPage() {
                       <table className="text-[13px] ml-4">
                         <tbody>
                           <tr><td className="pr-2 text-[#5C5C5C]">Nama</td><td className="pr-2">:</td><td className="font-bold">{settings.nama_kepala || "___________________"}</td></tr>
-                          <tr><td className="pr-2 text-[#5C5C5C]">NIP / NIK</td><td className="pr-2">:</td><td className="font-bold">___________________</td></tr>
                           <tr><td className="pr-2 text-[#5C5C5C]">Jabatan</td><td className="pr-2">:</td><td className="font-bold">Kepala {settings.sppg_name || "SPPG"}</td></tr>
                           <tr><td className="pr-2 text-[#5C5C5C]">Program</td><td className="pr-2">:</td><td className="font-bold">Makan Bergizi Gratis (MBG)</td></tr>
                           {settings.id_sppg && <tr><td className="pr-2 text-[#5C5C5C]">ID SPPG</td><td className="pr-2">:</td><td className="font-bold">{settings.id_sppg}</td></tr>}
@@ -505,14 +502,13 @@ export default function ReportsPage() {
                       <p>Demikian Surat Pernyataan Tanggung Jawab ini saya buat dengan sebenar-benarnya dalam keadaan sadar tanpa adanya paksaan dari pihak manapun.</p>
 
                       {/* Date */}
-                      <p className="mt-6">{settings.sppg_address || "___________________"}, {todayIndo()}</p>
+                      <p className="mt-6 text-right">{settings.sppg_address || "___________________"}, {todayIndo()}</p>
 
                       {/* Signature */}
                       <div className="flex justify-end mt-2">
                         <div className="text-center w-48">
                           <div className="text-[13px]">Kepala SPPG,</div>
                           <div className="h-16"></div>
-                          <div className="border-t border-[#1F1F1F] w-40 mx-auto"></div>
                           <div className="font-bold text-[13px] mt-1">{settings.nama_kepala || "___________________"}</div>
                           <div className="text-[11px] text-[#5C5C5C]">Kepala {settings.sppg_name || "SPPG"}</div>
                         </div>
@@ -533,12 +529,11 @@ export default function ReportsPage() {
                     <div className="flex items-start gap-4 pb-4 border-b-2 border-[#1F1F1F]">
                       <div className="w-14 h-14 rounded-lg bg-[#4A7C59] text-white grid place-items-center shrink-0 text-xl font-bold">S</div>
                       <div>
+                        {settings.nama_yayasan && <div className="text-[10px] text-[#5C5C5C]">{settings.nama_yayasan}</div>}
                         <div className="font-display font-bold text-lg">{settings.sppg_name || "SPPG MBG"}</div>
-                        <div className="text-xs text-[#5C5C5C]">{settings.sppg_address || "Alamat SPPG"}</div>
-                        <div className="text-[10px] text-[#999] mt-0.5">
-                          {settings.id_sppg && `ID: ${settings.id_sppg}`}
-                          {settings.id_sppg && settings.nama_yayasan && "  |  "}
-                          {settings.nama_yayasan && `Yayasan: ${settings.nama_yayasan}`}
+                        <div className="text-[10px] text-[#5C5C5C]">
+                          {settings.sppg_address || "Alamat SPPG"}
+                          {settings.id_sppg && `  |  ID: ${settings.id_sppg}`}
                         </div>
                       </div>
                     </div>
@@ -597,14 +592,12 @@ export default function ReportsPage() {
                         <div className="text-center w-48">
                           <div className="text-[13px]">Mengetahui,</div>
                           <div className="h-16"></div>
-                          <div className="border-t border-[#1F1F1F] w-40 mx-auto"></div>
                           <div className="font-bold text-[13px] mt-1">{settings.nama_akuntan || "___________________"}</div>
                           <div className="text-[11px] text-[#5C5C5C]">Pengawas Gizi</div>
                         </div>
                         <div className="text-center w-48">
                           <div className="text-[13px]">Kepala {settings.sppg_name || "SPPG"},</div>
                           <div className="h-16"></div>
-                          <div className="border-t border-[#1F1F1F] w-40 mx-auto"></div>
                           <div className="font-bold text-[13px] mt-1">{settings.nama_kepala || "___________________"}</div>
                           <div className="text-[11px] text-[#5C5C5C]">Kepala {settings.sppg_name || "SPPG"}</div>
                         </div>
