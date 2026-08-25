@@ -800,7 +800,7 @@ INSERT INTO public.biweekly_periods (id, period_name, start_date, end_date) VALU
 ('a4000001-0000-0000-0000-000000000004','Periode 2 - September 2026','2026-09-16','2026-09-30');
 
 -- ============= ITEM OPENING BALANCES =============
-INSERT INTO public.item_opening_balances (item_code, period_id, opening_quantity, opening_value) VALUES
+INSERT INTO public.item_opening_balances (id, item_code, period_id, opening_quantity, opening_value) VALUES
 ('a2000001-0000-0000-0000-000000000001','BB-001-001','a4000001-0000-0000-0000-000000000001',20,300000),
 ('a2000001-0000-0000-0000-000000000002','BB-001-002','a4000001-0000-0000-0000-000000000001',15,180000),
 ('a2000001-0000-0000-0000-000000000003','BB-002-001','a4000001-0000-0000-0000-000000000001',25,2125000),
