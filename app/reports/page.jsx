@@ -15,6 +15,15 @@ import { getSettings, renderLetterhead, renderLetterTitle, renderSignatureBlock,
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 
+// Helper for label:value rows in PDF
+function pv(doc, label, value, x, y) {
+  doc.setFont("helvetica", "normal");
+  doc.text(`${label}  :`, x, y);
+  doc.setFont("helvetica", "bold");
+  doc.text(value, x + 35, y);
+  return y + 5.5;
+}
+
 const REPORT_TABS = [
   { key: "lr", label: "LR - Laporan Resume", icon: FileText, color: "#4A7C59" },
   { key: "lpa", label: "LPA - Laporan 2 Pekanan", icon: Calendar, color: "#D97706" },
@@ -31,6 +40,7 @@ export default function ReportsPage() {
   const [anggaran, setAnggaran] = useState([]);
   const [periods, setPeriods] = useState([]);
   const [selectedPeriod, setSelectedPeriod] = useState("");
+  const [settings, setSettings] = useState({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -42,6 +52,7 @@ export default function ReportsPage() {
         setPeriods(r.data || []);
         if (r.data?.length) setSelectedPeriod(r.data[0].id);
       }),
+      api.get("/settings/logo").then(r => setSettings(r.data || {})),
     ]).finally(() => setLoading(false));
   }, []);
 
@@ -124,74 +135,64 @@ export default function ReportsPage() {
     const doc = new jsPDF();
     const [logo, settings] = await Promise.all([getLogo(), getSettings()]);
     const ml = 20, mr = 20, pw = 210;
-    let y = renderLetterhead(doc, settings, logo, { marginLeft: ml, marginRight: mr });
+    const sppgName = settings.sppg_name || "SPPG MBG";
+    const kepala = settings.nama_kepala || "___________________";
 
-    // Title block
+    let y = renderLetterhead(doc, settings, logo);
     y = renderLetterTitle(doc, "SURAT PERNYATAAN TANGGUNG JAWAB", "(Lampiran 30j Permenkes)", y, pw, ml, mr);
 
-    // Opening paragraph
+    // ── Opening ──
     doc.setFontSize(10);
     doc.setFont("helvetica", "normal");
     doc.setTextColor(0x1F, 0x1F, 0x1F);
     doc.text("Yang bertanda tangan di bawah ini:", ml, y);
     y += 8;
 
-    // Identity table
-    const name = settings.nama_kepala || "___________________";
-    const sppgName = settings.sppg_name || "SPPG MBG";
-    const idSppg = settings.id_sppg || "";
+    // ── Identity block ──
+    y = pv(doc, "Nama", kepala, ml + 3, y);
+    y = pv(doc, "NIP / NIK", "___________________", ml + 3, y);
+    y = pv(doc, "Jabatan", `Kepala ${sppgName}`, ml + 3, y);
+    y = pv(doc, "Program", "Makan Bergizi Gratis (MBG)", ml + 3, y);
+    if (settings.id_sppg) y = pv(doc, "ID SPPG", settings.id_sppg, ml + 3, y);
+    y += 3;
 
-    const idFields = [
-      ["Nama", name],
-      ["NIP/NIK", "___________________"],
-      ["Jabatan", `Kepala ${sppgName}`],
-      ["Program", "Makan Bergizi Gratis (MBG)"],
-    ];
-    if (idSppg) idFields.splice(2, 0, ["ID SPPG", idSppg]);
-
-    idFields.forEach(([label, val]) => {
-      doc.setFont("helvetica", "normal");
-      doc.text(`${label}  :`, ml + 5, y);
-      doc.setFont("helvetica", "bold");
-      doc.text(val, ml + 45, y);
-      y += 6;
-    });
-
-    y += 4;
+    // ── Declaration intro ──
     doc.setFont("helvetica", "normal");
     doc.text("Dengan ini menyatakan dengan sesungguhnya bahwa:", ml, y);
     y += 8;
 
-    // Declarations
-    const declarations = [
+    // ── Numbered declarations ──
+    const decls = [
       "Dana bantuan pangan yang diterima dari Pemerintah telah digunakan semata-mata untuk kegiatan operasional program Makan Bergizi Gratis sesuai ketentuan yang berlaku;",
       "Penyaluran bantuan pangan telah dilaksanakan kepada penerima manfaat yang berhak sesuai data yang tercatat dalam sistem;",
       "Laporan pertanggungjawaban keuangan dan operasional yang disampaikan adalah benar, lengkap, dan dapat dipertanggungjawabkan secara hukum.",
     ];
-    declarations.forEach((text, i) => {
-      const prefix = `${i + 1}. `;
+    decls.forEach((text, i) => {
       doc.setFont("helvetica", "normal");
-      doc.text(prefix, ml + 5, y);
-      const lines = doc.splitTextToSize(text, pw - ml - mr - 15);
-      doc.text(lines, ml + 12, y);
-      y += lines.length * 5 + 2;
+      doc.text(`${i + 1}.`, ml + 3, y);
+      const lines = doc.splitTextToSize(text, pw - ml - mr - 12);
+      doc.text(lines, ml + 10, y);
+      y += lines.length * 4.5 + 3;
     });
 
-    y += 4;
+    y += 3;
+
+    // ── Closing ──
     doc.setFont("helvetica", "normal");
-    doc.text("Demikian Surat Pernyataan Tanggung Jawab ini saya buat dengan sebenar-benarnya dan dalam keadaan sadar tanpa adanya paksaan dari pihak manapun.", ml, y);
-    y += 12;
+    const closing = "Demikian Surat Pernyataan Tanggung Jawab ini saya buat dengan sebenar-benarnya dalam keadaan sadar tanpa adanya paksaan dari pihak manapun.";
+    const closingLines = doc.splitTextToSize(closing, pw - ml - mr);
+    doc.text(closingLines, ml, y);
+    y += closingLines.length * 4.5 + 10;
 
-    // Date and location
-    const address = settings.sppg_address || "___________________";
-    doc.text(`${address}, ${todayIndo()}`, ml, y);
-    y += 16;
+    // ── Date ──
+    const addr = settings.sppg_address || "___________________";
+    doc.text(`${addr}, ${todayIndo()}`, ml, y);
+    y += 14;
 
-    // Signature
-    const sigRoles = [
+    // ── Signature ──
+    y = renderSignatureBlock(doc, settings, y, pw, [
       { label: "Kepala SPPG,", settingsKey: "nama_kepala", jabatan: `Kepala ${sppgName}` },
-    ];
-    y = renderSignatureBlock(doc, settings, y, pw, sigRoles);
+    ]);
 
     doc.save(`SPTJ-${new Date().toISOString().slice(0, 10)}.pdf`);
     toast.success("SPTJ berhasil dicetak");
@@ -201,27 +202,27 @@ export default function ReportsPage() {
     const doc = new jsPDF();
     const [logo, settings] = await Promise.all([getLogo(), getSettings()]);
     const ml = 20, mr = 20, pw = 210;
-    let y = renderLetterhead(doc, settings, logo, { marginLeft: ml, marginRight: mr });
+    const sppgName = settings.sppg_name || "SPPG MBG";
 
-    // Title block
+    let y = renderLetterhead(doc, settings, logo);
     y = renderLetterTitle(doc, "BERITA ACARA PENYALURAN", "(Lampiran 30n Permenkes)", y, pw, ml, mr);
 
-    // Opening
+    // ── Opening ──
     doc.setFontSize(10);
     doc.setFont("helvetica", "normal");
     doc.setTextColor(0x1F, 0x1F, 0x1F);
-
-    const sppgName = settings.sppg_name || "SPPG MBG";
-    doc.text(`Pada hari ini ${todayIndo()}, telah dilaksanakan penyaluran makanan siap distribusi`, ml, y);
+    const opening1 = `Pada hari ini ${todayIndo()}, telah dilaksanakan penyaluran makanan siap distribusi`;
+    const opening2 = `program Makan Bergizi Gratis di ${sppgName}.`;
+    doc.text(opening1, ml, y);
     y += 5;
-    doc.text(`program Makan Bergizi Gratis di ${sppgName}.`, ml, y);
+    doc.text(opening2, ml, y);
     y += 10;
 
+    // ── Section I ──
     doc.setFont("helvetica", "bold");
-    doc.text("I. Rincian Penyaluran", ml, y);
+    doc.text("I.  Rincian Penyaluran", ml, y);
     y += 7;
 
-    // Distribution table using autoTable
     autoTable(doc, {
       startY: y,
       margin: { left: ml, right: mr },
@@ -241,14 +242,18 @@ export default function ReportsPage() {
         fontStyle: "bold",
         fontSize: 9,
         halign: "center",
+        lineColor: [0x1F, 0x1F, 0x1F],
+        lineWidth: 0.3,
       },
       bodyStyles: {
         fontSize: 9,
         textColor: [0x1F, 0x1F, 0x1F],
+        lineColor: [0x1F, 0x1F, 0x1F],
+        lineWidth: 0.15,
       },
       columnStyles: {
         0: { halign: "center", cellWidth: 12 },
-        1: { cellWidth: 60 },
+        1: { cellWidth: 58 },
         2: { cellWidth: "auto" },
       },
       alternateRowStyles: { fillColor: [0xF9, 0xF6, 0xF0] },
@@ -256,35 +261,36 @@ export default function ReportsPage() {
 
     y = doc.lastAutoTable.finalY + 10;
 
+    // ── Section II ──
     doc.setFont("helvetica", "bold");
-    doc.text("II. Pernyataan", ml, y);
+    doc.text("II.  Pernyataan", ml, y);
     y += 7;
 
     doc.setFont("helvetica", "normal");
-    const statements = [
+    const stmts = [
       "Bahwa penyaluran bantuan pangan di atas telah dilaksanakan sesuai dengan ketentuan yang berlaku;",
       "Bahwa makanan yang disalurkan dalam kondisi baik, aman, dan layak konsumsi;",
       "Bahwa berita acara ini dibuat sebagai dasar pertanggungjawaban penyaluran bantuan pangan program Makan Bergizi Gratis.",
     ];
-    statements.forEach((text, i) => {
-      const prefix = `${i + 1}. `;
-      doc.text(prefix, ml + 3, y);
-      const lines = doc.splitTextToSize(text, pw - ml - mr - 10);
+    stmts.forEach((text, i) => {
+      doc.text(`${i + 1}.`, ml + 3, y);
+      const lines = doc.splitTextToSize(text, pw - ml - mr - 12);
       doc.text(lines, ml + 10, y);
-      y += lines.length * 5 + 2;
+      y += lines.length * 4.5 + 3;
     });
 
-    y += 6;
+    y += 4;
+
+    // ── Closing ──
     doc.setFont("helvetica", "normal");
     doc.text("Demikian Berita Acara ini dibuat dengan sebenar-benarnya.", ml, y);
     y += 12;
 
-    // Dual signature block
-    const sigRoles = [
+    // ── Dual signature ──
+    y = renderSignatureBlock(doc, settings, y, pw, [
       { label: "Pengawas Gizi,", settingsKey: "nama_akuntan", jabatan: "Pengawas Gizi" },
       { label: `Kepala ${sppgName},`, settingsKey: "nama_kepala", jabatan: `Kepala ${sppgName}` },
-    ];
-    y = renderSignatureBlock(doc, settings, y, pw, sigRoles);
+    ]);
 
     doc.save(`BAPSD-${new Date().toISOString().slice(0, 10)}.pdf`);
     toast.success("BAPSD berhasil dicetak");
@@ -450,29 +456,66 @@ export default function ReportsPage() {
             {/* SPTJ Tab */}
             {activeTab === "sptj" && (
               <div className="space-y-4">
-                <div className="card-soft p-8 max-w-2xl">
-                  <div className="text-center mb-8">
-                    <h2 className="font-display text-xl font-bold uppercase">Surat Pernyataan Tanggung Jawab</h2>
-                    <p className="text-sm text-[#5C5C5C] mt-1">(Lampiran 30j)</p>
-                  </div>
-                  <div className="space-y-4 text-sm leading-relaxed">
-                    <p>Saya yang bertanda tangan di bawah ini:</p>
-                    <div className="pl-4 space-y-1">
-                      <p>Nama: <span className="font-bold">{user?.name || "___________________"}</span></p>
-                      <p>Jabatan: <span className="font-bold">Kepala SPPG</span></p>
-                      <p>Program: <span className="font-bold">Makan Bergizi Gratis</span></p>
+                <div className="bg-white border border-[#EAE4D8] rounded-xl shadow-sm max-w-[700px] mx-auto">
+                  {/* Paper */}
+                  <div className="p-8 sm:p-12">
+                    {/* Kop Surat */}
+                    <div className="flex items-start gap-4 pb-4 border-b-2 border-[#1F1F1F]">
+                      <div className="w-14 h-14 rounded-lg bg-[#4A7C59] text-white grid place-items-center shrink-0 text-xl font-bold">S</div>
+                      <div>
+                        <div className="font-display font-bold text-lg">{settings.sppg_name || "SPPG MBG"}</div>
+                        <div className="text-xs text-[#5C5C5C]">{settings.sppg_address || "Alamat SPPG"}</div>
+                        <div className="text-[10px] text-[#999] mt-0.5">
+                          {settings.id_sppg && `ID: ${settings.id_sppg}`}
+                          {settings.id_sppg && settings.nama_yayasan && "  |  "}
+                          {settings.nama_yayasan && `Yayasan: ${settings.nama_yayasan}`}
+                        </div>
+                      </div>
                     </div>
-                    <p className="mt-4">Dengan ini menyatakan bahwa:</p>
-                    <ol className="list-decimal pl-8 space-y-2">
-                      <li>Dana yang diterima dari Pemerintah telah digunakan sesuai ketentuan yang berlaku.</li>
-                      <li>Penyaluran bantuan pangan telah dilakukan kepada penerima manfaat yang berhak.</li>
-                      <li>Laporan pertanggungjawaban yang disampaikan adalah benar dan dapat dipertanggungjawabkan.</li>
-                    </ol>
-                    <p className="mt-4">Demikian surat pernyataan ini saya buat dengan sebenar-benarnya.</p>
-                    <div className="flex justify-end mt-8">
-                      <div className="text-center">
-                        <p className="text-sm">___________________, {new Date().toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}</p>
-                        <p className="font-bold mt-8 border-b border-[#EAE4D8] inline-block min-w-[150px]">Kepala SPPG</p>
+
+                    {/* Title */}
+                    <div className="text-center mt-6 mb-1">
+                      <h2 className="font-bold text-base uppercase tracking-wide">Surat Pernyataan Tanggung Jawab</h2>
+                      <p className="text-[11px] text-[#999]">(Lampiran 30j Permenkes)</p>
+                    </div>
+                    <div className="border-t border-[#1F1F1F] mb-6"></div>
+
+                    {/* Body */}
+                    <div className="text-[13px] leading-relaxed space-y-4">
+                      <p>Yang bertanda tangan di bawah ini:</p>
+
+                      <table className="text-[13px] ml-4">
+                        <tbody>
+                          <tr><td className="pr-2 text-[#5C5C5C]">Nama</td><td className="pr-2">:</td><td className="font-bold">{settings.nama_kepala || "___________________"}</td></tr>
+                          <tr><td className="pr-2 text-[#5C5C5C]">NIP / NIK</td><td className="pr-2">:</td><td className="font-bold">___________________</td></tr>
+                          <tr><td className="pr-2 text-[#5C5C5C]">Jabatan</td><td className="pr-2">:</td><td className="font-bold">Kepala {settings.sppg_name || "SPPG"}</td></tr>
+                          <tr><td className="pr-2 text-[#5C5C5C]">Program</td><td className="pr-2">:</td><td className="font-bold">Makan Bergizi Gratis (MBG)</td></tr>
+                          {settings.id_sppg && <tr><td className="pr-2 text-[#5C5C5C]">ID SPPG</td><td className="pr-2">:</td><td className="font-bold">{settings.id_sppg}</td></tr>}
+                        </tbody>
+                      </table>
+
+                      <p>Dengan ini menyatakan dengan sesungguhnya bahwa:</p>
+
+                      <ol className="list-decimal ml-6 space-y-2">
+                        <li>Dana bantuan pangan yang diterima dari Pemerintah telah digunakan semata-mata untuk kegiatan operasional program Makan Bergizi Gratis sesuai ketentuan yang berlaku;</li>
+                        <li>Penyaluran bantuan pangan telah dilaksanakan kepada penerima manfaat yang berhak sesuai data yang tercatat dalam sistem;</li>
+                        <li>Laporan pertanggungjawaban keuangan dan operasional yang disampaikan adalah benar, lengkap, dan dapat dipertanggungjawabkan secara hukum.</li>
+                      </ol>
+
+                      <p>Demikian Surat Pernyataan Tanggung Jawab ini saya buat dengan sebenar-benarnya dalam keadaan sadar tanpa adanya paksaan dari pihak manapun.</p>
+
+                      {/* Date */}
+                      <p className="mt-6">{settings.sppg_address || "___________________"}, {todayIndo()}</p>
+
+                      {/* Signature */}
+                      <div className="flex justify-end mt-2">
+                        <div className="text-center w-48">
+                          <div className="text-[13px]">Kepala SPPG,</div>
+                          <div className="h-16"></div>
+                          <div className="border-t border-[#1F1F1F] w-40 mx-auto"></div>
+                          <div className="font-bold text-[13px] mt-1">{settings.nama_kepala || "___________________"}</div>
+                          <div className="text-[11px] text-[#5C5C5C]">Kepala {settings.sppg_name || "SPPG"}</div>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -484,27 +527,87 @@ export default function ReportsPage() {
             {/* BAPSD Tab */}
             {activeTab === "bapsd" && (
               <div className="space-y-4">
-                <div className="card-soft p-8 max-w-2xl">
-                  <div className="text-center mb-8">
-                    <h2 className="font-display text-xl font-bold uppercase">Berita Acara Penyaluran Siap Distribusi</h2>
-                    <p className="text-sm text-[#5C5C5C] mt-1">(Lampiran 30n)</p>
-                  </div>
-                  <div className="space-y-4 text-sm leading-relaxed">
-                    <p>Pada hari ini, {new Date().toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}, telah dilakukan penyaluran makanan siap distribusi.</p>
-                    <div className="pl-4 space-y-2">
-                      <p>Total Porsi: <span className="font-bold border-b border-[#EAE4D8] inline-block min-w-[100px]">_________</span></p>
-                      <p>Lokasi Tujuan: <span className="font-bold border-b border-[#EAE4D8] inline-block min-w-[200px]">_________</span></p>
-                      <p>Driver Pengantar: <span className="font-bold border-b border-[#EAE4D8] inline-block min-w-[200px]">_________</span></p>
-                    </div>
-                    <p className="mt-4">Berita acara ini dibuat sebagai dasar pertanggungjawaban penyaluran bantuan pangan.</p>
-                    <div className="flex justify-between mt-8">
-                      <div className="text-center">
-                        <p className="text-sm">Mengetahui,</p>
-                        <p className="font-bold mt-8 border-b border-[#EAE4D8] inline-block min-w-[150px]">Pengawas Gizi</p>
+                <div className="bg-white border border-[#EAE4D8] rounded-xl shadow-sm max-w-[700px] mx-auto">
+                  <div className="p-8 sm:p-12">
+                    {/* Kop Surat */}
+                    <div className="flex items-start gap-4 pb-4 border-b-2 border-[#1F1F1F]">
+                      <div className="w-14 h-14 rounded-lg bg-[#4A7C59] text-white grid place-items-center shrink-0 text-xl font-bold">S</div>
+                      <div>
+                        <div className="font-display font-bold text-lg">{settings.sppg_name || "SPPG MBG"}</div>
+                        <div className="text-xs text-[#5C5C5C]">{settings.sppg_address || "Alamat SPPG"}</div>
+                        <div className="text-[10px] text-[#999] mt-0.5">
+                          {settings.id_sppg && `ID: ${settings.id_sppg}`}
+                          {settings.id_sppg && settings.nama_yayasan && "  |  "}
+                          {settings.nama_yayasan && `Yayasan: ${settings.nama_yayasan}`}
+                        </div>
                       </div>
-                      <div className="text-center">
-                        <p className="text-sm">Kepala SPPG,</p>
-                        <p className="font-bold mt-8 border-b border-[#EAE4D8] inline-block min-w-[150px]">{user?.name || "___________________"}</p>
+                    </div>
+
+                    {/* Title */}
+                    <div className="text-center mt-6 mb-1">
+                      <h2 className="font-bold text-base uppercase tracking-wide">Berita Acara Penyaluran</h2>
+                      <p className="text-[11px] text-[#999]">(Lampiran 30n Permenkes)</p>
+                    </div>
+                    <div className="border-t border-[#1F1F1F] mb-6"></div>
+
+                    {/* Body */}
+                    <div className="text-[13px] leading-relaxed space-y-4">
+                      <p>Pada hari ini {todayIndo()}, telah dilaksanakan penyaluran makanan siap distribusi program Makan Bergizi Gratis di {settings.sppg_name || "SPPG MBG"}.</p>
+
+                      {/* Section I */}
+                      <p className="font-bold mt-4">I.  Rincian Penyaluran</p>
+                      <table className="w-full text-[12px] border border-[#1F1F1F]">
+                        <thead>
+                          <tr className="bg-[#4A7C59] text-white">
+                            <th className="border border-[#1F1F1F] px-3 py-1.5 text-center w-10">No</th>
+                            <th className="border border-[#1F1F1F] px-3 py-1.5 text-left">Uraian</th>
+                            <th className="border border-[#1F1F1F] px-3 py-1.5 text-left">Keterangan</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {[
+                            ["1", "Tanggal Penyaluran", todayIndo()],
+                            ["2", "Lokasi / Tujuan", settings.sppg_address || "___________________"],
+                            ["3", "Total Porsi Didistribusikan", "________ porsi"],
+                            ["4", "Jumlah Tujuan Pengiriman", "________ lokasi"],
+                            ["5", "Jumlah Driver Pengantar", "________ orang"],
+                            ["6", "Waktu Distribusi", "08:00 — 11:00 WIB"],
+                          ].map(([no, uraian, ket], i) => (
+                            <tr key={i} className={i % 2 === 1 ? "bg-[#F9F6F0]" : ""}>
+                              <td className="border border-[#1F1F1F] px-3 py-1.5 text-center">{no}</td>
+                              <td className="border border-[#1F1F1F] px-3 py-1.5">{uraian}</td>
+                              <td className="border border-[#1F1F1F] px-3 py-1.5">{ket}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+
+                      {/* Section II */}
+                      <p className="font-bold mt-4">II.  Pernyataan</p>
+                      <ol className="list-decimal ml-6 space-y-2">
+                        <li>Bahwa penyaluran bantuan pangan di atas telah dilaksanakan sesuai dengan ketentuan yang berlaku;</li>
+                        <li>Bahwa makanan yang disalurkan dalam kondisi baik, aman, dan layak konsumsi;</li>
+                        <li>Bahwa berita acara ini dibuat sebagai dasar pertanggungjawaban penyaluran bantuan pangan program Makan Bergizi Gratis.</li>
+                      </ol>
+
+                      <p className="mt-4">Demikian Berita Acara ini dibuat dengan sebenar-benarnya.</p>
+
+                      {/* Dual Signature */}
+                      <div className="flex justify-between mt-8">
+                        <div className="text-center w-48">
+                          <div className="text-[13px]">Mengetahui,</div>
+                          <div className="h-16"></div>
+                          <div className="border-t border-[#1F1F1F] w-40 mx-auto"></div>
+                          <div className="font-bold text-[13px] mt-1">{settings.nama_akuntan || "___________________"}</div>
+                          <div className="text-[11px] text-[#5C5C5C]">Pengawas Gizi</div>
+                        </div>
+                        <div className="text-center w-48">
+                          <div className="text-[13px]">Kepala {settings.sppg_name || "SPPG"},</div>
+                          <div className="h-16"></div>
+                          <div className="border-t border-[#1F1F1F] w-40 mx-auto"></div>
+                          <div className="font-bold text-[13px] mt-1">{settings.nama_kepala || "___________________"}</div>
+                          <div className="text-[11px] text-[#5C5C5C]">Kepala {settings.sppg_name || "SPPG"}</div>
+                        </div>
                       </div>
                     </div>
                   </div>
