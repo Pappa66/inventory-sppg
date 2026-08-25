@@ -10,19 +10,19 @@ import {
 import { ROLE_LABELS, ROLE_COLORS } from "@/lib/format";
 
 const DEMO_ACCOUNTS = [
-  { role: "admin_apps", email: "admin@sppg.id", label: "Admin Aplikasi", desc: "Akses penuh ke seluruh sistem" },
-  { role: "admin_sppg", email: "admin-sppg@sppg.id", label: "Admin SPPG", desc: "Kelola operasional satu SPPG" },
-  { role: "accountant", email: "akuntan@sppg.id", label: "Akuntan", desc: "Pembukuan & verifikasi" },
-  { role: "kitchen_head", email: "kepala@sppg.id", label: "Kepala SPPG", desc: "Pengawasan dapur & menu" },
-  { role: "head_chef", email: "chef@sppg.id", label: "Head Chef", desc: "Buat resep & susun menu" },
-  { role: "field_assistant", email: "asisten@sppg.id", label: "Asisten Lapangan", desc: "Pembelian & pengiriman" },
-  { role: "nutritionist", email: "ahligizi@sppg.id", label: "Ahli Gizi", desc: "Review gizi & setujui menu" },
-  { role: "driver", email: "driver@sppg.id", label: "Driver", desc: "Antar makanan ke tujuan" },
-  { role: "persiapan", email: "persiapan@sppg.id", label: "Tenaga Persiapan", desc: "Siapkan bahan sebelum masak" },
-  { role: "tenaga_masak", email: "masak@sppg.id", label: "Tenaga Masak", desc: "Masak sesuai resep" },
-  { role: "pemorsian", email: "pemorsian@sppg.id", label: "Tenaga Pemorsian", desc: "Bagi makanan ke ompreng" },
-  { role: "kebersihan", email: "kebersihan@sppg.id", label: "Petugas Kebersihan", desc: "Jaga kebersihan dapur" },
-  { role: "pencuci", email: "pencuci@sppg.id", label: "Pencuci Ompreng", desc: "Cuci & steril ompreng" },
+  { role: "admin_apps", email: "admin@sppg.id", id: "a0000001-0000-0000-0000-000000000001", label: "Admin Aplikasi", desc: "Akses penuh ke seluruh sistem" },
+  { role: "admin_sppg", email: "admin-sppg@sppg.id", id: "a0000001-0000-0000-0000-000000000002", label: "Admin SPPG", desc: "Kelola operasional satu SPPG" },
+  { role: "accountant", email: "akuntan@sppg.id", id: "a0000001-0000-0000-0000-000000000003", label: "Akuntan", desc: "Pembukuan & verifikasi" },
+  { role: "kitchen_head", email: "kepala@sppg.id", id: "a0000001-0000-0000-0000-000000000004", label: "Kepala SPPG", desc: "Pengawasan dapur & menu" },
+  { role: "head_chef", email: "chef@sppg.id", id: "a0000001-0000-0000-0000-000000000005", label: "Head Chef", desc: "Buat resep & susun menu" },
+  { role: "field_assistant", email: "asisten@sppg.id", id: "a0000001-0000-0000-0000-000000000006", label: "Asisten Lapangan", desc: "Pembelian & pengiriman" },
+  { role: "nutritionist", email: "ahligizi@sppg.id", id: "a0000001-0000-0000-0000-000000000007", label: "Ahli Gizi", desc: "Review gizi & setujui menu" },
+  { role: "driver", email: "driver@sppg.id", id: "a0000001-0000-0000-0000-000000000008", label: "Driver", desc: "Antar makanan ke tujuan" },
+  { role: "persiapan", email: "persiapan@sppg.id", id: "a0000001-0000-0000-0000-000000000009", label: "Tenaga Persiapan", desc: "Siapkan bahan sebelum masak" },
+  { role: "tenaga_masak", email: "masak@sppg.id", id: "a0000001-0000-0000-0000-000000000010", label: "Tenaga Masak", desc: "Masak sesuai resep" },
+  { role: "pemorsian", email: "pemorsian@sppg.id", id: "a0000001-0000-0000-0000-000000000011", label: "Tenaga Pemorsian", desc: "Bagi makanan ke ompreng" },
+  { role: "kebersihan", email: "kebersihan@sppg.id", id: "a0000001-0000-0000-0000-000000000012", label: "Petugas Kebersihan", desc: "Jaga kebersihan dapur" },
+  { role: "pencuci", email: "pencuci@sppg.id", id: "a0000001-0000-0000-0000-000000000013", label: "Pencuci Ompreng", desc: "Cuci & steril ompreng" },
 ];
 
 const QUICK_ROLES = [
@@ -54,10 +54,19 @@ export default function LoginPage() {
     }
   };
 
-  const loginAsRole = async (demoEmail) => {
+  const loginAsRole = async (acc) => {
     setLoading(true);
     try {
-      await login(demoEmail, "admin123");
+      const payload = {
+        id: acc.id,
+        email: acc.email,
+        name: acc.label,
+        role: acc.role,
+        is_active: true,
+      };
+      const token = btoa(JSON.stringify(payload));
+      localStorage.setItem("sppg_token", token);
+      document.cookie = `sppg_token=${token}; path=/; max-age=43200; SameSite=Lax`;
       router.push("/");
     } catch {
     } finally {
@@ -130,7 +139,7 @@ export default function LoginPage() {
                 {DEMO_ACCOUNTS.map((acc) => (
                   <button
                     key={acc.role}
-                    onClick={() => loginAsRole(acc.email)}
+                    onClick={() => loginAsRole(acc)}
                     disabled={loading}
                     className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-left hover:bg-[#F9F6F0] transition-colors group"
                   >

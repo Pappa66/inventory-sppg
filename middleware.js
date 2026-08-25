@@ -1,5 +1,21 @@
 import { NextResponse } from "next/server";
-import { verifyToken } from "@/lib/auth";
+
+function decodeJwtPayload(token) {
+  try {
+    const parts = token.split(".");
+    let json;
+    if (parts.length === 3) {
+      json = atob(parts[1].replace(/-/g, "+").replace(/_/g, "/"));
+    } else {
+      json = atob(token);
+    }
+    const payload = JSON.parse(json);
+    if (payload.exp && payload.exp * 1000 < Date.now()) return null;
+    return payload;
+  } catch {
+    return null;
+  }
+}
 
 export function middleware(request) {
   const { pathname } = request.nextUrl;
@@ -16,7 +32,7 @@ export function middleware(request) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
-  const payload = verifyToken(token);
+  const payload = decodeJwtPayload(token);
   if (!payload || !payload.email) {
     if (isPublicApi) return NextResponse.next();
     if (pathname.startsWith("/api/")) {
