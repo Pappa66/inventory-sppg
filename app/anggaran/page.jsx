@@ -145,6 +145,19 @@ export default function Page() {
   const insRab = calcInsRab(form);
   const totalPorsi = calcTotalPorsi(form);
 
+  if (!["admin_apps","admin_sppg","accountant","kitchen_head"].includes(activeRole)) {
+    return (
+      <Layout>
+        <div className="flex items-center justify-center min-h-[50vh]">
+          <div className="text-center">
+            <h1 className="font-display text-2xl font-bold text-[#5C5C5C]">Akses Dibatasi</h1>
+            <p className="text-[#5C5C5C] mt-2">Anda tidak memiliki izin untuk mengakses halaman ini.</p>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
+
   return (
     <Layout>
       <div className="space-y-6" data-testid="anggaran-page">
