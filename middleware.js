@@ -5,8 +5,11 @@ export function middleware(request) {
   const { pathname } = request.nextUrl;
   if (pathname === "/login") return NextResponse.next();
 
+  const isPublicApi = pathname.startsWith("/api/auth/login") || pathname.startsWith("/api/ping");
   const token = request.cookies.get("sppg_token")?.value;
+
   if (!token) {
+    if (isPublicApi) return NextResponse.next();
     if (pathname.startsWith("/api/")) {
       return NextResponse.json({ detail: "Unauthorized" }, { status: 401 });
     }
@@ -15,6 +18,7 @@ export function middleware(request) {
 
   const payload = verifyToken(token);
   if (!payload || !payload.email) {
+    if (isPublicApi) return NextResponse.next();
     if (pathname.startsWith("/api/")) {
       return NextResponse.json({ detail: "Token tidak valid" }, { status: 401 });
     }
