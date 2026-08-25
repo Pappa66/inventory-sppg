@@ -9,7 +9,7 @@ import { useRouter } from "next/navigation";
 import { Save, Package, Search, Filter } from "lucide-react";
 
 export default function OpeningBalancesPage() {
-  const { user } = useAuth();
+  const { user, activeRole } = useAuth();
   const router = useRouter();
   const [items, setItems] = useState([]);
   const [balances, setBalances] = useState({});
@@ -20,7 +20,7 @@ export default function OpeningBalancesPage() {
   const [search, setSearch] = useState("");
   const [filterCat, setFilterCat] = useState("");
 
-  const canWrite = user?.role === "admin_apps" || user?.role === "admin_sppg";
+  const canWrite = activeRole === "admin_apps" || activeRole === "admin_sppg";
 
   useEffect(() => {
     fetchPeriods();

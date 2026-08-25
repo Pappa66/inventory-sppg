@@ -11,7 +11,7 @@ import {
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { getLogo } from "@/lib/logo";
-import { getSettings, renderLetterhead, renderSignatureBlock, todayIndo } from "@/lib/letterhead";
+import { getSettings, renderLetterhead, renderLetterTitle, renderSignatureBlock, todayIndo } from "@/lib/letterhead";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -123,136 +123,170 @@ export default function ReportsPage() {
   const cetakSPTJ = async () => {
     const doc = new jsPDF();
     const [logo, settings] = await Promise.all([getLogo(), getSettings()]);
-    let y = renderLetterhead(doc, settings, logo);
+    const ml = 20, mr = 20, pw = 210;
+    let y = renderLetterhead(doc, settings, logo, { marginLeft: ml, marginRight: mr });
 
-    // Title
-    doc.setFontSize(14);
-    doc.setFont("helvetica", "bold");
-    doc.setTextColor(0x2D, 0x2D, 0x2D);
-    doc.text("SURAT PERNYATAAN TANGGUNG JAWAB", 105, y, { align: "center" });
-    doc.setFontSize(9);
-    doc.setFont("helvetica", "normal");
-    doc.text("(Lampiran 30j)", 105, y + 5, { align: "center" });
-    y += 14;
+    // Title block
+    y = renderLetterTitle(doc, "SURAT PERNYATAAN TANGGUNG JAWAB", "(Lampiran 30j Permenkes)", y, pw, ml, mr);
 
-    // Body
+    // Opening paragraph
     doc.setFontSize(10);
     doc.setFont("helvetica", "normal");
-    doc.text("Saya yang bertanda tangan di bawah ini:", 14, y);
+    doc.setTextColor(0x1F, 0x1F, 0x1F);
+    doc.text("Yang bertanda tangan di bawah ini:", ml, y);
     y += 8;
 
-    // Identity
+    // Identity table
     const name = settings.nama_kepala || "___________________";
-    doc.text("Nama    :", 14, y);
-    doc.setFont("helvetica", "bold");
-    doc.text(name, 42, y);
-    doc.setFont("helvetica", "normal");
-    y += 6;
-    doc.text("Jabatan :", 14, y);
-    doc.setFont("helvetica", "bold");
-    doc.text("Kepala SPPG", 42, y);
-    doc.setFont("helvetica", "normal");
-    y += 6;
-    doc.text("Program :", 14, y);
-    doc.setFont("helvetica", "bold");
-    doc.text(settings.sppg_name || "Makan Bergizi Gratis", 42, y);
-    doc.setFont("helvetica", "normal");
-    y += 10;
+    const sppgName = settings.sppg_name || "SPPG MBG";
+    const idSppg = settings.id_sppg || "";
 
-    doc.text("Dengan ini menyatakan bahwa:", 14, y);
-    y += 8;
-
-    const declarations = [
-      "Dana yang diterima dari Pemerintah telah digunakan sesuai ketentuan yang berlaku.",
-      "Penyaluran bantuan pangan telah dilakukan kepada penerima manfaat yang berhak.",
-      "Laporan pertanggungjawaban yang disampaikan adalah benar dan dapat dipertanggungjawabkan.",
+    const idFields = [
+      ["Nama", name],
+      ["NIP/NIK", "___________________"],
+      ["Jabatan", `Kepala ${sppgName}`],
+      ["Program", "Makan Bergizi Gratis (MBG)"],
     ];
-    declarations.forEach((text, i) => {
-      doc.text(`${i + 1}. ${text}`, 20, y);
-      y += 7;
+    if (idSppg) idFields.splice(2, 0, ["ID SPPG", idSppg]);
+
+    idFields.forEach(([label, val]) => {
+      doc.setFont("helvetica", "normal");
+      doc.text(`${label}  :`, ml + 5, y);
+      doc.setFont("helvetica", "bold");
+      doc.text(val, ml + 45, y);
+      y += 6;
     });
 
     y += 4;
-    doc.text("Demikian surat pernyataan ini saya buat dengan sebenar-benarnya.", 14, y);
-    y += 6;
+    doc.setFont("helvetica", "normal");
+    doc.text("Dengan ini menyatakan dengan sesungguhnya bahwa:", ml, y);
+    y += 8;
 
-    // Date
-    doc.text(`${settings.sppg_address || "____________"}, ${todayIndo()}`, 14, y);
-    y += 6;
+    // Declarations
+    const declarations = [
+      "Dana bantuan pangan yang diterima dari Pemerintah telah digunakan semata-mata untuk kegiatan operasional program Makan Bergizi Gratis sesuai ketentuan yang berlaku;",
+      "Penyaluran bantuan pangan telah dilaksanakan kepada penerima manfaat yang berhak sesuai data yang tercatat dalam sistem;",
+      "Laporan pertanggungjawaban keuangan dan operasional yang disampaikan adalah benar, lengkap, dan dapat dipertanggungjawabkan secara hukum.",
+    ];
+    declarations.forEach((text, i) => {
+      const prefix = `${i + 1}. `;
+      doc.setFont("helvetica", "normal");
+      doc.text(prefix, ml + 5, y);
+      const lines = doc.splitTextToSize(text, pw - ml - mr - 15);
+      doc.text(lines, ml + 12, y);
+      y += lines.length * 5 + 2;
+    });
+
+    y += 4;
+    doc.setFont("helvetica", "normal");
+    doc.text("Demikian Surat Pernyataan Tanggung Jawab ini saya buat dengan sebenar-benarnya dan dalam keadaan sadar tanpa adanya paksaan dari pihak manapun.", ml, y);
+    y += 12;
+
+    // Date and location
+    const address = settings.sppg_address || "___________________";
+    doc.text(`${address}, ${todayIndo()}`, ml, y);
+    y += 16;
 
     // Signature
     const sigRoles = [
-      { label: "Kepala SPPG,", settingsKey: "nama_kepala", jabatan: `Kepala ${settings.sppg_name || "SPPG"}` },
+      { label: "Kepala SPPG,", settingsKey: "nama_kepala", jabatan: `Kepala ${sppgName}` },
     ];
-    y = renderSignatureBlock(doc, settings, y, 210, sigRoles);
+    y = renderSignatureBlock(doc, settings, y, pw, sigRoles);
 
-    doc.save(`SPTJ-${new Date().toISOString().slice(0,10)}.pdf`);
+    doc.save(`SPTJ-${new Date().toISOString().slice(0, 10)}.pdf`);
     toast.success("SPTJ berhasil dicetak");
   };
 
   const cetakBAPSD = async () => {
     const doc = new jsPDF();
     const [logo, settings] = await Promise.all([getLogo(), getSettings()]);
-    let y = renderLetterhead(doc, settings, logo);
+    const ml = 20, mr = 20, pw = 210;
+    let y = renderLetterhead(doc, settings, logo, { marginLeft: ml, marginRight: mr });
 
-    // Title
-    doc.setFontSize(14);
-    doc.setFont("helvetica", "bold");
-    doc.setTextColor(0x2D, 0x2D, 0x2D);
-    doc.text("BERITA ACARA PENYALURAN SIAP DISTRIBUSI", 105, y, { align: "center" });
-    doc.setFontSize(9);
-    doc.setFont("helvetica", "normal");
-    doc.text("(Lampiran 30n)", 105, y + 5, { align: "center" });
-    y += 14;
+    // Title block
+    y = renderLetterTitle(doc, "BERITA ACARA PENYALURAN", "(Lampiran 30n Permenkes)", y, pw, ml, mr);
 
-    // Body
+    // Opening
     doc.setFontSize(10);
-    doc.text(`Pada hari ini ${todayIndo()}, telah dilakukan penyaluran makanan siap distribusi`, 14, y);
-    y += 7;
-    doc.text(`di ${settings.sppg_name || "SPPG MBG"}.`, 14, y);
-    y += 10;
-
-    doc.text("Rincian penyaluran:", 14, y);
-    y += 8;
-
-    // Table header
-    doc.setFont("helvetica", "bold");
-    doc.setFillColor(0xEA, 0xE4, 0xD8);
-    doc.rect(14, y - 4, 182, 7, "F");
-    doc.text("No", 18, y);
-    doc.text("Keterangan", 30, y);
-    doc.text("Jumlah", 160, y);
     doc.setFont("helvetica", "normal");
-    y += 8;
+    doc.setTextColor(0x1F, 0x1F, 0x1F);
 
-    // Sample rows (would be dynamic in production)
-    const rows = [
-      ["1", "Total Porsi Distribusi", "455 porsi"],
-      ["2", "Lokasi Tujuan", "12 lokasi"],
-      ["3", "Driver Pengantar", "2 orang"],
-      ["4", "Waktu Distribusi", "08:00 - 11:00 WIB"],
-    ];
-    rows.forEach(([no, desc, qty]) => {
-      doc.text(no, 18, y);
-      doc.text(desc, 30, y);
-      doc.text(qty, 160, y);
-      y += 6;
-    });
-    y += 6;
-
-    doc.text("Berita acara ini dibuat sebagai dasar pertanggungjawaban penyaluran bantuan pangan.", 14, y);
-    y += 6;
-    doc.text("Demikian berita acara ini dibuat dengan sebenar-benarnya.", 14, y);
+    const sppgName = settings.sppg_name || "SPPG MBG";
+    doc.text(`Pada hari ini ${todayIndo()}, telah dilaksanakan penyaluran makanan siap distribusi`, ml, y);
+    y += 5;
+    doc.text(`program Makan Bergizi Gratis di ${sppgName}.`, ml, y);
     y += 10;
 
-    // Signatures
-    const sigRoles = [
-      { label: "Mengetahui,", settingsKey: "nama_akuntan", jabatan: "Pengawas Gizi" },
-      { label: "Kepala SPPG,", settingsKey: "nama_kepala", jabatan: `Kepala ${settings.sppg_name || "SPPG"}` },
-    ];
-    y = renderSignatureBlock(doc, settings, y, 210, sigRoles);
+    doc.setFont("helvetica", "bold");
+    doc.text("I. Rincian Penyaluran", ml, y);
+    y += 7;
 
-    doc.save(`BAPSD-${new Date().toISOString().slice(0,10)}.pdf`);
+    // Distribution table using autoTable
+    autoTable(doc, {
+      startY: y,
+      margin: { left: ml, right: mr },
+      head: [["No", "Uraian", "Keterangan"]],
+      body: [
+        ["1", "Tanggal Penyaluran", todayIndo()],
+        ["2", "Lokasi / Tujuan", settings.sppg_address || "___________________"],
+        ["3", "Total Porsi Didistribusikan", "________ porsi"],
+        ["4", "Jumlah Tujuan Pengiriman", "________ lokasi"],
+        ["5", "Jumlah Driver Pengantar", "________ orang"],
+        ["6", "Waktu Distribusi", "08:00 — 11:00 WIB"],
+      ],
+      theme: "grid",
+      headStyles: {
+        fillColor: [0x4A, 0x7C, 0x59],
+        textColor: [0xFF, 0xFF, 0xFF],
+        fontStyle: "bold",
+        fontSize: 9,
+        halign: "center",
+      },
+      bodyStyles: {
+        fontSize: 9,
+        textColor: [0x1F, 0x1F, 0x1F],
+      },
+      columnStyles: {
+        0: { halign: "center", cellWidth: 12 },
+        1: { cellWidth: 60 },
+        2: { cellWidth: "auto" },
+      },
+      alternateRowStyles: { fillColor: [0xF9, 0xF6, 0xF0] },
+    });
+
+    y = doc.lastAutoTable.finalY + 10;
+
+    doc.setFont("helvetica", "bold");
+    doc.text("II. Pernyataan", ml, y);
+    y += 7;
+
+    doc.setFont("helvetica", "normal");
+    const statements = [
+      "Bahwa penyaluran bantuan pangan di atas telah dilaksanakan sesuai dengan ketentuan yang berlaku;",
+      "Bahwa makanan yang disalurkan dalam kondisi baik, aman, dan layak konsumsi;",
+      "Bahwa berita acara ini dibuat sebagai dasar pertanggungjawaban penyaluran bantuan pangan program Makan Bergizi Gratis.",
+    ];
+    statements.forEach((text, i) => {
+      const prefix = `${i + 1}. `;
+      doc.text(prefix, ml + 3, y);
+      const lines = doc.splitTextToSize(text, pw - ml - mr - 10);
+      doc.text(lines, ml + 10, y);
+      y += lines.length * 5 + 2;
+    });
+
+    y += 6;
+    doc.setFont("helvetica", "normal");
+    doc.text("Demikian Berita Acara ini dibuat dengan sebenar-benarnya.", ml, y);
+    y += 12;
+
+    // Dual signature block
+    const sigRoles = [
+      { label: "Pengawas Gizi,", settingsKey: "nama_akuntan", jabatan: "Pengawas Gizi" },
+      { label: `Kepala ${sppgName},`, settingsKey: "nama_kepala", jabatan: `Kepala ${sppgName}` },
+    ];
+    y = renderSignatureBlock(doc, settings, y, pw, sigRoles);
+
+    doc.save(`BAPSD-${new Date().toISOString().slice(0, 10)}.pdf`);
     toast.success("BAPSD berhasil dicetak");
   };
 

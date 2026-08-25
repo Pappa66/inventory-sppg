@@ -16,7 +16,7 @@ const LEVEL_COLORS = { 1: "#4A7C59", 2: "#D97706", 3: "#2C4251" };
 const ZONES = ["DRY", "WET", "FREEZER"];
 
 export default function ItemHierarchyPage() {
-  const { user } = useAuth();
+  const { user, activeRole } = useAuth();
   const router = useRouter();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -24,7 +24,7 @@ export default function ItemHierarchyPage() {
   const [form, setForm] = useState(null);
   const [filter, setFilter] = useState({ level: "" });
 
-  const canWrite = user?.role === "admin_apps" || user?.role === "admin_sppg";
+  const canWrite = activeRole === "admin_apps" || activeRole === "admin_sppg";
 
   useEffect(() => {
     fetchItems();

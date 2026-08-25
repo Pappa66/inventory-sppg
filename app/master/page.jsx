@@ -12,7 +12,7 @@ import Pagination from "@/components/Pagination";
 
 const EMPTY = { name: "", unit: "kg", category: "Sayur", par_level: 0, price_per_unit: 0, zone: "DRY", allergens: [] };
 
-const CAN_EDIT = ["admin", "kitchen_head", "head_chef"];
+const CAN_EDIT = ["admin_apps", "admin_sppg", "kitchen_head", "head_chef"];
 
 export default function Page() {
   const { activeRole } = useAuth();

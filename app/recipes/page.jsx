@@ -13,7 +13,7 @@ import Pagination from "@/components/Pagination";
 const EMPTY = { name: "", servings: 100, menu_category: null, ingredients: [], instructions: "",
   calories_kcal: 0, protein_g: 0, carbs_g: 0, fats_g: 0, sodium_mg: 0, allergens: [], photo_url: "" };
 
-const CAN_EDIT = ["admin", "head_chef", "nutritionist", "kitchen_head"];
+const CAN_EDIT = ["admin_apps", "admin_sppg", "head_chef", "nutritionist", "kitchen_head"];
 
 export default function Page() {
   const { activeRole } = useAuth();

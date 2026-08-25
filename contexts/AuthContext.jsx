@@ -33,10 +33,15 @@ export function AuthProvider({ children }) {
         setActiveRole(data.role);
         setLoading(false);
       })
-      .catch(() => {
-        clearAll();
-        setLoading(false);
-        router.push("/login");
+      .catch((err) => {
+        const status = err?.response?.status;
+        if (status === 401) {
+          clearAll();
+          setLoading(false);
+          router.push("/login");
+        } else {
+          setLoading(false);
+        }
       });
   }, [router]);
 
