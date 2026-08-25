@@ -33,6 +33,7 @@ export async function POST(request) {
       fiber_g: body.fiber_g || 0,
       sodium_mg: body.sodium_mg || 0,
       allergens: body.allergens || [],
+      nutrition_auto: body.nutrition_auto !== undefined ? body.nutrition_auto : true,
       photo_url: body.photo_url || null,
       created_at: new Date().toISOString(),
     };

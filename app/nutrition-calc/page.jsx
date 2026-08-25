@@ -3,15 +3,13 @@
 import React, { useState, useEffect, useMemo } from "react";
 import Layout from "@/components/Layout";
 import { api } from "@/lib/api";
-import { Calculator, CheckCircle2, AlertTriangle, ChefHat, Scale, HeartPulse } from "lucide-react";
+import { Calculator, CheckCircle2, AlertTriangle, ChefHat, Scale, HeartPulse, Leaf } from "lucide-react";
 import { AKG_STANDARDS } from "@/lib/format";
 
 function NutrientBar({ label, value, unit, standard, color }) {
   const pct = standard > 0 ? Math.min((value / standard) * 100, 120) : 0;
-  const status =
-    pct >= 80 ? "ok" : pct >= 50 ? "warn" : "low";
+  const status = pct >= 80 ? "ok" : pct >= 50 ? "warn" : "low";
   const statusColor = status === "ok" ? "#4A7C59" : status === "warn" ? "#D97706" : "#C5533B";
-  const statusIcon = status === "ok" ? CheckCircle2 : AlertTriangle;
 
   return (
     <div className="space-y-1">
@@ -22,28 +20,32 @@ function NutrientBar({ label, value, unit, standard, color }) {
         </span>
       </div>
       <div className="w-full h-3 bg-[#EAE4D8] rounded-full overflow-hidden">
-        <div
-          className="h-full rounded-full transition-all duration-500"
-          style={{
-            width: `${Math.min(pct, 100)}%`,
-            backgroundColor: statusColor,
-          }}
-        />
+        <div className="h-full rounded-full transition-all duration-500" style={{ width: `${Math.min(pct, 100)}%`, backgroundColor: statusColor }} />
       </div>
     </div>
   );
 }
 
+const NUTRI_COLS = [
+  ["calories", "Kalori", "kkal", "#D97706"],
+  ["protein", "Protein", "g", "#4A7C59"],
+  ["carbs", "Karbo", "g", "#2C4251"],
+  ["fats", "Lemak", "g", "#C5533B"],
+  ["fiber", "Serat", "g", "#0E7490"],
+  ["sodium", "Natrium", "mg", "#6D28D9"],
+];
+
 export default function NutritionCalcPage() {
   const [recipes, setRecipes] = useState([]);
+  const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedRecipe, setSelectedRecipe] = useState(null);
   const [selectedAkg, setSelectedAkg] = useState("BALITA");
 
   useEffect(() => {
-    api.get("/recipes")
-      .then(({ data }) => setRecipes(data || []))
-      .catch(() => setRecipes([]))
+    Promise.all([api.get("/recipes"), api.get("/items")])
+      .then(([r, i]) => { setRecipes(r.data || []); setItems(i.data || []); })
+      .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
 
@@ -59,6 +61,29 @@ export default function NutritionCalcPage() {
       fiber: (selectedRecipe.fiber_g || 0) / s,
     };
   }, [selectedRecipe]);
+
+  const ingredientBreakdown = useMemo(() => {
+    if (!selectedRecipe) return [];
+    const rows = [];
+    for (const ing of (selectedRecipe.ingredients || [])) {
+      const item = items.find(x => x.id === ing.item_id);
+      if (!item) continue;
+      const n = item.nutrition_per_100g || {};
+      const factor = (ing.quantity || 0) / 100;
+      rows.push({
+        name: item.name,
+        quantity: ing.quantity,
+        unit: ing.unit || item.unit,
+        calories: (n.calories || 0) * factor,
+        protein: (n.protein || 0) * factor,
+        carbs: (n.carbs || 0) * factor,
+        fats: (n.fats || 0) * factor,
+        fiber: (n.fiber || 0) * factor,
+        sodium: (n.sodium || 0) * factor,
+      });
+    }
+    return rows;
+  }, [selectedRecipe, items]);
 
   const akg = AKG_STANDARDS[selectedAkg];
 
@@ -80,9 +105,7 @@ export default function NutritionCalcPage() {
       <div className="space-y-6">
         <div>
           <h1 className="font-display text-4xl font-bold">Kalkulator Gizi</h1>
-          <p className="text-[#5C5C5C] mt-1">
-            Periksa apakah menu memenuhi AKG untuk setiap kelompok sasaran
-          </p>
+          <p className="text-[#5C5C5C] mt-1">Gizi dihitung dari bahan per 100g. Rincian per bahan tersedia.</p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -98,18 +121,11 @@ export default function NutritionCalcPage() {
               ) : (
                 <div className="space-y-2 max-h-[60vh] overflow-y-auto">
                   {recipes.map((r) => (
-                    <button
-                      key={r.id}
-                      onClick={() => setSelectedRecipe(r)}
-                      className={`w-full text-left p-3 rounded-lg border text-sm transition-colors ${
-                        selectedRecipe?.id === r.id
-                          ? "border-[#4A7C59] bg-[#4A7C59]/10"
-                          : "border-[#EAE4D8] hover:bg-[#F9F6F0]"
-                      }`}
-                    >
+                    <button key={r.id} onClick={() => setSelectedRecipe(r)}
+                      className={`w-full text-left p-3 rounded-lg border text-sm transition-colors ${selectedRecipe?.id === r.id ? "border-[#4A7C59] bg-[#4A7C59]/10" : "border-[#EAE4D8] hover:bg-[#F9F6F0]"}`}>
                       <div className="font-semibold">{r.name}</div>
                       <div className="text-xs text-[#5C5C5C] mt-1">
-                        {r.calories_kcal || 0}kkal | {r.protein_g || 0}g protein | {r.carbs_g || 0}g karbo
+                        {r.calories_kcal || 0}kkal | {r.protein_g || 0}g protein | {(r.ingredients || []).length} bahan
                       </div>
                     </button>
                   ))}
@@ -124,11 +140,8 @@ export default function NutritionCalcPage() {
                 <Scale size={16} />
                 <label className="text-sm font-semibold">Kelompok Sasaran</label>
               </div>
-              <select
-                value={selectedAkg}
-                onChange={(e) => setSelectedAkg(e.target.value)}
-                className="w-full px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0] text-sm"
-              >
+              <select value={selectedAkg} onChange={(e) => setSelectedAkg(e.target.value)}
+                className="w-full px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0] text-sm">
                 {Object.entries(AKG_STANDARDS).map(([k, v]) => (
                   <option key={k} value={k}>{v.label}</option>
                 ))}
@@ -145,10 +158,8 @@ export default function NutritionCalcPage() {
               <>
                 <div className="card-soft p-5">
                   <h3 className="font-display font-bold text-lg mb-1">{selectedRecipe.name}</h3>
-                  <p className="text-xs text-[#5C5C5C]">
-                    {selectedRecipe.servings} porsi | Per porsi:
-                  </p>
-                  <div className="grid grid-cols-3 sm:grid-cols-5 gap-3 mt-3">
+                  <p className="text-xs text-[#5C5C5C]">{selectedRecipe.servings} porsi | Per porsi:</p>
+                  <div className="grid grid-cols-3 sm:grid-cols-6 gap-3 mt-3">
                     {[
                       { label: "Kalori", val: perPortion.calories, unit: "kkal", color: "#D97706" },
                       { label: "Protein", val: perPortion.protein, unit: "g", color: "#4A7C59" },
@@ -159,14 +170,52 @@ export default function NutritionCalcPage() {
                     ].map((n) => (
                       <div key={n.label} className="text-center p-3 rounded-lg bg-[#F9F6F0]">
                         <div className="text-[10px] uppercase tracking-widest text-[#5C5C5C]">{n.label}</div>
-                        <div className="font-display font-bold text-lg mt-1" style={{ color: n.color }}>
-                          {n.val.toFixed(1)}
-                        </div>
+                        <div className="font-display font-bold text-lg mt-1" style={{ color: n.color }}>{n.val.toFixed(1)}</div>
                         <div className="text-[10px] text-[#5C5C5C]">{n.unit}</div>
                       </div>
                     ))}
                   </div>
                 </div>
+
+                {ingredientBreakdown.length > 0 && (
+                  <div className="card-soft p-5">
+                    <h3 className="font-display font-bold flex items-center gap-2 mb-3">
+                      <Leaf size={16} /> Rincian per Bahan
+                    </h3>
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-sm">
+                        <thead>
+                          <tr className="border-b border-[#EAE4D8]">
+                            <th className="text-left py-2 px-2 text-xs uppercase text-[#5C5C5C]">Bahan</th>
+                            <th className="text-right py-2 px-2 text-xs uppercase text-[#5C5C5C]">Qty</th>
+                            {NUTRI_COLS.map(([k, l]) => (
+                              <th key={k} className="text-right py-2 px-2 text-xs uppercase text-[#5C5C5C]">{l}</th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {ingredientBreakdown.map((row, i) => (
+                            <tr key={i} className="border-b border-[#EAE4D8] last:border-0">
+                              <td className="py-2 px-2 font-medium">{row.name}</td>
+                              <td className="py-2 px-2 text-right text-[#5C5C5C]">{row.quantity} {row.unit}</td>
+                              {NUTRI_COLS.map(([k, , unit]) => (
+                                <td key={k} className="py-2 px-2 text-right font-semibold">{row[k].toFixed(1)}<span className="text-[10px] text-[#5C5C5C] ml-0.5">{unit}</span></td>
+                              ))}
+                            </tr>
+                          ))}
+                          <tr className="font-bold bg-[#F9F6F0]">
+                            <td className="py-2 px-2">Total</td>
+                            <td className="py-2 px-2 text-right">—</td>
+                            {NUTRI_COLS.map(([k, , unit]) => {
+                              const total = ingredientBreakdown.reduce((s, r) => s + r[k], 0);
+                              return <td key={k} className="py-2 px-2 text-right">{total.toFixed(1)}<span className="text-[10px] text-[#5C5C5C] ml-0.5">{unit}</span></td>;
+                            })}
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
 
                 <div className="card-soft p-5 space-y-4">
                   <h3 className="font-display font-bold flex items-center gap-2">
@@ -183,20 +232,14 @@ export default function NutritionCalcPage() {
                 {verdict && (
                   <div className={`card-soft p-5 ${verdict.allGood ? "border-l-4 border-[#4A7C59]" : "border-l-4 border-[#C5533B]"}`}>
                     <div className="flex items-center gap-3">
-                      {verdict.allGood ? (
-                        <CheckCircle2 size={24} className="text-[#4A7C59]" />
-                      ) : (
-                        <AlertTriangle size={24} className="text-[#C5533B]" />
-                      )}
+                      {verdict.allGood ? <CheckCircle2 size={24} className="text-[#4A7C59]" /> : <AlertTriangle size={24} className="text-[#C5533B]" />}
                       <div>
                         <p className={`font-display font-bold text-lg ${verdict.allGood ? "text-[#4A7C59]" : "text-[#C5533B]"}`}>
                           {verdict.allGood ? "Memenuhi Standar AKG" : "Perlu Perbaikan Gizi"}
                         </p>
                         <p className="text-sm text-[#5C5C5C] mt-1">
                           Rata-rata pemenuhan: {verdict.avgPct.toFixed(0)}%
-                          {!verdict.allGood && (
-                            <span> — Pertimbangkan tambah porsi protein atau sayuran untuk kelompok {akg.label}.</span>
-                          )}
+                          {!verdict.allGood && <span> — Pertimbangkan tambah porsi protein atau sayuran untuk kelompok {akg.label}.</span>}
                         </p>
                       </div>
                     </div>

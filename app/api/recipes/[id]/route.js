@@ -11,7 +11,7 @@ export async function PATCH(request, { params }) {
     const body = await request.json();
     const supabase = await createClient();
 
-    const allowedFields = ["name", "servings", "menu_category", "ingredients", "instructions", "calories_kcal", "protein_g", "carbs_g", "fats_g", "fiber_g", "sodium_mg", "allergens", "photo_url"];
+    const allowedFields = ["name", "servings", "menu_category", "ingredients", "instructions", "calories_kcal", "protein_g", "carbs_g", "fats_g", "fiber_g", "sodium_mg", "allergens", "photo_url", "nutrition_auto"];
     const updates = {};
     for (const k of allowedFields) {
       if (body[k] !== undefined) updates[k] = body[k];

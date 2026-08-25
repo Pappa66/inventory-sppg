@@ -10,7 +10,7 @@ import { Plus, History } from "lucide-react";
 import { SkeletonTable } from "@/components/Skeleton";
 import Pagination from "@/components/Pagination";
 
-const EMPTY = { name: "", unit: "kg", category: "Sayur", par_level: 0, price_per_unit: 0, zone: "DRY", allergens: [] };
+const EMPTY = { name: "", unit: "kg", category: "Sayur", par_level: 0, price_per_unit: 0, zone: "DRY", allergens: [], nutrition_per_100g: { calories: 0, protein: 0, carbs: 0, fats: 0, fiber: 0, sodium: 0 } };
 
 const CAN_EDIT = ["admin_apps", "admin_sppg", "kitchen_head", "head_chef"];
 
@@ -90,7 +90,7 @@ export default function Page() {
                     <td className="py-3 px-4 text-right audit-ts">{fmtIDR(it.price_per_unit)}</td>
                     <td className="py-3 px-4 text-xs">{(it.allergens||[]).join(", ") || "—"}</td>
                     <td className="py-3 px-4 text-right space-x-2">
-                      {CAN_EDIT.includes(activeRole) && <button data-testid={`edit-item-${it.id}`} onClick={()=>{setEditing(it); setForm({name:it.name,unit:it.unit,category:it.category,par_level:it.par_level,price_per_unit:it.price_per_unit,zone:it.zone||"DRY",allergens:it.allergens||[]}); setOpen(true);}} className="btn-ghost text-xs">Edit</button>}
+                      {CAN_EDIT.includes(activeRole) && <button data-testid={`edit-item-${it.id}`} onClick={()=>{setEditing(it); setForm({name:it.name,unit:it.unit,category:it.category,par_level:it.par_level,price_per_unit:it.price_per_unit,zone:it.zone||"DRY",allergens:it.allergens||[],nutrition_per_100g:it.nutrition_per_100g||{calories:0,protein:0,carbs:0,fats:0,fiber:0,sodium:0}}); setOpen(true);}} className="btn-ghost text-xs">Edit</button>}
                       <button data-testid={`history-${it.id}`} onClick={()=>showHistory(it)} className="btn-ghost text-xs"><History size={14}/> Riwayat</button>
                     </td>
                   </tr>
@@ -126,7 +126,7 @@ export default function Page() {
                     </div>
                   </div>
                   <div className="flex justify-end gap-2 pt-1">
-                    {CAN_EDIT.includes(activeRole) && <button data-testid={`edit-item-${it.id}`} onClick={()=>{setEditing(it); setForm({name:it.name,unit:it.unit,category:it.category,par_level:it.par_level,price_per_unit:it.price_per_unit,zone:it.zone||"DRY",allergens:it.allergens||[]}); setOpen(true);}} className="btn-ghost text-xs">Edit</button>}
+                    {CAN_EDIT.includes(activeRole) && <button data-testid={`edit-item-${it.id}`} onClick={()=>{setEditing(it); setForm({name:it.name,unit:it.unit,category:it.category,par_level:it.par_level,price_per_unit:it.price_per_unit,zone:it.zone||"DRY",allergens:it.allergens||[],nutrition_per_100g:it.nutrition_per_100g||{calories:0,protein:0,carbs:0,fats:0,fiber:0,sodium:0}}); setOpen(true);}} className="btn-ghost text-xs">Edit</button>}
                     <button data-testid={`history-${it.id}`} onClick={()=>showHistory(it)} className="btn-ghost text-xs"><History size={14}/> Riwayat</button>
                   </div>
                 </div>
@@ -186,6 +186,19 @@ export default function Page() {
                     })}
                   </div>
                 </div>
+                <div>
+                  <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Nilai Gizi per 100g</label>
+                  <div className="grid grid-cols-3 gap-2 mt-1">
+                    {[["calories","Kkal"],["protein","Protein (g)"],["carbs","Karbo (g)"],["fats","Lemak (g)"],["fiber","Serat (g)"],["sodium","Natrium (mg)"]].map(([k,l])=>(
+                      <div key={k}>
+                        <label className="text-[10px] uppercase text-[#5C5C5C]">{l}</label>
+                        <input type="number" step="0.1" className="w-full mt-1 px-2 py-1.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0] text-sm" 
+                          value={form.nutrition_per_100g?.[k]||0} 
+                          onChange={(e)=>setForm({...form, nutrition_per_100g:{...form.nutrition_per_100g, [k]:parseFloat(e.target.value)||0}})}/>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
               <div className="flex justify-end gap-2 mt-5">
                 <button type="button" onClick={()=>setOpen(false)} className="btn-ghost">Batal</button>
@@ -209,10 +222,12 @@ export default function Page() {
                     ["name", "Nama"], ["zone", "Zona"], ["category", "Kategori"],
                     ["unit", "Satuan"], ["par_level", "Par-Level"],
                     ["price_per_unit", "Harga/Satuan"], ["allergens", "Alergen"],
+                    ["nutrition_per_100g", "Gizi/100g"],
                   ];
                   const fmt = (val) => {
                     if (val == null || val === "") return "—";
                     if (Array.isArray(val)) return val.length ? val.join(", ") : "—";
+                    if (typeof val === "object") return Object.entries(val).map(([k,v])=>`${k}:${v}`).join(", ");
                     if (typeof val === "number") return val.toLocaleString("id-ID");
                     return String(val);
                   };

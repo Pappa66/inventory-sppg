@@ -30,6 +30,7 @@ export async function POST(request) {
       price_per_unit: body.price_per_unit || 0,
       zone: body.zone || "DRY",
       allergens: body.allergens || [],
+      nutrition_per_100g: body.nutrition_per_100g || { calories: 0, protein: 0, carbs: 0, fats: 0, fiber: 0, sodium: 0 },
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     };
