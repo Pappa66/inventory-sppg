@@ -109,7 +109,12 @@ function UpdateFormInline({ planId, destIdx, dest, onUpdate, onCancel }) {
     if (!file) { setPhotoUrl(""); return; }
     try {
       const base64 = await fileToBase64(file);
-      setPhotoUrl(base64);
+      try {
+        const { data } = await api.post("/upload", { file: base64, folder: "delivery" });
+        setPhotoUrl(data?.url || base64);
+      } catch {
+        setPhotoUrl(base64);
+      }
     } catch {
       toast.error("Gagal membaca foto");
     }

@@ -154,6 +154,17 @@ export default function Page() {
     }
   };
 
+  const uploadPhoto = async (dataUrl, folder) => {
+    if (!dataUrl) return "";
+    if (!dataUrl.startsWith("data:")) return dataUrl;
+    try {
+      const { data } = await api.post("/upload", { file: dataUrl, folder });
+      return data?.url || dataUrl;
+    } catch {
+      return dataUrl;
+    }
+  };
+
   const submitTask = async (e) => {
     e.preventDefault();
     setSubmitting(true);
@@ -165,12 +176,13 @@ export default function Page() {
         if (filled.length === 0) { setError("Isi minimal 1 kategori ompreng"); setSubmitting(false); return; }
 
         for (const cat of filled) {
+          const photoUrl = await uploadPhoto(ompreng[cat.key].photo, "pemorsian");
           await api.post("/daily-tasks", {
             task_date: form.task_date,
             task_type: cfg.taskType,
             category: cat.key,
             portions: parseInt(ompreng[cat.key].qty) || 0,
-            photo_url: ompreng[cat.key].photo || "",
+            photo_url: photoUrl,
             description: `${cat.label}: ${form.description || "Pemorsian"}`,
             status: "SELESAI",
           });
@@ -180,21 +192,23 @@ export default function Page() {
         const entries = slots.map((s, i) => ({ idx: i, slot: s, photo: photos[i] })).filter(e => e.photo);
         if (entries.length === 0) { setError("Minimal upload 1 foto"); setSubmitting(false); return; }
         for (const entry of entries) {
+          const photoUrl = await uploadPhoto(entry.photo, cfg.taskType);
           await api.post("/daily-tasks", {
             task_date: form.task_date,
             task_type: cfg.taskType,
             category: null, portions: 0,
-            photo_url: entry.photo,
+            photo_url: photoUrl,
             description: `${entry.slot.label}: ${form.description || entry.slot.desc}`,
             status: "SELESAI",
           });
         }
       } else {
+        const photoUrl = await uploadPhoto(photos[0], cfg.taskType);
         await api.post("/daily-tasks", {
           task_date: form.task_date,
           task_type: cfg.taskType,
           category: null, portions: 0,
-          photo_url: photos[0] || "",
+          photo_url: photoUrl,
           description: form.description,
           status: "SELESAI",
         });
