@@ -15,9 +15,11 @@ export default function Page() {
   const [lots, setLots] = useState([]);
   const [items, setItems] = useState([]);
   const [openLot, setOpenLot] = useState(false);
+  const [openItem, setOpenItem] = useState(false);
   const [openOpname, setOpenOpname] = useState(null);
   const [openTaken, setOpenTaken] = useState(null);
   const [lotForm, setLotForm] = useState({ item_id: "", quantity: 0, expiry_date: "" });
+  const [itemForm, setItemForm] = useState({ name: "", unit: "kg", category: "SY", par_level: 0, price_per_unit: 0, zone: "DRY" });
   const [opnameForm, setOpnameForm] = useState({ counted_quantity: 0, zone: "DRY", temperature_c: "", humidity_pct: "", reason: "Routine" });
   const [takenForm, setTakenForm] = useState({ quantity: 0, reason: "COOKING" });
   const [zoneFilter, setZoneFilter] = useState("ALL");
@@ -55,6 +57,16 @@ export default function Page() {
       await api.post("/stock-lots", lotForm);
       toast.success("Lot stok ditambahkan");
       setOpenLot(false); setLotForm({ item_id: "", quantity: 0, expiry_date: "" }); load();
+    } catch (er) { toast.error(formatErr(er)); }
+  };
+
+  const submitItem = async (e) => {
+    e.preventDefault();
+    if (!itemForm.name.trim()) return toast.error("Nama bahan wajib diisi");
+    try {
+      await api.post("/items", itemForm);
+      toast.success("Bahan baru ditambahkan");
+      setOpenItem(false); setItemForm({ name: "", unit: "kg", category: "Sayur", par_level: 0, price_per_unit: 0, zone: "DRY" }); load();
     } catch (er) { toast.error(formatErr(er)); }
   };
 
@@ -115,7 +127,10 @@ export default function Page() {
               ))}
             </div>
             {(activeRole === "field_assistant" || activeRole === "admin_apps" || activeRole === "admin_sppg" || activeRole === "kitchen_head" || activeRole === "head_chef") && (
-              <button data-testid="add-lot-btn" onClick={()=>setOpenLot(true)} className="btn-primary"><Plus size={16}/> Tambah Lot</button>
+              <>
+                <button data-testid="add-item-btn" onClick={()=>setOpenItem(true)} className="btn-outline"><Plus size={16}/> Tambah Bahan</button>
+                <button data-testid="add-lot-btn" onClick={()=>setOpenLot(true)} className="btn-primary"><Plus size={16}/> Tambah Lot</button>
+              </>
             )}
           </div>
         </div>
@@ -245,6 +260,57 @@ export default function Page() {
               <div className="flex justify-end gap-2 mt-5">
                 <button type="button" onClick={()=>setOpenLot(false)} className="btn-ghost">Batal</button>
                 <button data-testid="save-lot" type="submit" className="btn-primary">Simpan</button>
+              </div>
+            </form>
+          </div>
+        )}
+
+        {openItem && (
+          <div className="fixed inset-0 z-40 bg-black/40 grid place-items-center p-4" onClick={()=>setOpenItem(false)}>
+            <form onClick={(e)=>e.stopPropagation()} onSubmit={submitItem} className="card-soft p-4 sm:p-6 w-full max-w-md">
+              <h2 className="font-display text-2xl font-bold">Tambah Bahan Baru</h2>
+              <div className="grid grid-cols-1 gap-3 mt-4">
+                <div>
+                  <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Nama Bahan</label>
+                  <input data-testid="item-name" required className="w-full mt-1 px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={itemForm.name} onChange={(e)=>setItemForm({...itemForm, name:e.target.value})}/>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Satuan</label>
+                    <select data-testid="item-unit" className="w-full mt-1 px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={itemForm.unit} onChange={(e)=>setItemForm({...itemForm, unit:e.target.value})}>
+                      <option value="kg">kg</option><option value="liter">liter</option><option value="pcs">pcs</option><option value="gram">gram</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Kategori</label>
+                    <select data-testid="item-category" className="w-full mt-1 px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={itemForm.category} onChange={(e)=>setItemForm({...itemForm, category:e.target.value})}>
+                      {Object.entries(ITEM_CATEGORIES).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
+                    </select>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Par Level</label>
+                    <input data-testid="item-par" type="number" className="w-full mt-1 px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={itemForm.par_level} onChange={(e)=>setItemForm({...itemForm, par_level:parseFloat(e.target.value)||0})}/>
+                  </div>
+                  <div>
+                    <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Harga/Satuan</label>
+                    <input data-testid="item-price" type="number" className="w-full mt-1 px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={itemForm.price_per_unit} onChange={(e)=>setItemForm({...itemForm, price_per_unit:parseFloat(e.target.value)||0})}/>
+                  </div>
+                </div>
+                <div>
+                  <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Zona</label>
+                  <div className="grid grid-cols-3 gap-2 mt-1">
+                    {ZONES.map(z => (
+                      <button type="button" key={z} onClick={()=>setItemForm({...itemForm, zone:z})} className="px-3 py-2 rounded-md border text-sm font-semibold transition"
+                        style={itemForm.zone===z?{background:ZONE_COLORS[z], color:"white", borderColor:ZONE_COLORS[z]}:{background:"#F9F6F0", color:ZONE_COLORS[z], borderColor:"#EAE4D8"}}>{ZONE_LABELS[z]}</button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+              <div className="flex justify-end gap-2 mt-5">
+                <button type="button" onClick={()=>setOpenItem(false)} className="btn-ghost">Batal</button>
+                <button data-testid="save-item" type="submit" className="btn-primary">Simpan</button>
               </div>
             </form>
           </div>

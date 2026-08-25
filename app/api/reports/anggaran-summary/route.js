@@ -22,24 +22,24 @@ export async function GET(request) {
 
     const summary = anggarans.map((a) => ({
       plan_date: a.plan_date,
-      total_pakets: a.total_pakets || 0,
+      total_portions: a.total_portions || 0,
       rab: a.rab || 0,
-      actual: a.actual_amount || 0,
-      selisih: (a.rab || 0) - (a.actual_amount || 0),
+      actual: a.actual || 0,
+      selisih: (a.rab || 0) - (a.actual || 0),
     }));
 
     const totals = summary.reduce(
       (acc, s) => ({
-        total_pakets: acc.total_pakets + s.total_pakets,
+        total_portions: acc.total_portions + s.total_portions,
         rab: acc.rab + s.rab,
         actual: acc.actual + s.actual,
         selisih: acc.selisih + s.selisih,
       }),
-      { total_pakets: 0, rab: 0, actual: 0, selisih: 0 }
+      { total_portions: 0, rab: 0, actual: 0, selisih: 0 }
     );
 
     return apiSuccess({ summary, totals });
   } catch (e) {
-    return apiError(e.message, 401);
+    return apiError("Internal server error", 500);
   }
 }

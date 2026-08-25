@@ -8,7 +8,7 @@ export async function GET(request) {
     const { data } = await supabase.from("purchases").select("*").order("purchased_at", { ascending: false }).limit(2000);
     return apiSuccess(data || []);
   } catch (e) {
-    return apiError(e.message, 401);
+    return apiError("Internal server error", 500);
   }
 }
 
@@ -46,6 +46,6 @@ export async function POST(request) {
 
     return apiSuccess(purchase, 201);
   } catch (e) {
-    return apiError(e.message, 401);
+    return apiError("Internal server error", 500);
   }
 }

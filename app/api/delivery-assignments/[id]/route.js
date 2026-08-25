@@ -18,6 +18,10 @@ export async function PATCH(request, { params }) {
     const { data: old } = await supabase.from("delivery_assignments").select("*").eq("id", id).single();
     if (!old) return apiError("Assignment tidak ditemukan", 404);
 
+    if (user.role === "driver" && old.driver_id !== user.id) {
+      return apiError("Driver hanya bisa update assignment sendiri", 403);
+    }
+
     // Enforce status transition if status is being updated
     if (body.status && body.status !== old.status) {
       const expectedNext = VALID_TRANSITIONS[old.status];
@@ -26,9 +30,9 @@ export async function PATCH(request, { params }) {
       }
     }
 
-    const updates = { ...body };
-    delete updates.id;
-    delete updates.created_at;
+    const allowed = ["status","notes"];
+    const updates = {};
+    for (const key of allowed) { if (body[key] !== undefined) updates[key] = body[key]; }
 
     // Set timestamps based on status transitions
     if (body.status === "IN_TRANSIT" && !old.started_at) {
@@ -55,6 +59,6 @@ export async function PATCH(request, { params }) {
 
     return apiSuccess({ ok: true });
   } catch (e) {
-    return apiError(e.message, 401);
+    return apiError("Internal server error", 500);
   }
 }

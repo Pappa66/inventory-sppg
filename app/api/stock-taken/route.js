@@ -20,7 +20,7 @@ export async function GET(request) {
     }));
     return apiSuccess(enriched);
   } catch (e) {
-    return apiError(e.message, 401);
+    return apiError("Internal server error", 500);
   }
 }
 
@@ -55,7 +55,7 @@ export async function POST(request) {
 
     await logAudit(supabase, {
       actor: user, action: "STOCK_TAKEN", entity: "stock_lots", entity_id: body.lot_id,
-      note: `Diambil: ${body.quantity} ${lot.items?.unit || ""} dari ${lot.item_name}. Sisa: ${newQty}. Alasan: ${body.reason || "COOKING"}`,
+      note: `Diambil: ${body.quantity} ${lot.items?.unit || ""} dari ${lot.items?.name || "unknown"}. Sisa: ${newQty}. Alasan: ${body.reason || "COOKING"}`,
     });
 
     return apiSuccess({
@@ -66,6 +66,6 @@ export async function POST(request) {
       unit: lot.items?.unit,
     }, 201);
   } catch (e) {
-    return apiError(e.message, 401);
+    return apiError("Internal server error", 500);
   }
 }

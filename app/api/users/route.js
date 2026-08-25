@@ -5,12 +5,12 @@ import bcrypt from "bcryptjs";
 export async function GET(request) {
   try {
     const user = await getTokenUser(request);
-    requireRoles("admin_apps","admin_sppg")(user);
+    requireRoles("admin_apps","admin_sppg","field_assistant","kitchen_head")(user);
     const supabase = await createClient();
     const { data } = await supabase.from("users").select("*").order("created_at", { ascending: false });
     return apiSuccess(data || []);
   } catch (e) {
-    return apiError(e.message, 401);
+    return apiError("Internal server error", 500);
   }
 }
 
@@ -45,6 +45,6 @@ export async function POST(request) {
     const { password_hash, ...safe } = newUser;
     return apiSuccess(safe, 201);
   } catch (e) {
-    return apiError(e.message, 401);
+    return apiError("Internal server error", 500);
   }
 }

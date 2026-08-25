@@ -33,7 +33,7 @@ export async function GET(request) {
     if (error) return apiError(error.message);
     return apiSuccess(data || []);
   } catch (e) {
-    return apiError(e.message, 401);
+    return apiError("Internal server error", 500);
   }
 }
 
@@ -80,6 +80,6 @@ export async function POST(request) {
 
     return apiSuccess(assignment, 201);
   } catch (e) {
-    return apiError(e.message, 401);
+    return apiError("Internal server error", 500);
   }
 }

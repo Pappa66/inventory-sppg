@@ -235,16 +235,35 @@ export default function Page() {
   const [loading, setLoading] = useState(true);
   const [expandedPlan, setExpandedPlan] = useState(null);
   const [expandedDest, setExpandedDest] = useState(null);
+  const [logsByPlan, setLogsByPlan] = useState({});
 
   const canSeeAll = activeRole === "admin_apps" || activeRole === "admin_sppg" || activeRole === "field_assistant";
 
-  const load = () => {
+  const load = async () => {
     setLoading(true);
-    api
-      .get("/delivery-plans", { params: { date: dateStr() } })
-      .then(({ data }) => setPlans(data))
-      .catch((e) => toast.error(formatErr(e)))
-      .finally(() => setLoading(false));
+    try {
+      const { data: planData } = await api.get("/delivery-plans", { params: { plan_date: dateStr() } });
+      const planList = planData || [];
+      setPlans(planList);
+
+      const logsMap = {};
+      for (const plan of planList) {
+        const assignment = plan.delivery_assignments?.[0];
+        if (assignment) {
+          try {
+            const { data: logs } = await api.get("/delivery-logs", { params: { assignment_id: assignment.id } });
+            logsMap[plan.id] = logs || [];
+          } catch { logsMap[plan.id] = []; }
+        } else {
+          logsMap[plan.id] = [];
+        }
+      }
+      setLogsByPlan(logsMap);
+    } catch (e) {
+      toast.error(formatErr(e));
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => { load(); }, []);
@@ -305,11 +324,17 @@ export default function Page() {
         ) : (
           <div className="space-y-4">
             {myPlans.map((plan) => {
-              const driverName = plan.driver_name || plan.driver?.name || "Driver";
+              const driverName = plan.delivery_assignments?.[0]?.driver_name || plan.driver_name || "Driver";
               const isExpanded = expandedPlan === plan.id;
               const dests = plan.delivery_plan_items || [];
-              const deliveredCount = dests.filter(d => d.status === "DELIVERED").length;
-              const transitCount = dests.filter(d => d.status === "IN_TRANSIT").length;
+              const planLogs = logsByPlan[plan.id] || [];
+              const getDestStatus = (destId) => {
+                const destLogs = planLogs.filter(l => l.destination_id === destId);
+                if (destLogs.length === 0) return "NOT_DELIVERED";
+                return destLogs[destLogs.length - 1].status;
+              };
+              const deliveredCount = dests.filter(d => getDestStatus(d.destination_id) === "DELIVERED").length;
+              const transitCount = dests.filter(d => getDestStatus(d.destination_id) === "IN_TRANSIT").length;
               const overallStatus = deliveredCount === dests.length ? "DELIVERED" : transitCount > 0 ? "IN_TRANSIT" : "NOT_DELIVERED";
 
               return (
@@ -326,7 +351,7 @@ export default function Page() {
                         <div>
                           <div className="font-semibold">{driverName}</div>
                           <div className="text-xs text-[#5C5C5C]">
-                            {plan.delivery_date} &middot; {deliveredCount}/{dests.length} tujuan selesai
+                            {plan.plan_date} &middot; {deliveredCount}/{dests.length} tujuan selesai
                           </div>
                         </div>
                       </div>
@@ -355,9 +380,11 @@ export default function Page() {
                       {dests.map((dest, idx) => {
                         const destKey = `${plan.id}-${idx}`;
                         const isDestExpanded = expandedDest === destKey;
-                        const dName = typeof dest.destination === "object" ? dest.destination?.name : dest.destination_name || destName(dest.destination_id);
-                        const destLogs = dest.delivery_logs || [];
+                        const dName = dest.destinations?.name || dest.destination?.name || dest.destination_name || destName(dest.destination_id);
+                        const destLogs = planLogs.filter(l => l.destination_id === dest.destination_id);
+                        const destStatus = destLogs.length > 0 ? destLogs[destLogs.length - 1].status : "NOT_DELIVERED";
                         const lastLog = destLogs.length > 0 ? destLogs[destLogs.length - 1] : null;
+                        const assignmentId = plan.delivery_assignments?.[0]?.id || plan.id;
 
                         return (
                           <div key={idx} className="p-4">
@@ -393,15 +420,15 @@ export default function Page() {
                               </div>
 
                               <div className="flex items-center gap-2 shrink-0">
-                                <CourierTracker status={dest.status || "NOT_DELIVERED"} logs={destLogs} />
-                                {dest.status !== "DELIVERED" && (
+                                <CourierTracker status={destStatus} logs={destLogs} />
+                                {destStatus !== "DELIVERED" && (
                                   <button
                                     onClick={() => setExpandedDest(isDestExpanded ? null : destKey)}
                                     className={`btn-ghost text-xs whitespace-nowrap ${
-                                      dest.status === "NOT_DELIVERED" ? "text-[#D97706]" : "text-[#4A7C59]"
+                                      destStatus === "NOT_DELIVERED" ? "text-[#D97706]" : "text-[#4A7C59]"
                                     }`}
                                   >
-                                    {dest.status === "NOT_DELIVERED" ? "Kirim" : "Selesaikan"}
+                                    {destStatus === "NOT_DELIVERED" ? "Kirim" : "Selesaikan"}
                                   </button>
                                 )}
                               </div>
@@ -409,7 +436,7 @@ export default function Page() {
 
                             {isDestExpanded && (
                               <UpdateFormInline
-                                planId={plan.id}
+                                planId={assignmentId}
                                 destIdx={idx}
                                 dest={dest}
                                 onUpdate={() => { setExpandedDest(null); load(); }}

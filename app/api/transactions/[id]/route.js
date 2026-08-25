@@ -9,9 +9,13 @@ export async function PUT(request, { params }) {
     const body = await request.json();
     const supabase = await createClient();
 
+    const allowed = ["category","account_code","amount","description","payment_method","reference_no","status"];
+    const updates = { updated_at: new Date().toISOString() };
+    for (const key of allowed) { if (body[key] !== undefined) updates[key] = body[key]; }
+
     const { data, error } = await supabase
       .from("transaksis")
-      .update(body)
+      .update(updates)
       .eq("id", id)
       .select()
       .single();
@@ -25,7 +29,7 @@ export async function PUT(request, { params }) {
 
     return apiSuccess(data);
   } catch (e) {
-    return apiError(e.message, 401);
+    return apiError("Internal server error", 500);
   }
 }
 
@@ -46,6 +50,6 @@ export async function DELETE(request, { params }) {
 
     return apiSuccess({ ok: true });
   } catch (e) {
-    return apiError(e.message, 401);
+    return apiError("Internal server error", 500);
   }
 }

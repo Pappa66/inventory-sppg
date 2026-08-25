@@ -55,6 +55,7 @@ export default function ReportsPage() {
   const [periods, setPeriods] = useState([]);
   const [selectedPeriod, setSelectedPeriod] = useState("");
   const [settings, setSettings] = useState({});
+  const [deliveryPlans, setDeliveryPlans] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -66,7 +67,8 @@ export default function ReportsPage() {
         setPeriods(r.data || []);
         if (r.data?.length) setSelectedPeriod(r.data[0].id);
       }),
-      api.get("/settings/logo").then(r => setSettings(r.data || {})),
+      api.get("/settings/logo").then(r => setSettings(r.data || {})).catch(() => setSettings({})),
+      api.get("/delivery-plans").then(r => setDeliveryPlans(r.data || [])).catch(() => setDeliveryPlans([])),
     ]).finally(() => setLoading(false));
   }, []);
 
@@ -219,6 +221,12 @@ export default function ReportsPage() {
     const ml = 20, mr = 20, pw = 210;
     const sppgName = settings.sppg_name || "SPPG MBG";
 
+    const today = new Date().toISOString().slice(0, 10);
+    const todayPlans = deliveryPlans.filter(p => p.plan_date === today);
+    const totalPortions = todayPlans.reduce((sum, p) => sum + (p.delivery_plan_items || []).reduce((s, item) => s + (item.portions || 0), 0), 0);
+    const totalDestinations = todayPlans.reduce((sum, p) => sum + (p.delivery_plan_items || []).length, 0);
+    const driverIds = new Set(todayPlans.map(p => p.delivery_assignments?.[0]?.driver_id).filter(Boolean));
+
     let y = renderLetterhead(doc, settings, logo);
     y = renderLetterTitle(doc, "BERITA ACARA PENYALURAN", "(Lampiran 30n Permenkes)", y, pw, ml, mr);
 
@@ -242,10 +250,10 @@ export default function ReportsPage() {
       head: [["No", "Uraian", "Keterangan"]],
       body: [
         ["1", "Tanggal Penyaluran", todayIndo()],
-        ["2", "Lokasi / Tujuan", settings.sppg_address || "___________________"],
-        ["3", "Total Porsi Didistribusikan", "________ porsi"],
-        ["4", "Jumlah Tujuan Pengiriman", "________ lokasi"],
-        ["5", "Jumlah Driver Pengantar", "________ orang"],
+        ["2", "Lokasi / Tujuan", settings.sppg_address || todayPlans[0]?.delivery_plan_items?.[0]?.destinations?.name || "___________________"],
+        ["3", "Total Porsi Didistribusikan", `${totalPortions} porsi`],
+        ["4", "Jumlah Tujuan Pengiriman", `${totalDestinations} lokasi`],
+        ["5", "Jumlah Driver Pengantar", `${driverIds.size} orang`],
         ["6", "Waktu Distribusi", "08:00 — 11:00 WIB"],
       ],
       theme: "grid",

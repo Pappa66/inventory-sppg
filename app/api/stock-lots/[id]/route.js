@@ -9,14 +9,15 @@ export async function PATCH(request, { params }) {
     const body = await request.json();
     const supabase = await createClient();
 
-    const updates = { ...body };
-    delete updates.id;
+    const allowed = ["quantity","actual_quantity","expiry_date","note","zone","taken_by","taken_at","taken_reason"];
+    const updates = { updated_at: new Date().toISOString() };
+    for (const key of allowed) { if (body[key] !== undefined) updates[key] = body[key]; }
 
     const { error } = await supabase.from("stock_lots").update(updates).eq("id", id);
     if (error) return apiError(error.message);
 
     return apiSuccess({ ok: true });
   } catch (e) {
-    return apiError(e.message, 401);
+    return apiError("Internal server error", 500);
   }
 }

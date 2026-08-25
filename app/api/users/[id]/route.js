@@ -27,6 +27,6 @@ export async function PATCH(request, { params }) {
 
     return apiSuccess({ ok: true });
   } catch (e) {
-    return apiError(e.message, 401);
+    return apiError("Internal server error", 500);
   }
 }

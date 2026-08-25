@@ -39,6 +39,6 @@ export async function POST(request) {
     if (error) return apiError(error.message);
     return apiSuccess(data);
   } catch (e) {
-    return apiError(e.message, 401);
+    return apiError("Internal server error", 500);
   }
 }

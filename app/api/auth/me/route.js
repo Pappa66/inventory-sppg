@@ -13,6 +13,6 @@ export async function GET(request) {
       created_at: user.created_at,
     });
   } catch (e) {
-    return apiError(e.message, 401);
+    return apiError("Internal server error", 500);
   }
 }

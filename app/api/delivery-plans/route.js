@@ -19,6 +19,9 @@ export async function GET(request) {
         delivery_plan_items (
           *,
           destinations ( name, address )
+        ),
+        delivery_assignments (
+          id, driver_id, status, started_at, completed_at
         )
       `)
       .order("plan_date", { ascending: false });
@@ -31,7 +34,7 @@ export async function GET(request) {
     if (error) return apiError(error.message);
     return apiSuccess(data || []);
   } catch (e) {
-    return apiError(e.message, 401);
+    return apiError("Internal server error", 500);
   }
 }
 
@@ -83,6 +86,6 @@ export async function POST(request) {
 
     return apiSuccess(plan, 201);
   } catch (e) {
-    return apiError(e.message, 401);
+    return apiError("Internal server error", 500);
   }
 }

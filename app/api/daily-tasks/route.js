@@ -27,7 +27,7 @@ export async function GET(request) {
 
     return apiSuccess(data || []);
   } catch (e) {
-    return apiError(e.message, 401);
+    return apiError("Internal server error", 500);
   }
 }
 
@@ -35,7 +35,7 @@ export async function POST(request) {
   try {
     const user = await getTokenUser(request);
     if (!user) return apiError("Unauthorized", 401);
-    requireRoles("admin_apps","admin_sppg","kitchen_head","head_chef")(user);
+    requireRoles("admin_apps","admin_sppg","kitchen_head","head_chef","persiapan","tenaga_masak","pemorsian","kebersihan","pencuci")(user);
     const supabase = await createClient();
     const body = await request.json();
 
@@ -45,7 +45,7 @@ export async function POST(request) {
       return apiError("task_date dan task_type wajib diisi");
     }
 
-    const allowedRoles = ["pemorsian", "persiapan", "tenaga_masak", "kebersihan", "pencuci"];
+    const allowedRoles = ["pemorsian", "persiapan", "masak", "tenaga_masak", "kebersihan", "pencuci"];
     if (!allowedRoles.includes(task_type)) {
       return apiError("task_type tidak valid");
     }
@@ -70,6 +70,6 @@ export async function POST(request) {
 
     return apiSuccess(data, 201);
   } catch (e) {
-    return apiError(e.message, 401);
+    return apiError("Internal server error", 500);
   }
 }

@@ -15,9 +15,9 @@ export async function PATCH(request, { params }) {
     const { data: old } = await supabase.from("destinations").select("*").eq("id", id).single();
     if (!old) return apiError("Destinations tidak ditemukan", 404);
 
-    const updates = { ...body, updated_at: new Date().toISOString() };
-    delete updates.id;
-    delete updates.created_at;
+    const allowed = ["name","address","contact_person","phone","notes","is_active"];
+    const updates = { updated_at: new Date().toISOString() };
+    for (const key of allowed) { if (body[key] !== undefined) updates[key] = body[key]; }
 
     const { error } = await supabase.from("destinations").update(updates).eq("id", id);
     if (error) return apiError(error.message);
@@ -33,7 +33,7 @@ export async function PATCH(request, { params }) {
 
     return apiSuccess({ ok: true });
   } catch (e) {
-    return apiError(e.message, 401);
+    return apiError("Internal server error", 500);
   }
 }
 
@@ -61,6 +61,6 @@ export async function DELETE(request, { params }) {
 
     return apiSuccess({ ok: true });
   } catch (e) {
-    return apiError(e.message, 401);
+    return apiError("Internal server error", 500);
   }
 }

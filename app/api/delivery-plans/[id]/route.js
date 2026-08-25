@@ -26,7 +26,7 @@ export async function GET(request, { params }) {
     if (error || !data) return apiError("Delivery plan tidak ditemukan", 404);
     return apiSuccess(data);
   } catch (e) {
-    return apiError(e.message, 401);
+    return apiError("Internal server error", 500);
   }
 }
 
@@ -42,13 +42,30 @@ export async function PATCH(request, { params }) {
     const { data: old } = await supabase.from("delivery_plans").select("*").eq("id", id).single();
     if (!old) return apiError("Delivery plan tidak ditemukan", 404);
 
-    const updates = { ...body };
-    delete updates.id;
-    delete updates.created_at;
-    delete updates.created_by;
+    const allowed = ["plan_date","notes","driver_id"];
+    const updates = { updated_at: new Date().toISOString() };
+    for (const key of allowed) { if (body[key] !== undefined) updates[key] = body[key]; }
 
     const { error } = await supabase.from("delivery_plans").update(updates).eq("id", id);
     if (error) return apiError(error.message);
+
+    if (body.driver_id) {
+      const { data: existingAssignment } = await supabase
+        .from("delivery_assignments")
+        .select("id")
+        .eq("plan_id", id)
+        .single();
+
+      if (!existingAssignment) {
+        const { error: assignErr } = await supabase.from("delivery_assignments").insert({
+          plan_id: id,
+          driver_id: body.driver_id,
+          status: "PENDING",
+          created_at: new Date().toISOString(),
+        });
+        if (assignErr) return apiError(assignErr.message);
+      }
+    }
 
     await logAudit(supabase, {
       actor: user,
@@ -61,7 +78,7 @@ export async function PATCH(request, { params }) {
 
     return apiSuccess({ ok: true });
   } catch (e) {
-    return apiError(e.message, 401);
+    return apiError("Internal server error", 500);
   }
 }
 
@@ -89,6 +106,6 @@ export async function DELETE(request, { params }) {
 
     return apiSuccess({ ok: true });
   } catch (e) {
-    return apiError(e.message, 401);
+    return apiError("Internal server error", 500);
   }
 }

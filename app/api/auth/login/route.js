@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase";
 import { apiError, apiSuccess } from "@/lib/db-helpers";
 import bcrypt from "bcryptjs";
+import { signToken } from "@/lib/auth";
 
 const DEMO_USERS = [
   { id: "a0000001-0000-0000-0000-000000000001", email: "admin@sppg.id",      name: "Administrator Aplikasi", role: "admin_apps" },
@@ -62,7 +63,7 @@ export async function POST(request) {
     };
 
     return apiSuccess({
-      token: Buffer.from(JSON.stringify(payload)).toString("base64"),
+      token: signToken(payload),
       user: payload,
     });
   } catch (e) {

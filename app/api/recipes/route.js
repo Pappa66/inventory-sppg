@@ -8,7 +8,7 @@ export async function GET(request) {
     const { data } = await supabase.from("recipes").select("*").order("name");
     return apiSuccess(data || []);
   } catch (e) {
-    return apiError(e.message, 401);
+    return apiError("Internal server error", 500);
   }
 }
 
@@ -48,6 +48,6 @@ export async function POST(request) {
 
     return apiSuccess(recipe, 201);
   } catch (e) {
-    return apiError(e.message, 401);
+    return apiError("Internal server error", 500);
   }
 }

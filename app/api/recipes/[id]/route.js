@@ -27,7 +27,7 @@ export async function PATCH(request, { params }) {
 
     return apiSuccess({ ok: true });
   } catch (e) {
-    return apiError(e.message, 401);
+    return apiError("Internal server error", 500);
   }
 }
 
@@ -42,6 +42,6 @@ export async function DELETE(request, { params }) {
     await logAudit(supabase, { actor: user, action: "DELETE_RECIPE", entity: "recipes", entity_id: id });
     return apiSuccess({ ok: true });
   } catch (e) {
-    return apiError(e.message, 401);
+    return apiError("Internal server error", 500);
   }
 }

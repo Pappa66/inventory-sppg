@@ -16,7 +16,7 @@ import { SkeletonTable } from "@/components/Skeleton";
 import Pagination from "@/components/Pagination";
 
 const EMPTY_PLAN = {
-  delivery_date: "",
+  plan_date: "",
   destination_ids: [],
   driver_id: "",
   notes: "",
@@ -63,7 +63,7 @@ export default function Page() {
   useEffect(() => { load(); }, []);
 
   const plansForDate = useMemo(() => {
-    const list = plans.filter((p) => p.delivery_date === selectedDate);
+    const list = plans.filter((p) => p.plan_date === selectedDate);
     if (!search.trim()) return list;
     const q = search.toLowerCase();
     return list.filter((p) => {
@@ -83,7 +83,7 @@ export default function Page() {
   }, [plansForDate, page]);
 
   const openCreate = () => {
-    setForm({ ...EMPTY_PLAN, delivery_date: selectedDate });
+    setForm({ ...EMPTY_PLAN, plan_date: selectedDate });
     setPortions({});
     setOpen(true);
   };
@@ -112,12 +112,12 @@ export default function Page() {
     }
     try {
       const payload = {
-        delivery_date: form.delivery_date,
-        driver_id: form.driver_id || null,
+        plan_date: form.plan_date,
         notes: form.notes,
-        destinations: form.destination_ids.map((destId) => ({
+        items: form.destination_ids.map((destId) => ({
           destination_id: destId,
-          portions: portions[destId] || {},
+          category: "PORTION_LARGE",
+          portions: portions[destId] || 0,
         })),
       };
       await api.post("/delivery-plans", payload);
@@ -233,7 +233,7 @@ export default function Page() {
                 </thead>
                 <tbody>
                   {paginated.map((p) => {
-                    const destCount = p.destinations?.length || 0;
+                    const destCount = p.delivery_plan_items?.length || 0;
                     const isExpanded = expandedPlan === p.id;
                     return (
                       <React.Fragment key={p.id}>
@@ -269,10 +269,10 @@ export default function Page() {
                             </td>
                           )}
                         </tr>
-                        {isExpanded && p.destinations?.map((dest, idx) => (
+                        {isExpanded && p.delivery_plan_items?.map((dest, idx) => (
                           <tr key={`${p.id}-${idx}`} className="bg-[#F9F6F0] border-b border-[#EAE4D8] last:border-0">
                             <td className="py-2 px-4 text-xs text-[#5C5C5C] pl-10">{idx + 1}.</td>
-                            <td className="py-2 px-4 text-sm font-medium">{destName(dest.destination_id)}</td>
+                            <td className="py-2 px-4 text-sm font-medium">{dest.destinations?.name || destName(dest.destination_id)}</td>
                             <td className="py-2 px-4" colSpan={canWrite ? 3 : 2}>
                               <div className="flex flex-wrap gap-2">
                                 {Object.entries(MENU_CATEGORIES).map(([key, cat]) => (
@@ -309,7 +309,7 @@ export default function Page() {
                         <div className="font-semibold flex items-center gap-2">
                           <Truck size={14} className="text-[#0891B2]" /> {driverName(p.driver_id)}
                         </div>
-                        <div className="text-xs text-[#5C5C5C] mt-1">{fmtDate(p.delivery_date)}</div>
+                        <div className="text-xs text-[#5C5C5C] mt-1">{fmtDate(p.plan_date)}</div>
                       </div>
                       {statusBadge(p.status)}
                     </div>
@@ -317,12 +317,12 @@ export default function Page() {
                       onClick={() => setExpandedPlan(isExpanded ? null : p.id)}
                       className="text-sm text-[#4A7C59] hover:underline flex items-center gap-1"
                     >
-                      <MapPin size={14} /> {(p.destinations?.length || 0)} tujuan
+                      <MapPin size={14} /> {(p.delivery_plan_items?.length || 0)} tujuan
                       {isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
                     </button>
-                    {isExpanded && p.destinations?.map((dest, idx) => (
+                    {isExpanded && p.delivery_plan_items?.map((dest, idx) => (
                       <div key={idx} className="bg-[#EAE4D8]/30 rounded-md p-3 space-y-1">
-                        <div className="font-medium text-sm">{destName(dest.destination_id)}</div>
+                        <div className="font-medium text-sm">{dest.destinations?.name || destName(dest.destination_id)}</div>
                         <div className="flex flex-wrap gap-1">
                           {Object.entries(MENU_CATEGORIES).map(([key, cat]) => (
                             <span key={key} className="text-[10px] px-1.5 py-0.5 rounded-full" style={{ background: `${cat.color}1A`, color: cat.color }}>
@@ -377,8 +377,8 @@ export default function Page() {
                     required
                     type="date"
                     className="w-full mt-1 px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]"
-                    value={form.delivery_date}
-                    onChange={(e) => setForm({ ...form, delivery_date: e.target.value })}
+                    value={form.plan_date}
+                    onChange={(e) => setForm({ ...form, plan_date: e.target.value })}
                   />
                 </div>
                 <div>

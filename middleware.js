@@ -1,25 +1,32 @@
 import { NextResponse } from "next/server";
+import { verifyToken } from "@/lib/auth";
 
 export function middleware(request) {
   const { pathname } = request.nextUrl;
-  if (pathname.startsWith("/api/")) return NextResponse.next();
   if (pathname === "/login") return NextResponse.next();
 
   const token = request.cookies.get("sppg_token")?.value;
-  if (!token) return NextResponse.redirect(new URL("/login", request.url));
-
-  // Basic validation: token should be valid base64 JSON
-  try {
-    const json = Buffer.from(token, "base64").toString("utf-8");
-    const payload = JSON.parse(json);
-    if (!payload || !payload.email) {
-      return NextResponse.redirect(new URL("/login", request.url));
+  if (!token) {
+    if (pathname.startsWith("/api/")) {
+      return NextResponse.json({ detail: "Unauthorized" }, { status: 401 });
     }
-  } catch {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
-  return NextResponse.next();
+  const payload = verifyToken(token);
+  if (!payload || !payload.email) {
+    if (pathname.startsWith("/api/")) {
+      return NextResponse.json({ detail: "Token tidak valid" }, { status: 401 });
+    }
+    return NextResponse.redirect(new URL("/login", request.url));
+  }
+
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set("x-user-id", payload.id);
+  requestHeaders.set("x-user-email", payload.email);
+  requestHeaders.set("x-user-role", payload.role);
+
+  return NextResponse.next({ request: { headers: requestHeaders } });
 }
 
 export const config = {

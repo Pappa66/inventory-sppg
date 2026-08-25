@@ -1,7 +1,7 @@
 import { createClient } from "@/lib/supabase";
 import { getTokenUser, requireRoles, logAudit, apiError, apiSuccess } from "@/lib/db-helpers";
 
-const CAN_EDIT = ["admin_apps","admin_sppg", "kitchen_head", "head_chef"];
+const CAN_EDIT = ["admin_apps","admin_sppg", "kitchen_head", "head_chef", "field_assistant"];
 
 export async function PATCH(request, { params }) {
   try {
@@ -13,8 +13,9 @@ export async function PATCH(request, { params }) {
 
     const { data: old } = await supabase.from("items").select("*").eq("id", id).single();
 
-    const updates = { ...body, updated_at: new Date().toISOString() };
-    delete updates.id;
+    const allowed = ["name","unit","category","par_level","price_per_unit","zone","allergens","nutrition_per_100g"];
+    const updates = { updated_at: new Date().toISOString() };
+    for (const key of allowed) { if (body[key] !== undefined) updates[key] = body[key]; }
 
     const { error } = await supabase.from("items").update(updates).eq("id", id);
     if (error) return apiError(error.message);
@@ -28,7 +29,7 @@ export async function PATCH(request, { params }) {
     return apiSuccess({ ok: true });
   } catch (e) {
     console.error("[items PATCH]", e.message);
-    return apiError("Gagal: " + e.message, 401);
+    return apiError("Internal server error", 500);
   }
 }
 
@@ -50,6 +51,6 @@ export async function DELETE(request, { params }) {
 
     return apiSuccess({ ok: true });
   } catch (e) {
-    return apiError(e.message, 401);
+    return apiError("Internal server error", 500);
   }
 }

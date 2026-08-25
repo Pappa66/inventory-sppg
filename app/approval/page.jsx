@@ -95,7 +95,7 @@ export default function Page() {
                 )}
                 <div className="mt-3 flex gap-2">
                   {m.status === "DRAFT" && activeRole === "nutritionist" && <div className="flex-1 text-xs text-[#5C5C5C] py-1.5 text-center italic">Menunggu diajukan Chef…</div>}
-                  {m.status === "DRAFT" && (activeRole === "head_chef" || activeRole === "admin_apps" || activeRole === "admin_sppg") && <button data-testid={`submit-${m.id}`} onClick={()=>submit(m.id)} className="btn-outline flex-1 text-xs py-1.5"><Send size={12}/> Ajukan</button>}
+                  {m.status === "DRAFT" && (activeRole === "head_chef" || activeRole === "kitchen_head" || activeRole === "admin_apps" || activeRole === "admin_sppg") && <button data-testid={`submit-${m.id}`} onClick={()=>submit(m.id)} className="btn-outline flex-1 text-xs py-1.5"><Send size={12}/> Ajukan</button>}
                   {m.status === "PENDING_REVIEW" && (activeRole === "nutritionist" || activeRole === "admin_apps" || activeRole === "admin_sppg") && (
                     <button data-testid={`open-sign-${m.id}`} onClick={()=>{setSigning(m); setSignature(`${user.name} · ${user.role === "nutritionist" ? "Ahli Gizi" : "Admin"}`);}} className="btn-primary flex-1 text-xs py-1.5"><CheckCircle2 size={12}/> Review & Tanda Tangan</button>
                   )}
