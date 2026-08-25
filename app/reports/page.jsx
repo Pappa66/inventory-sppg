@@ -6,11 +6,12 @@ import { api } from "@/lib/api";
 import { fmtIDR, fmtDate, BENEFICIARY_TYPES } from "@/lib/format";
 import {
   FileText, ScrollText, BookOpen, Users, Stamp, FileCheck,
-  Calendar, Download
+  Calendar, Download, Printer
 } from "lucide-react";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { getLogo } from "@/lib/logo";
+import { getSettings, renderLetterhead, renderSignatureBlock, todayIndo } from "@/lib/letterhead";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -95,16 +96,12 @@ export default function ReportsPage() {
 
   const exportPDF = async (tab) => {
     const doc = new jsPDF();
-    const logo = await getLogo();
-    let titleY = 18;
-    if (logo) {
-      titleY = 36;
-      try { doc.addImage(logo, "PNG", 14, 8, 40, 0); } catch {}
-    }
+    const [logo, settings] = await Promise.all([getLogo(), getSettings()]);
+    const titleY = renderLetterhead(doc, settings, logo);
     doc.setFontSize(14);
     doc.text(`LAPORAN ${REPORT_TABS.find(t => t.key === tab)?.label || ""}`, 14, titleY);
     doc.setFontSize(9);
-    doc.text(`Dicetak: ${new Date().toLocaleDateString("id-ID")}`, 14, titleY + 6);
+    doc.text(`Dicetak: ${todayIndo()}`, 14, titleY + 6);
 
     if (tab === "lr" || tab === "lpa") {
       const data = tab === "lr" ? lrData : lpaData;
@@ -121,6 +118,142 @@ export default function ReportsPage() {
 
     doc.save(`laporan-${tab}-${new Date().toISOString().slice(0,10)}.pdf`);
     toast.success("PDF berhasil diunduh");
+  };
+
+  const cetakSPTJ = async () => {
+    const doc = new jsPDF();
+    const [logo, settings] = await Promise.all([getLogo(), getSettings()]);
+    let y = renderLetterhead(doc, settings, logo);
+
+    // Title
+    doc.setFontSize(14);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(0x2D, 0x2D, 0x2D);
+    doc.text("SURAT PERNYATAAN TANGGUNG JAWAB", 105, y, { align: "center" });
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "normal");
+    doc.text("(Lampiran 30j)", 105, y + 5, { align: "center" });
+    y += 14;
+
+    // Body
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    doc.text("Saya yang bertanda tangan di bawah ini:", 14, y);
+    y += 8;
+
+    // Identity
+    const name = settings.nama_kepala || "___________________";
+    doc.text("Nama    :", 14, y);
+    doc.setFont("helvetica", "bold");
+    doc.text(name, 42, y);
+    doc.setFont("helvetica", "normal");
+    y += 6;
+    doc.text("Jabatan :", 14, y);
+    doc.setFont("helvetica", "bold");
+    doc.text("Kepala SPPG", 42, y);
+    doc.setFont("helvetica", "normal");
+    y += 6;
+    doc.text("Program :", 14, y);
+    doc.setFont("helvetica", "bold");
+    doc.text(settings.sppg_name || "Makan Bergizi Gratis", 42, y);
+    doc.setFont("helvetica", "normal");
+    y += 10;
+
+    doc.text("Dengan ini menyatakan bahwa:", 14, y);
+    y += 8;
+
+    const declarations = [
+      "Dana yang diterima dari Pemerintah telah digunakan sesuai ketentuan yang berlaku.",
+      "Penyaluran bantuan pangan telah dilakukan kepada penerima manfaat yang berhak.",
+      "Laporan pertanggungjawaban yang disampaikan adalah benar dan dapat dipertanggungjawabkan.",
+    ];
+    declarations.forEach((text, i) => {
+      doc.text(`${i + 1}. ${text}`, 20, y);
+      y += 7;
+    });
+
+    y += 4;
+    doc.text("Demikian surat pernyataan ini saya buat dengan sebenar-benarnya.", 14, y);
+    y += 6;
+
+    // Date
+    doc.text(`${settings.sppg_address || "____________"}, ${todayIndo()}`, 14, y);
+    y += 6;
+
+    // Signature
+    const sigRoles = [
+      { label: "Kepala SPPG,", settingsKey: "nama_kepala", jabatan: `Kepala ${settings.sppg_name || "SPPG"}` },
+    ];
+    y = renderSignatureBlock(doc, settings, y, 210, sigRoles);
+
+    doc.save(`SPTJ-${new Date().toISOString().slice(0,10)}.pdf`);
+    toast.success("SPTJ berhasil dicetak");
+  };
+
+  const cetakBAPSD = async () => {
+    const doc = new jsPDF();
+    const [logo, settings] = await Promise.all([getLogo(), getSettings()]);
+    let y = renderLetterhead(doc, settings, logo);
+
+    // Title
+    doc.setFontSize(14);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(0x2D, 0x2D, 0x2D);
+    doc.text("BERITA ACARA PENYALURAN SIAP DISTRIBUSI", 105, y, { align: "center" });
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "normal");
+    doc.text("(Lampiran 30n)", 105, y + 5, { align: "center" });
+    y += 14;
+
+    // Body
+    doc.setFontSize(10);
+    doc.text(`Pada hari ini ${todayIndo()}, telah dilakukan penyaluran makanan siap distribusi`, 14, y);
+    y += 7;
+    doc.text(`di ${settings.sppg_name || "SPPG MBG"}.`, 14, y);
+    y += 10;
+
+    doc.text("Rincian penyaluran:", 14, y);
+    y += 8;
+
+    // Table header
+    doc.setFont("helvetica", "bold");
+    doc.setFillColor(0xEA, 0xE4, 0xD8);
+    doc.rect(14, y - 4, 182, 7, "F");
+    doc.text("No", 18, y);
+    doc.text("Keterangan", 30, y);
+    doc.text("Jumlah", 160, y);
+    doc.setFont("helvetica", "normal");
+    y += 8;
+
+    // Sample rows (would be dynamic in production)
+    const rows = [
+      ["1", "Total Porsi Distribusi", "455 porsi"],
+      ["2", "Lokasi Tujuan", "12 lokasi"],
+      ["3", "Driver Pengantar", "2 orang"],
+      ["4", "Waktu Distribusi", "08:00 - 11:00 WIB"],
+    ];
+    rows.forEach(([no, desc, qty]) => {
+      doc.text(no, 18, y);
+      doc.text(desc, 30, y);
+      doc.text(qty, 160, y);
+      y += 6;
+    });
+    y += 6;
+
+    doc.text("Berita acara ini dibuat sebagai dasar pertanggungjawaban penyaluran bantuan pangan.", 14, y);
+    y += 6;
+    doc.text("Demikian berita acara ini dibuat dengan sebenar-benarnya.", 14, y);
+    y += 10;
+
+    // Signatures
+    const sigRoles = [
+      { label: "Mengetahui,", settingsKey: "nama_akuntan", jabatan: "Pengawas Gizi" },
+      { label: "Kepala SPPG,", settingsKey: "nama_kepala", jabatan: `Kepala ${settings.sppg_name || "SPPG"}` },
+    ];
+    y = renderSignatureBlock(doc, settings, y, 210, sigRoles);
+
+    doc.save(`BAPSD-${new Date().toISOString().slice(0,10)}.pdf`);
+    toast.success("BAPSD berhasil dicetak");
   };
 
   return (
@@ -282,61 +415,67 @@ export default function ReportsPage() {
 
             {/* SPTJ Tab */}
             {activeTab === "sptj" && (
-              <div className="card-soft p-8 max-w-2xl">
-                <div className="text-center mb-8">
-                  <h2 className="font-display text-xl font-bold uppercase">Surat Pernyataan Tanggung Jawab</h2>
-                  <p className="text-sm text-[#5C5C5C] mt-1">(Lampiran 30j)</p>
-                </div>
-                <div className="space-y-4 text-sm leading-relaxed">
-                  <p>Saya yang bertanda tangan di bawah ini:</p>
-                  <div className="pl-4 space-y-1">
-                    <p>Nama: <span className="font-bold border-b border-[#EAE4D8] inline-block min-w-[200px]">___________________</span></p>
-                    <p>Jabatan: <span className="font-bold">Kepala SPPG</span></p>
-                    <p>Program: <span className="font-bold">Makan Bergizi Gratis</span></p>
+              <div className="space-y-4">
+                <div className="card-soft p-8 max-w-2xl">
+                  <div className="text-center mb-8">
+                    <h2 className="font-display text-xl font-bold uppercase">Surat Pernyataan Tanggung Jawab</h2>
+                    <p className="text-sm text-[#5C5C5C] mt-1">(Lampiran 30j)</p>
                   </div>
-                  <p className="mt-4">Dengan ini menyatakan bahwa:</p>
-                  <ol className="list-decimal pl-8 space-y-2">
-                    <li>Dana yang diterima dari Pemerintah telah digunakan sesuai ketentuan yang berlaku.</li>
-                    <li>Penyaluran bantuan pangan telah dilakukan kepada penerima manfaat yang berhak.</li>
-                    <li>Laporan pertanggungjawaban yang disampaikan adalah benar dan dapat dipertanggungjawabkan.</li>
-                  </ol>
-                  <p className="mt-4">Demikian surat pernyataan ini saya buat dengan sebenar-benarnya.</p>
-                  <div className="flex justify-end mt-8">
-                    <div className="text-center">
-                      <p className="text-sm">___________________, ___/___/2026</p>
-                      <p className="font-bold mt-8 border-b border-[#EAE4D8] inline-block min-w-[150px]">Kepala SPPG</p>
+                  <div className="space-y-4 text-sm leading-relaxed">
+                    <p>Saya yang bertanda tangan di bawah ini:</p>
+                    <div className="pl-4 space-y-1">
+                      <p>Nama: <span className="font-bold">{user?.name || "___________________"}</span></p>
+                      <p>Jabatan: <span className="font-bold">Kepala SPPG</span></p>
+                      <p>Program: <span className="font-bold">Makan Bergizi Gratis</span></p>
+                    </div>
+                    <p className="mt-4">Dengan ini menyatakan bahwa:</p>
+                    <ol className="list-decimal pl-8 space-y-2">
+                      <li>Dana yang diterima dari Pemerintah telah digunakan sesuai ketentuan yang berlaku.</li>
+                      <li>Penyaluran bantuan pangan telah dilakukan kepada penerima manfaat yang berhak.</li>
+                      <li>Laporan pertanggungjawaban yang disampaikan adalah benar dan dapat dipertanggungjawabkan.</li>
+                    </ol>
+                    <p className="mt-4">Demikian surat pernyataan ini saya buat dengan sebenar-benarnya.</p>
+                    <div className="flex justify-end mt-8">
+                      <div className="text-center">
+                        <p className="text-sm">___________________, {new Date().toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}</p>
+                        <p className="font-bold mt-8 border-b border-[#EAE4D8] inline-block min-w-[150px]">Kepala SPPG</p>
+                      </div>
                     </div>
                   </div>
                 </div>
+                <button onClick={cetakSPTJ} className="btn-outline flex items-center gap-2"><Printer size={14}/> Cetak SPTJ (PDF)</button>
               </div>
             )}
 
             {/* BAPSD Tab */}
             {activeTab === "bapsd" && (
-              <div className="card-soft p-8 max-w-2xl">
-                <div className="text-center mb-8">
-                  <h2 className="font-display text-xl font-bold uppercase">Berita Acara Pengalihan Sisa Dana</h2>
-                  <p className="text-sm text-[#5C5C5C] mt-1">(Lampiran 30n)</p>
-                </div>
-                <div className="space-y-4 text-sm leading-relaxed">
-                  <p>Pada hari ini, _________ bulan _________ tahun 2026, telah dilakukan pengalihan sisa dana bantuan pangan.</p>
-                  <div className="pl-4 space-y-2">
-                    <p>Sisa dana yang dialihkan: <span className="font-bold border-b border-[#EAE4D8] inline-block min-w-[150px]">Rp ___________</span></p>
-                    <p>Disalurkan ke: <span className="font-bold border-b border-[#EAE4D8] inline-block min-w-[200px]">___________________</span></p>
-                    <p>Alasan pengalihan: <span className="font-bold border-b border-[#EAE4D8] inline-block min-w-[200px]">___________________</span></p>
+              <div className="space-y-4">
+                <div className="card-soft p-8 max-w-2xl">
+                  <div className="text-center mb-8">
+                    <h2 className="font-display text-xl font-bold uppercase">Berita Acara Penyaluran Siap Distribusi</h2>
+                    <p className="text-sm text-[#5C5C5C] mt-1">(Lampiran 30n)</p>
                   </div>
-                  <p className="mt-4">Berita acara ini dibuat sebagai dasar pertanggungjawaban penggunaan dana bantuan pangan.</p>
-                  <div className="flex justify-between mt-8">
-                    <div className="text-center">
-                      <p className="text-sm">Mengetahui,</p>
-                      <p className="font-bold mt-8 border-b border-[#EAE4D8] inline-block min-w-[150px]">Pengawas Gizi</p>
+                  <div className="space-y-4 text-sm leading-relaxed">
+                    <p>Pada hari ini, {new Date().toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}, telah dilakukan penyaluran makanan siap distribusi.</p>
+                    <div className="pl-4 space-y-2">
+                      <p>Total Porsi: <span className="font-bold border-b border-[#EAE4D8] inline-block min-w-[100px]">_________</span></p>
+                      <p>Lokasi Tujuan: <span className="font-bold border-b border-[#EAE4D8] inline-block min-w-[200px]">_________</span></p>
+                      <p>Driver Pengantar: <span className="font-bold border-b border-[#EAE4D8] inline-block min-w-[200px]">_________</span></p>
                     </div>
-                    <div className="text-center">
-                      <p className="text-sm">Kepala SPPG,</p>
-                      <p className="font-bold mt-8 border-b border-[#EAE4D8] inline-block min-w-[150px]">___________________</p>
+                    <p className="mt-4">Berita acara ini dibuat sebagai dasar pertanggungjawaban penyaluran bantuan pangan.</p>
+                    <div className="flex justify-between mt-8">
+                      <div className="text-center">
+                        <p className="text-sm">Mengetahui,</p>
+                        <p className="font-bold mt-8 border-b border-[#EAE4D8] inline-block min-w-[150px]">Pengawas Gizi</p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-sm">Kepala SPPG,</p>
+                        <p className="font-bold mt-8 border-b border-[#EAE4D8] inline-block min-w-[150px]">{user?.name || "___________________"}</p>
+                      </div>
                     </div>
                   </div>
                 </div>
+                <button onClick={cetakBAPSD} className="btn-outline flex items-center gap-2"><Printer size={14}/> Cetak BAPSD (PDF)</button>
               </div>
             )}
           </>

@@ -1,0 +1,21 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e4]:
+    - generic [ref=e5]:
+      - heading "SPPG · MBG" [level=1] [ref=e10]
+      - paragraph [ref=e11]: Inventory & Procurement
+    - generic [ref=e12]:
+      - heading "Masuk" [level=2] [ref=e13]
+      - generic [ref=e14]:
+        - text: Email
+        - textbox "admin@sppg.id" [ref=e15]
+      - generic [ref=e16]:
+        - text: Password
+        - textbox "••••••••" [ref=e17]
+      - button "Masuk" [ref=e18] [cursor=pointer]
+      - generic [ref=e22]:
+        - text: "Demo:"
+        - strong [ref=e23]: admin@sppg.id
+        - text: /
+        - strong [ref=e24]: admin123
+  - region "Notifications alt+T"
+  - alert [ref=e25]

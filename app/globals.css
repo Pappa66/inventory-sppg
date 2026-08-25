@@ -36,3 +36,14 @@
 }
 
 [data-testid="reports-page"] .recharts-surface { overflow: visible; }
+
+@media print {
+  body { background: white !important; }
+  aside, header, nav, .no-print { display: none !important; }
+  main { margin-left: 0 !important; padding: 0 !important; }
+  .card-soft { box-shadow: none !important; border: 1px solid #ddd !important; }
+  .btn-primary, .btn-outline, .btn-ghost { display: none !important; }
+  table { page-break-inside: auto; }
+  tr { page-break-inside: avoid; }
+  thead { display: table-header-group; }
+}

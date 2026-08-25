@@ -1,15 +1,15 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
-import { ROLE_LABELS, ROLE_COLORS } from "@/lib/format";
+import { ROLE_LABELS, ROLE_COLORS, ROLE_GROUPS } from "@/lib/format";
 import {
   LayoutDashboard, Users, Database, Boxes, ShoppingBasket, CalendarDays,
   ChefHat, BarChart3, FileText, ScrollText, LogOut, Leaf, BadgeCheck,
   Menu, X, Settings as SettingsIcon, MapPin, Truck, Navigation,
-  PiggyBank, HelpCircle, Camera, Calculator
+  PiggyBank, HelpCircle, Camera, Calculator, ChevronDown, Check
 } from "lucide-react";
 
 const ALL_NAV = [
@@ -48,45 +48,91 @@ const ALL_NAV = [
   { to: "/panduan", label: "Panduan Penggunaan", icon: HelpCircle, roles: "*" },
 ];
 
-function RoleSwitcher() {
+function RoleDropdown() {
   const { user, activeRole, setActiveRole } = useAuth();
-  const roles = user?.role === "admin_apps"
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+
+  const allowedRoles = user?.role === "admin_apps"
     ? Object.keys(ROLE_LABELS)
     : user?.role === "admin_sppg"
     ? Object.keys(ROLE_LABELS).filter(r => r !== "admin_apps")
     : [user?.role].filter(Boolean);
-  const single = roles.length <= 1;
+
+  const single = allowedRoles.length <= 1;
+
+  const close = useCallback(() => setOpen(false), []);
+
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e) => {
+      if (e.key === "Escape") close();
+      if (ref.current && !ref.current.contains(e.target)) close();
+    };
+    document.addEventListener("mousedown", handler);
+    document.addEventListener("keydown", handler);
+    return () => {
+      document.removeEventListener("mousedown", handler);
+      document.removeEventListener("keydown", handler);
+    };
+  }, [open, close]);
 
   if (single) {
     return (
-      <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full" style={{ background: ROLE_COLORS[activeRole], color: "white" }}>
-        <span className="w-1.5 h-1.5 rounded-full bg-white" />
+      <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg" style={{ background: ROLE_COLORS[activeRole] + "1A", color: ROLE_COLORS[activeRole] }}>
+        <span className="w-2 h-2 rounded-full" style={{ background: ROLE_COLORS[activeRole] }} />
         <span className="text-xs font-semibold uppercase tracking-wider">{ROLE_LABELS[activeRole]}</span>
       </div>
     );
   }
 
+  const filteredGroups = ROLE_GROUPS
+    .map(g => ({ ...g, roles: g.roles.filter(r => allowedRoles.includes(r)) }))
+    .filter(g => g.roles.length > 0);
+
   return (
-    <div className="inline-flex items-center gap-1.5 bg-[#EAE4D8] p-1 rounded-full" role="tablist">
-      {roles.map((r) => {
-        const active = activeRole === r;
-        return (
-          <button
-            key={r}
-            type="button"
-            onClick={() => setActiveRole(r)}
-            className="px-3 py-1.5 rounded-full text-[11px] font-semibold uppercase tracking-wider whitespace-nowrap"
-            style={{
-              background: active ? ROLE_COLORS[r] : "transparent",
-              color: active ? "white" : "#5C5C5C",
-              boxShadow: active ? "inset 0 0 0 2px rgba(255,255,255,0.55), 0 1px 2px rgba(0,0,0,0.18)" : "none",
-              transition: "color 120ms",
-            }}
-          >
-            {ROLE_LABELS[r]}
-          </button>
-        );
-      })}
+    <div className="relative" ref={ref}>
+      <button
+        type="button"
+        onClick={() => setOpen(o => !o)}
+        className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-[#EAE4D8] bg-white hover:bg-[#F9F6F0] transition-colors"
+      >
+        <span className="w-2 h-2 rounded-full" style={{ background: ROLE_COLORS[activeRole] }} />
+        <span className="text-sm font-semibold truncate max-w-[140px] sm:max-w-none" style={{ color: ROLE_COLORS[activeRole] }}>
+          {ROLE_LABELS[activeRole]}
+        </span>
+        <ChevronDown size={14} className={`text-[#5C5C5C] transition-transform ${open ? "rotate-180" : ""}`} />
+      </button>
+
+      {open && (
+        <div className="absolute right-0 mt-2 w-64 bg-white rounded-xl border border-[#EAE4D8] shadow-lg z-50 py-2 max-h-[70vh] overflow-y-auto">
+          <div className="px-3 py-1.5 text-[10px] uppercase tracking-widest text-[#5C5C5C] font-semibold">Switch Role</div>
+          {filteredGroups.map((group) => (
+            <div key={group.label}>
+              <div className="px-3 pt-2.5 pb-1 text-[10px] uppercase tracking-widest text-[#5C5C5C] font-semibold">{group.label}</div>
+              {group.roles.map((r) => {
+                const active = activeRole === r;
+                return (
+                  <button
+                    key={r}
+                    type="button"
+                    onClick={() => { setActiveRole(r); setOpen(false); }}
+                    className="w-full flex items-center gap-2.5 px-3 py-2 text-sm transition-colors"
+                    style={{
+                      background: active ? ROLE_COLORS[r] + "12" : "transparent",
+                      color: active ? ROLE_COLORS[r] : "#1F1F1F",
+                    }}
+                  >
+                    <span className="w-2 h-2 rounded-full shrink-0" style={{ background: ROLE_COLORS[r] }} />
+                    <span className="font-medium flex-1 text-left">{ROLE_LABELS[r]}</span>
+                    {active && <Check size={14} style={{ color: ROLE_COLORS[r] }} />}
+                  </button>
+                );
+              })}
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -151,22 +197,17 @@ export default function Layout({ children }) {
       </aside>
 
       <main className="lg:ml-64">
-        <header className="sticky top-0 z-20 bg-[#F9F6F0]/90 backdrop-blur border-b border-[#EAE4D8] px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between gap-3">
-          <div className="flex items-center gap-3 min-w-0">
-            <button className="lg:hidden btn-ghost p-2 -ml-2" onClick={() => setMobileOpen(true)} aria-label="Buka menu">
-              <Menu size={20} />
-            </button>
-            <div className="shrink-0 min-w-0">
-              <div className="text-[10px] sm:text-[11px] uppercase tracking-widest text-[#5C5C5C]">Mode tampilan</div>
-              <div className="font-display font-bold text-base sm:text-lg leading-tight truncate" style={{ color: ROLE_COLORS[role] }}>
-                {ROLE_LABELS[role]}
-              </div>
+        <header className="sticky top-0 z-20 bg-[#F9F6F0]/90 backdrop-blur border-b border-[#EAE4D8] px-4 sm:px-6 lg:px-8 py-3">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3 min-w-0">
+              <button className="lg:hidden btn-ghost p-2 -ml-2" onClick={() => setMobileOpen(true)} aria-label="Buka menu">
+                <Menu size={20} />
+              </button>
+              <h1 className="font-display font-bold text-lg sm:text-xl truncate" style={{ color: ROLE_COLORS[role] }}>
+                {items.find(n => !n.divider && pathname === n.to)?.label || "Dasbor"}
+              </h1>
             </div>
-          </div>
-          <div className="flex-1 min-w-0 flex justify-end overflow-hidden">
-            <div className="max-w-full overflow-x-auto no-scrollbar">
-              <RoleSwitcher />
-            </div>
+            <RoleDropdown />
           </div>
         </header>
         <div className="p-4 sm:p-6 lg:p-8 max-w-[1400px]">{children}</div>

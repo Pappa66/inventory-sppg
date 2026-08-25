@@ -5,6 +5,8 @@ const SETTINGS_KEYS = [
   "logo", "sppg_name", "sppg_address", "default_transport_cost",
   "price_balita_paud_sd13", "price_sd4_smp_sma_bumil_busui",
   "cooking_start_hour", "distribution_start_hour", "beneficiaries",
+  "id_sppg", "nama_kepala", "nama_akuntan", "nama_yayasan",
+  "rekening_va", "tahun_anggaran", "periode_start", "periode_end",
 ];
 
 export async function GET(request) {
@@ -15,7 +17,7 @@ export async function GET(request) {
     const result = {};
     for (const row of data || []) {
       const val = row.value;
-      if (["default_transport_cost", "price_balita_paud_sd13", "price_sd4_smp_sma_bumil_busui", "cooking_start_hour", "distribution_start_hour"].includes(row.key)) {
+      if (["default_transport_cost", "price_balita_paud_sd13", "price_sd4_smp_sma_bumil_busui", "cooking_start_hour", "distribution_start_hour", "tahun_anggaran"].includes(row.key)) {
         result[row.key] = parseInt(val) || 0;
       } else {
         result[row.key] = val;

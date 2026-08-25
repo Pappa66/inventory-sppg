@@ -1,0 +1,23 @@
+- generic [active] [ref=f2e1]:
+  - generic [ref=f2e4]:
+    - generic [ref=f2e5]:
+      - heading "SPPG · MBG" [level=1] [ref=f2e10]
+      - paragraph [ref=f2e11]: Inventory & Procurement
+    - generic [ref=f2e12]:
+      - heading "Masuk" [level=2] [ref=f2e13]
+      - generic [ref=f2e35]: Email atau password salah
+      - generic [ref=f2e14]:
+        - text: Email
+        - textbox "admin@sppg.id" [ref=f2e15]
+      - generic [ref=f2e16]:
+        - text: Password
+        - textbox "••••••••" [ref=f2e17]: Password123!
+      - button "Masuk" [ref=f2e18] [cursor=pointer]
+      - generic [ref=f2e22]:
+        - text: "Demo:"
+        - strong [ref=f2e23]: admin@sppg.id
+        - text: /
+        - strong [ref=f2e24]: admin123
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=f2e30] [cursor=pointer]
+  - alert [ref=f2e34]

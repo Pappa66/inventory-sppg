@@ -8,6 +8,10 @@ out/
 .DS_Store
 .vercel
 
+*.png
+*.jpg
+*.jpeg
+
 # Dokumen internal (tidak untuk publik)
 PROPOSAL.md
 DOKUMENTASI.md

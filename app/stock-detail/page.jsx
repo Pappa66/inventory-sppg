@@ -8,6 +8,7 @@ import { Package, Search, Filter, Download } from "lucide-react";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { getLogo } from "@/lib/logo";
+import { getSettings, renderLetterhead, todayIndo } from "@/lib/letterhead";
 import { toast } from "sonner";
 
 export default function StockDetailPage() {
@@ -95,16 +96,12 @@ export default function StockDetailPage() {
 
   const exportPDF = async () => {
     const doc = new jsPDF("l");
-    const logo = await getLogo();
-    let titleY = 18;
-    if (logo) {
-      titleY = 36;
-      try { doc.addImage(logo, "PNG", 14, 8, 40, 0); } catch {}
-    }
+    const [logo, settings] = await Promise.all([getLogo(), getSettings()]);
+    const titleY = renderLetterhead(doc, settings, logo);
     doc.setFontSize(14);
-    doc.text("STOCK BARANG (DETAIL)", 14, titleY);
+    doc.text("STOK BARANG (DETAIL)", 14, titleY);
     doc.setFontSize(9);
-    doc.text(`Dicetak: ${new Date().toLocaleDateString("id-ID")}`, 14, titleY + 6);
+    doc.text(`Dicetak: ${todayIndo()}`, 14, titleY + 6);
 
     autoTable(doc, {
       startY: titleY + 12,

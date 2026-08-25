@@ -3,13 +3,20 @@ import { apiError, apiSuccess } from "@/lib/db-helpers";
 import bcrypt from "bcryptjs";
 
 const DEMO_USERS = [
-  { id: null, email: "admin@sppg.id",     name: "Administrator",    role: "admin" },
-  { id: null, email: "akuntan@sppg.id",   name: "Sri Akuntansi",    role: "accountant" },
-  { id: null, email: "kepala@sppg.id",    name: "Pak Kepala Dapur", role: "kitchen_head" },
-  { id: null, email: "chef@sppg.id",      name: "Chef Wulan",       role: "head_chef" },
-  { id: null, email: "asisten@sppg.id",   name: "Asisten Belanja",  role: "field_assistant" },
-  { id: null, email: "staf@sppg.id",      name: "Staf Gudang",      role: "field_staff" },
-  { id: null, email: "ahligizi@sppg.id",  name: "Ahli Gizi Maya",   role: "nutritionist" },
+  { id: "a0000001-0000-0000-0000-000000000001", email: "admin@sppg.id",      name: "Administrator Aplikasi", role: "admin_apps" },
+  { id: "a0000001-0000-0000-0000-000000000002", email: "admin-sppg@sppg.id", name: "Admin Dapur SPPG",       role: "admin_sppg" },
+  { id: "a0000001-0000-0000-0000-000000000003", email: "akuntan@sppg.id",    name: "Sri Akuntansi",          role: "accountant" },
+  { id: "a0000001-0000-0000-0000-000000000004", email: "kepala@sppg.id",     name: "Pak Kepala Dapur",       role: "kitchen_head" },
+  { id: "a0000001-0000-0000-0000-000000000005", email: "chef@sppg.id",       name: "Chef Wulan",             role: "head_chef" },
+  { id: "a0000001-0000-0000-0000-000000000006", email: "asisten@sppg.id",    name: "Asisten Lapangan",       role: "field_assistant" },
+  { id: "a0000001-0000-0000-0000-000000000007", email: "ahligizi@sppg.id",   name: "Ahli Gizi Maya",         role: "nutritionist" },
+  { id: "a0000001-0000-0000-0000-000000000008", email: "driver@sppg.id",     name: "Driver Budi",            role: "driver" },
+  { id: "a0000001-0000-0000-0000-000000000009", email: "driver2@sppg.id",    name: "Driver Sari",            role: "driver" },
+  { id: "a0000001-0000-0000-0000-000000000010", email: "persiapan@sppg.id",  name: "Rina Persiapan",         role: "persiapan" },
+  { id: "a0000001-0000-0000-0000-000000000011", email: "masak@sppg.id",      name: "Sari Masak",            role: "tenaga_masak" },
+  { id: "a0000001-0000-0000-0000-000000000012", email: "pemorsian@sppg.id",  name: "Dewi Pemorsian",         role: "pemorsian" },
+  { id: "a0000001-0000-0000-0000-000000000013", email: "kebersihan@sppg.id", name: "Siti Kebersihan",        role: "kebersihan" },
+  { id: "a0000001-0000-0000-0000-000000000014", email: "pencuci@sppg.id",    name: "Budi Pencuci",           role: "pencuci" },
 ];
 
 export async function POST(request) {

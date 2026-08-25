@@ -1,0 +1,160 @@
+- generic [ref=e1]:
+  - generic [ref=e2]:
+    - complementary [ref=e3]:
+      - generic [ref=e10]:
+        - generic [ref=e11]: SPPG · MBG
+        - generic [ref=e12]: Inventory & Procurement
+      - navigation [ref=e13]:
+        - link "Dasbor" [ref=e14] [cursor=pointer]:
+          - /url: /
+        - link "Pengguna" [ref=e74] [cursor=pointer]:
+          - /url: /users
+        - link "Pengaturan SPPG" [ref=e80] [cursor=pointer]:
+          - /url: /settings
+        - generic [ref=e84]: Konfigurasi Sistem
+        - link "Konfigurasi Global" [ref=e85] [cursor=pointer]:
+          - /url: /global-config
+        - generic [ref=e89]: Master & Persediaan
+        - link "Master Bahan" [ref=e90] [cursor=pointer]:
+          - /url: /master
+        - link "Hirarki Barang" [ref=e95] [cursor=pointer]:
+          - /url: /item-hierarchy
+        - link "Saldo Awal Barang" [ref=e100] [cursor=pointer]:
+          - /url: /opening-balances
+        - link "Stok & Opname" [ref=e105] [cursor=pointer]:
+          - /url: /inventory
+        - link "Stock Detail" [ref=e116] [cursor=pointer]:
+          - /url: /stock-detail
+        - link "Stock Rekap" [ref=e127] [cursor=pointer]:
+          - /url: /stock-rekap
+        - link "Belanja & Struk" [ref=e138] [cursor=pointer]:
+          - /url: /procurement
+        - generic [ref=e145]: Dapur & Menu
+        - link "Resep & Gizi" [ref=e146] [cursor=pointer]:
+          - /url: /recipes
+        - link "Menu & Cetak" [ref=e149] [cursor=pointer]:
+          - /url: /menu
+        - generic [ref=e152]: Pengiriman
+        - link "Tujuan Antar" [ref=e153] [cursor=pointer]:
+          - /url: /destinations
+        - link "Rencana Antar" [ref=e157] [cursor=pointer]:
+          - /url: /deliveries
+        - link "Tracking Driver" [ref=e163] [cursor=pointer]:
+          - /url: /delivery-tracking
+        - generic [ref=e166]: Keuangan & Pembukuan
+        - link "Anggaran" [ref=e167] [cursor=pointer]:
+          - /url: /anggaran
+        - link "Transaksi (D/K)" [ref=e171] [cursor=pointer]:
+          - /url: /transactions
+        - link "BKU" [ref=e175] [cursor=pointer]:
+          - /url: /bku
+        - link "Buku Pembantu" [ref=e179] [cursor=pointer]:
+          - /url: /sub-ledger
+        - generic [ref=e183]: Laporan & Approval
+        - link "Persetujuan Menu" [ref=e184] [cursor=pointer]:
+          - /url: /approval
+        - link "Laporan" [ref=e188] [cursor=pointer]:
+          - /url: /reports
+        - link "Audit Trail" [ref=e192] [cursor=pointer]:
+          - /url: /audit
+        - generic [ref=e196]: Bantuan
+        - link "Panduan Penggunaan" [ref=e21] [cursor=pointer]:
+          - /url: /panduan
+      - generic [ref=e25]:
+        - generic [ref=e26]: Login sebagai
+        - generic [ref=e197]: Administrator Aplikasi
+        - generic [ref=e198]: admin@sppg.id
+        - button "Keluar" [ref=e27] [cursor=pointer]
+    - main [ref=e31]:
+      - generic [ref=e33]:
+        - heading "Dasbor" [level=1] [ref=e35]
+        - generic [ref=e36]:
+          - button "Admin Aplikasi" [active] [ref=e199] [cursor=pointer]
+          - generic [ref=e317]:
+            - generic [ref=e318]: Switch Role
+            - generic [ref=e319]:
+              - generic [ref=e320]: Admin
+              - button "Admin Aplikasi" [ref=e321] [cursor=pointer]
+              - button "Admin SPPG" [ref=e326] [cursor=pointer]
+            - generic [ref=e329]:
+              - generic [ref=e330]: Manajemen
+              - button "Kepala SPPG" [ref=e331] [cursor=pointer]
+              - button "Akuntan" [ref=e334] [cursor=pointer]
+              - button "Ahli Gizi" [ref=e337] [cursor=pointer]
+            - generic [ref=e340]:
+              - generic [ref=e341]: Dapur
+              - button "Head Chef" [ref=e342] [cursor=pointer]
+              - button "Tenaga Persiapan" [ref=e345] [cursor=pointer]
+              - button "Tenaga Masak" [ref=e348] [cursor=pointer]
+              - button "Tenaga Pemorsian" [ref=e351] [cursor=pointer]
+            - generic [ref=e354]:
+              - generic [ref=e355]: Lapangan
+              - button "Asisten Lapangan" [ref=e356] [cursor=pointer]
+              - button "Driver" [ref=e359] [cursor=pointer]
+            - generic [ref=e362]:
+              - generic [ref=e363]: Penunjang
+              - button "Petugas Kebersihan" [ref=e364] [cursor=pointer]
+              - button "Pencuci Ompreng" [ref=e367] [cursor=pointer]
+      - generic [ref=e39]:
+        - generic [ref=e40]:
+          - heading "Dasbor" [level=1] [ref=e41]
+          - paragraph [ref=e42]: Ringkasan untuk Admin Aplikasi
+        - generic [ref=e204]:
+          - generic [ref=e205]:
+            - generic [ref=e206]: Total Stok
+            - generic [ref=e212]: Rp 0
+          - generic [ref=e213]:
+            - generic [ref=e214]: Total Anggaran
+            - generic [ref=e219]: Rp 0
+          - generic [ref=e220]:
+            - generic [ref=e221]: Transaksi Hari Ini
+            - generic [ref=e225]: 0 transaksi
+          - generic [ref=e226]:
+            - generic [ref=e227]: Pengiriman Pending
+            - generic [ref=e234]: "0"
+          - generic [ref=e235]:
+            - generic [ref=e236]: Low Stock
+            - generic [ref=e240]: "22"
+          - generic [ref=e241]:
+            - generic [ref=e242]: User Aktif
+            - generic [ref=e249]: 14 / 14
+        - generic [ref=e250]:
+          - generic [ref=e251]: Stok Menipis
+          - generic [ref=e254]:
+            - generic [ref=e255]:
+              - generic [ref=e256]: Mie Telur
+              - generic [ref=e257]: 0 / 15 kg
+            - generic [ref=e258]:
+              - generic [ref=e259]: Jagung Manis
+              - generic [ref=e260]: 0 / 12 kg
+            - generic [ref=e261]:
+              - generic [ref=e262]: Tempe
+              - generic [ref=e263]: 15 / 25 papan
+            - generic [ref=e264]:
+              - generic [ref=e265]: Tahu
+              - generic [ref=e266]: 0 / 20 papan
+            - generic [ref=e267]:
+              - generic [ref=e268]: Daging Sapi Giling
+              - generic [ref=e269]: 4 / 8 kg
+            - generic [ref=e270]:
+              - generic [ref=e271]: Ikan Asin
+              - generic [ref=e272]: 0 / 8 kg
+            - generic [ref=e273]:
+              - generic [ref=e274]: Susu UHT
+              - generic [ref=e275]: 0 / 20 liter
+            - generic [ref=e276]:
+              - generic [ref=e277]: Telur Puyuh
+              - generic [ref=e278]: 0 / 6 kg
+            - generic [ref=e279]: +14 item lainnya
+        - generic [ref=e280]:
+          - link "Konfigurasi Global" [ref=e281] [cursor=pointer]:
+            - /url: /global-config
+          - link "Pengguna" [ref=e287] [cursor=pointer]:
+            - /url: /users
+          - link "Laporan" [ref=e295] [cursor=pointer]:
+            - /url: /reports
+          - link "Audit Trail" [ref=e301] [cursor=pointer]:
+            - /url: /audit
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e312] [cursor=pointer]
+  - alert [ref=e316]
