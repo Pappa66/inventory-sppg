@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import Layout from "@/components/Layout";
 import { api } from "@/lib/api";
 import { toast } from "sonner";
-import { useAuth } from "contexts/AuthContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
 import { Save, Package, Search, Filter } from "lucide-react";
 
@@ -36,7 +36,10 @@ export default function OpeningBalancesPage() {
       const { data } = await api.get("/biweekly-periods");
       setPeriods(data || []);
       if (data?.length) setSelectedPeriod(data[0].id);
-    } catch (err) {}
+    } catch (err) {
+      console.error("Gagal memuat periode:", err);
+      toast.error("Gagal memuat data periode");
+    }
   };
 
   const fetchItems = async () => {
@@ -59,7 +62,10 @@ export default function OpeningBalancesPage() {
         map[b.item_code] = { quantity: b.opening_quantity, value: b.opening_value };
       }
       setBalances(map);
-    } catch (err) {}
+    } catch (err) {
+      console.error("Gagal memuat saldo awal:", err);
+      toast.error("Gagal memuat data saldo awal");
+    }
   };
 
   const handleChange = (code, field, val) => {

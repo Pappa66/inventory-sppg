@@ -4,18 +4,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import Layout from "@/components/Layout";
 import { api } from "@/lib/api";
 import { Calculator, CheckCircle2, AlertTriangle, ChefHat, Scale, HeartPulse } from "lucide-react";
-
-const AKG_STANDARDS = {
-  BALITA: { label: "Balita (1-3 tahun)", calories: 1400, protein: 40, carbs: 325, fats: 45, sodium: 1200 },
-  PAUD: { label: "PAUD/TK", calories: 1400, protein: 40, carbs: 325, fats: 45, sodium: 1200 },
-  SD13: { label: "SD Kelas 1-3", calories: 1500, protein: 45, carbs: 350, fats: 50, sodium: 1200 },
-  SD46: { label: "SD Kelas 4-6", calories: 1900, protein: 55, carbs: 440, fats: 65, sodium: 1400 },
-  SMP: { label: "SMP", calories: 2100, protein: 60, carbs: 490, fats: 70, sodium: 1500 },
-  SMA: { label: "SMA/SLB", calories: 2350, protein: 65, carbs: 545, fats: 78, sodium: 1500 },
-  TENDIK: { label: "Tenaga Kependidikan", calories: 2100, protein: 60, carbs: 490, fats: 70, sodium: 1500 },
-  BUMIL: { label: "Ibu Hamil", calories: 2250, protein: 73, carbs: 520, fats: 72, sodium: 1500 },
-  BUSUI: { label: "Ibu Menyusui", calories: 2450, protein: 80, carbs: 570, fats: 80, sodium: 1500 },
-};
+import { AKG_STANDARDS } from "@/lib/format";
 
 function NutrientBar({ label, value, unit, standard, color }) {
   const pct = standard > 0 ? Math.min((value / standard) * 100, 120) : 0;
@@ -67,6 +56,7 @@ export default function NutritionCalcPage() {
       carbs: (selectedRecipe.carbs_g || 0) / s,
       fats: (selectedRecipe.fats_g || 0) / s,
       sodium: (selectedRecipe.sodium_mg || 0) / s,
+      fiber: (selectedRecipe.fiber_g || 0) / s,
     };
   }, [selectedRecipe]);
 
@@ -75,10 +65,10 @@ export default function NutritionCalcPage() {
   const verdict = useMemo(() => {
     if (!perPortion || !akg) return null;
     const checks = [
-      { pct: (perPortion.calories / akg.calories) * 100 },
+      { pct: (perPortion.calories / akg.kkal) * 100 },
       { pct: (perPortion.protein / akg.protein) * 100 },
-      { pct: (perPortion.carbs / akg.carbs) * 100 },
-      { pct: (perPortion.fats / akg.fats) * 100 },
+      { pct: (perPortion.carbs / akg.karbo) * 100 },
+      { pct: (perPortion.fats / akg.lemak) * 100 },
     ];
     const avgPct = checks.reduce((s, c) => s + c.pct, 0) / checks.length;
     const allGood = checks.every((c) => c.pct >= 70);
@@ -164,6 +154,7 @@ export default function NutritionCalcPage() {
                       { label: "Protein", val: perPortion.protein, unit: "g", color: "#4A7C59" },
                       { label: "Karbo", val: perPortion.carbs, unit: "g", color: "#2C4251" },
                       { label: "Lemak", val: perPortion.fats, unit: "g", color: "#C5533B" },
+                      { label: "Serat", val: perPortion.fiber, unit: "g", color: "#0E7490" },
                       { label: "Natrium", val: perPortion.sodium, unit: "mg", color: "#6D28D9" },
                     ].map((n) => (
                       <div key={n.label} className="text-center p-3 rounded-lg bg-[#F9F6F0]">
@@ -181,10 +172,11 @@ export default function NutritionCalcPage() {
                   <h3 className="font-display font-bold flex items-center gap-2">
                     <HeartPulse size={16} /> Pemenuhan AKG - {akg.label}
                   </h3>
-                  <NutrientBar label="Kalori" value={perPortion.calories} unit="kkal" standard={akg.calories} color="#D97706" />
+                  <NutrientBar label="Kalori" value={perPortion.calories} unit="kkal" standard={akg.kkal} color="#D97706" />
                   <NutrientBar label="Protein" value={perPortion.protein} unit="g" standard={akg.protein} color="#4A7C59" />
-                  <NutrientBar label="Karbohidrat" value={perPortion.carbs} unit="g" standard={akg.carbs} color="#2C4251" />
-                  <NutrientBar label="Lemak" value={perPortion.fats} unit="g" standard={akg.fats} color="#C5533B" />
+                  <NutrientBar label="Karbohidrat" value={perPortion.carbs} unit="g" standard={akg.karbo} color="#2C4251" />
+                  <NutrientBar label="Lemak" value={perPortion.fats} unit="g" standard={akg.lemak} color="#C5533B" />
+                  <NutrientBar label="Serat" value={perPortion.fiber} unit="g" standard={akg.serat} color="#0E7490" />
                   <NutrientBar label="Natrium" value={perPortion.sodium} unit="mg" standard={akg.sodium} color="#6D28D9" />
                 </div>
 

@@ -5,6 +5,7 @@ import Layout from "@/components/Layout";
 import { api } from "@/lib/api";
 import { fmtIDR } from "@/lib/format";
 import { ScrollText, Filter, Download } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 const ACCOUNT_CODES = [
   { code: "1000", name: "BUKU KAS UMUM" },
@@ -18,15 +19,28 @@ const ACCOUNT_CODES = [
 ];
 
 export default function BKUPage() {
+  const { activeRole } = useAuth();
   const [transaksi, setTransaksi] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filterAccount, setFilterAccount] = useState("");
   const [filterDateStart, setFilterDateStart] = useState("");
   const [filterDateEnd, setFilterDateEnd] = useState("");
 
+  if (!["admin_apps", "admin_sppg", "accountant"].includes(activeRole)) {
+    return (
+      <Layout>
+        <div className="space-y-6">
+          <h1 className="font-display text-4xl font-bold">Akses Dibatasi</h1>
+          <p className="text-[#5C5C5C]">Anda tidak memiliki akses ke halaman ini.</p>
+        </div>
+      </Layout>
+    );
+  }
+
   useEffect(() => {
     api.get("/transactions")
       .then(r => setTransaksi(r.data || []))
+      .catch(e => { console.error(e); setTransaksi([]); })
       .finally(() => setLoading(false));
   }, []);
 

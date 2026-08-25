@@ -5,7 +5,7 @@ import Layout from "@/components/Layout";
 import { api } from "@/lib/api";
 import { getLogo, clearLogoCache } from "@/lib/logo";
 import { toast } from "sonner";
-import { useAuth } from "contexts/AuthContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
 import {
   Upload, Save, Building2, Truck as TruckIcon, Users, Clock,
@@ -13,8 +13,22 @@ import {
 } from "lucide-react";
 
 export default function Page() {
-  const { user } = useAuth();
+  const { user, activeRole } = useAuth();
   const router = useRouter();
+
+  if (!["admin_apps", "admin_sppg"].includes(activeRole)) {
+    return (
+      <Layout>
+        <div className="flex items-center justify-center min-h-[50vh]">
+          <div className="text-center">
+            <h1 className="font-display text-2xl font-bold text-[#5C5C5C]">Akses Dibatasi</h1>
+            <p className="text-[#5C5C5C] mt-2">Anda tidak memiliki izin untuk mengakses halaman ini.</p>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
+
   const [logoPreview, setLogoPreview] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -41,7 +55,10 @@ export default function Page() {
     getLogo().then(setLogoPreview);
     api.get("/settings/logo").then(({ data }) => {
       if (data) setSettings(prev => ({ ...prev, ...data }));
-    }).catch(() => {});
+    }).catch((err) => {
+      console.error("Gagal memuat pengaturan:", err);
+      toast.error("Gagal memuat pengaturan");
+    });
   }, []);
 
   const handleFile = async (e) => {

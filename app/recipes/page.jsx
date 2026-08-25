@@ -11,7 +11,7 @@ import { SkeletonCards } from "@/components/Skeleton";
 import Pagination from "@/components/Pagination";
 
 const EMPTY = { name: "", servings: 100, menu_category: null, ingredients: [], instructions: "",
-  calories_kcal: 0, protein_g: 0, carbs_g: 0, fats_g: 0, sodium_mg: 0, allergens: [], photo_url: "" };
+  calories_kcal: 0, protein_g: 0, carbs_g: 0, fats_g: 0, fiber_g: 0, sodium_mg: 0, allergens: [], photo_url: "" };
 
 const CAN_EDIT = ["admin_apps", "admin_sppg", "head_chef", "nutritionist", "kitchen_head"];
 
@@ -79,10 +79,10 @@ export default function Page() {
                         </div>
                       </div>
                     </div>
-                    {CAN_EDIT.includes(activeRole) && <button onClick={()=>{setEditing(r); setForm({name:r.name, servings:r.servings, menu_category:r.menu_category||null, ingredients:r.ingredients||[], instructions:r.instructions||"", calories_kcal:r.calories_kcal||0, protein_g:r.protein_g||0, carbs_g:r.carbs_g||0, fats_g:r.fats_g||0, sodium_mg:r.sodium_mg||0, allergens:r.allergens||[], photo_url:r.photo_url||""}); setPhotoPreview(r.photo_url||null); setOpen(true);}} className="btn-ghost text-xs">Edit</button>}
+                    {CAN_EDIT.includes(activeRole) && <button onClick={()=>{setEditing(r); setForm({name:r.name, servings:r.servings, menu_category:r.menu_category||null, ingredients:r.ingredients||[], instructions:r.instructions||"", calories_kcal:r.calories_kcal||0, protein_g:r.protein_g||0, carbs_g:r.carbs_g||0, fats_g:r.fats_g||0, fiber_g:r.fiber_g||0, sodium_mg:r.sodium_mg||0, allergens:r.allergens||[], photo_url:r.photo_url||""}); setPhotoPreview(r.photo_url||null); setOpen(true);}} className="btn-ghost text-xs">Edit</button>}
                   </div>
-                <div className="grid grid-cols-5 gap-1 mt-3 text-center">
-                  {[["Kkal", r.calories_kcal, "#D97706"],["Prot", r.protein_g, "#4A7C59"],["Karbo", r.carbs_g, "#2C4251"],["Lemak", r.fats_g, "#C5533B"],["Na (mg)", r.sodium_mg, "#5C5C5C"]].map(([l,v,c],i)=>(
+                <div className="grid grid-cols-6 gap-1 mt-3 text-center">
+                  {[["Kkal", r.calories_kcal, "#D97706"],["Prot", r.protein_g, "#4A7C59"],["Karbo", r.carbs_g, "#2C4251"],["Lemak", r.fats_g, "#C5533B"],["Serat", r.fiber_g, "#0E7490"],["Na (mg)", r.sodium_mg, "#5C5C5C"]].map(([l,v,c],i)=>(
                     <div key={i} className="rounded-md p-1.5" style={{background:`${c}10`}}>
                       <div className="audit-ts font-bold text-sm" style={{color:c}}>{Number(v||0).toFixed(0)}</div>
                       <div className="text-[9px] uppercase tracking-wide text-[#5C5C5C]">{l}</div>
@@ -197,7 +197,7 @@ export default function Page() {
                   <div className="col-span-2 border-t border-[#EAE4D8] pt-3">
                     <label className="text-xs uppercase tracking-widest text-[#5C5C5C] flex items-center gap-2"><Flame size={12}/> Profil Gizi per Porsi</label>
                     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 mt-2">
-                      {[["calories_kcal","Kkal"],["protein_g","Protein (g)"],["carbs_g","Karbo (g)"],["fats_g","Lemak (g)"],["sodium_mg","Sodium (mg)"]].map(([k,l])=>(
+                      {[["calories_kcal","Kkal"],["protein_g","Protein (g)"],["carbs_g","Karbo (g)"],["fats_g","Lemak (g)"],["fiber_g","Serat (g)"],["sodium_mg","Sodium (mg)"]].map(([k,l])=>(
                         <div key={k}>
                           <label className="text-[10px] uppercase text-[#5C5C5C]">{l}</label>
                           <input data-testid={`nutri-${k}`} type="number" step="0.1" className="w-full mt-1 px-2 py-1.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0] text-sm audit-ts" value={form[k]} onChange={(e)=>setForm({...form, [k]:parseFloat(e.target.value)||0})}/>

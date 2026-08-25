@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import Layout from "@/components/Layout";
 import { api } from "@/lib/api";
 import { toast } from "sonner";
-import { useAuth } from "contexts/AuthContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
 import {
   Save, Settings, Percent, DollarSign, Users, Clock,
@@ -61,14 +61,14 @@ const CONFIG_SECTIONS = [
 ];
 
 export default function GlobalConfigPage() {
-  const { user } = useAuth();
+  const { user, activeRole } = useAuth();
   const router = useRouter();
   const [config, setConfig] = useState({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    if (user && user.role !== "admin_apps") {
+    if (user && activeRole !== "admin_apps") {
       router.push("/");
       return;
     }
@@ -103,7 +103,7 @@ export default function GlobalConfigPage() {
     }
   };
 
-  if (user && user.role !== "admin_apps") {
+  if (user && activeRole !== "admin_apps") {
     return null;
   }
 

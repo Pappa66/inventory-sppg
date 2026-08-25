@@ -30,6 +30,7 @@ export async function POST(request) {
       protein_g: body.protein_g || 0,
       carbs_g: body.carbs_g || 0,
       fats_g: body.fats_g || 0,
+      fiber_g: body.fiber_g || 0,
       sodium_mg: body.sodium_mg || 0,
       allergens: body.allergens || [],
       photo_url: body.photo_url || null,

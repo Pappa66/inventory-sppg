@@ -6,6 +6,7 @@ import { api } from "@/lib/api";
 import { fmtDateTime, ROLE_LABELS, ROLE_COLORS, ZONE_COLORS } from "@/lib/format";
 import { SkeletonTable } from "@/components/Skeleton";
 import Pagination from "@/components/Pagination";
+import { useAuth } from "@/contexts/AuthContext";
 
 function renderChanges(changes) {
   if (!changes) return null;
@@ -35,13 +36,25 @@ function renderChanges(changes) {
 }
 
 export default function Page() {
+  const { activeRole } = useAuth();
   const [rows, setRows] = useState([]);
   const [filter, setFilter] = useState("");
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const perPage = 10;
 
-  useEffect(() => { setLoading(true); api.get("/audit").then(({data})=>{ setRows(data); setPage(1); }).finally(() => setLoading(false)); }, []);
+  if (!["admin_apps", "admin_sppg", "accountant", "kitchen_head"].includes(activeRole)) {
+    return (
+      <Layout>
+        <div className="space-y-6">
+          <h1 className="font-display text-4xl font-bold">Akses Dibatasi</h1>
+          <p className="text-[#5C5C5C]">Anda tidak memiliki akses ke halaman ini.</p>
+        </div>
+      </Layout>
+    );
+  }
+
+  useEffect(() => { setLoading(true); api.get("/audit").then(({data})=>{ setRows(data); setPage(1); }).catch(e => { console.error(e); setRows([]); }).finally(() => setLoading(false)); }, []);
 
   const shown = rows.filter(r => {
     if (!filter) return true;

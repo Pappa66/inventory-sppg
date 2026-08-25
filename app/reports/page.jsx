@@ -35,6 +35,20 @@ const REPORT_TABS = [
 
 export default function ReportsPage() {
   const { user, activeRole } = useAuth();
+
+  if (!["admin_apps", "admin_sppg", "accountant"].includes(activeRole)) {
+    return (
+      <Layout>
+        <div className="flex items-center justify-center min-h-[50vh]">
+          <div className="text-center">
+            <h1 className="font-display text-2xl font-bold text-[#5C5C5C]">Akses Dibatasi</h1>
+            <p className="text-[#5C5C5C] mt-2">Anda tidak memiliki izin untuk mengakses halaman ini.</p>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
+
   const [activeTab, setActiveTab] = useState("lr");
   const [transaksi, setTransaksi] = useState([]);
   const [anggaran, setAnggaran] = useState([]);

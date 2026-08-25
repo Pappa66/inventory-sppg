@@ -4,7 +4,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import Layout from "@/components/Layout";
 import { api, formatErr } from "@/lib/api";
 import { toast } from "sonner";
-import { useAuth } from "contexts/AuthContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { Plus, Pencil, Trash2, Save, Filter } from "lucide-react";
 import { fmtIDR } from "@/lib/format";
 

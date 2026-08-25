@@ -41,10 +41,12 @@ function thisMonday() {
 function useDashboardData(activeRole) {
   const [data, setData] = useState({});
   const [loading, setLoading] = useState(true);
+  const [fetchErrors, setFetchErrors] = useState(0);
 
   useEffect(() => {
     setLoading(true);
     setData({});
+    setFetchErrors(0);
     const role = activeRole || "admin_sppg";
     const weekStart = thisMonday();
     const today = todayStr();
@@ -56,19 +58,19 @@ function useDashboardData(activeRole) {
       fetches.push(
         api.get("/reports/financial")
           .then(({ data }) => setData(d => ({ ...d, fin: data })))
-          .catch(() => {}),
+          .catch(() => setFetchErrors(e => e + 1)),
         api.get("/reports/low-stock")
           .then(({ data }) => setData(d => ({ ...d, low: data || [] })))
-          .catch(() => {}),
+          .catch(() => setFetchErrors(e => e + 1)),
         api.get("/users")
           .then(({ data }) => setData(d => ({ ...d, users: data || [] })))
-          .catch(() => {}),
+          .catch(() => setFetchErrors(e => e + 1)),
         api.get("/purchases")
           .then(({ data }) => setData(d => ({ ...d, purchases: data || [] })))
-          .catch(() => {}),
+          .catch(() => setFetchErrors(e => e + 1)),
         api.get(`/delivery-plans?plan_date=${today}`)
           .then(({ data }) => setData(d => ({ ...d, deliveryPlans: data || [] })))
-          .catch(() => {}),
+          .catch(() => setFetchErrors(e => e + 1)),
       );
     }
 
@@ -77,19 +79,19 @@ function useDashboardData(activeRole) {
       fetches.push(
         api.get("/reports/financial")
           .then(({ data }) => setData(d => ({ ...d, fin: data })))
-          .catch(() => {}),
+          .catch(() => setFetchErrors(e => e + 1)),
         api.get("/reports/low-stock")
           .then(({ data }) => setData(d => ({ ...d, low: data || [] })))
-          .catch(() => {}),
+          .catch(() => setFetchErrors(e => e + 1)),
         api.get("/users")
           .then(({ data }) => setData(d => ({ ...d, users: data || [] })))
-          .catch(() => {}),
+          .catch(() => setFetchErrors(e => e + 1)),
         api.get("/purchases")
           .then(({ data }) => setData(d => ({ ...d, purchases: data || [] })))
-          .catch(() => {}),
+          .catch(() => setFetchErrors(e => e + 1)),
         api.get(`/delivery-plans?plan_date=${today}`)
           .then(({ data }) => setData(d => ({ ...d, deliveryPlans: data || [] })))
-          .catch(() => {}),
+          .catch(() => setFetchErrors(e => e + 1)),
       );
     }
 
@@ -98,10 +100,10 @@ function useDashboardData(activeRole) {
       fetches.push(
         api.get("/reports/financial")
           .then(({ data }) => setData(d => ({ ...d, fin: data })))
-          .catch(() => {}),
+          .catch(() => setFetchErrors(e => e + 1)),
         api.get("/purchases")
           .then(({ data }) => setData(d => ({ ...d, purchases: data || [] })))
-          .catch(() => {}),
+          .catch(() => setFetchErrors(e => e + 1)),
       );
     }
 
@@ -110,16 +112,16 @@ function useDashboardData(activeRole) {
       fetches.push(
         api.get("/stock-lots")
           .then(({ data }) => setData(d => ({ ...d, lots: data || [] })))
-          .catch(() => {}),
+          .catch(() => setFetchErrors(e => e + 1)),
         api.get(`/menus?week_start=${weekStart}`)
           .then(({ data }) => setData(d => ({ ...d, menus: data || [] })))
-          .catch(() => {}),
+          .catch(() => setFetchErrors(e => e + 1)),
         api.get("/stock-taken")
           .then(({ data }) => setData(d => ({ ...d, stockTaken: data || [] })))
-          .catch(() => {}),
+          .catch(() => setFetchErrors(e => e + 1)),
         api.get("/recipes")
           .then(({ data }) => setData(d => ({ ...d, recipes: data || [] })))
-          .catch(() => {}),
+          .catch(() => setFetchErrors(e => e + 1)),
       );
     }
 
@@ -128,16 +130,16 @@ function useDashboardData(activeRole) {
       fetches.push(
         api.get("/recipes")
           .then(({ data }) => setData(d => ({ ...d, recipes: data || [] })))
-          .catch(() => {}),
+          .catch(() => setFetchErrors(e => e + 1)),
         api.get(`/menus?week_start=${weekStart}`)
           .then(({ data }) => setData(d => ({ ...d, menus: data || [] })))
-          .catch(() => {}),
+          .catch(() => setFetchErrors(e => e + 1)),
         api.get("/stock-taken")
           .then(({ data }) => setData(d => ({ ...d, stockTaken: data || [] })))
-          .catch(() => {}),
+          .catch(() => setFetchErrors(e => e + 1)),
         api.get("/stock-lots")
           .then(({ data }) => setData(d => ({ ...d, lots: data || [] })))
-          .catch(() => {}),
+          .catch(() => setFetchErrors(e => e + 1)),
       );
     }
 
@@ -146,16 +148,16 @@ function useDashboardData(activeRole) {
       fetches.push(
         api.get("/reports/low-stock")
           .then(({ data }) => setData(d => ({ ...d, low: data || [] })))
-          .catch(() => {}),
+          .catch(() => setFetchErrors(e => e + 1)),
         api.get(`/delivery-plans?plan_date=${today}`)
           .then(({ data }) => setData(d => ({ ...d, deliveryPlans: data || [] })))
-          .catch(() => {}),
+          .catch(() => setFetchErrors(e => e + 1)),
         api.get("/purchases")
           .then(({ data }) => setData(d => ({ ...d, purchases: data || [] })))
-          .catch(() => {}),
+          .catch(() => setFetchErrors(e => e + 1)),
         api.get("/reports/delivery-status")
           .then(({ data }) => setData(d => ({ ...d, deliveryStatus: data })))
-          .catch(() => {}),
+          .catch(() => setFetchErrors(e => e + 1)),
       );
     }
 
@@ -164,16 +166,16 @@ function useDashboardData(activeRole) {
       fetches.push(
         api.get("/menus/pending")
           .then(({ data }) => setData(d => ({ ...d, menusPending: data || [] })))
-          .catch(() => {}),
+          .catch(() => setFetchErrors(e => e + 1)),
         api.get("/menus")
           .then(({ data }) => setData(d => ({ ...d, menusAll: data || [] })))
-          .catch(() => {}),
+          .catch(() => setFetchErrors(e => e + 1)),
         api.get("/recipes")
           .then(({ data }) => setData(d => ({ ...d, recipes: data || [] })))
-          .catch(() => {}),
+          .catch(() => setFetchErrors(e => e + 1)),
         api.get("/reports/financial")
           .then(({ data }) => setData(d => ({ ...d, fin: data })))
-          .catch(() => {}),
+          .catch(() => setFetchErrors(e => e + 1)),
       );
     }
 
@@ -182,10 +184,10 @@ function useDashboardData(activeRole) {
       fetches.push(
         api.get(`/delivery-plans?plan_date=${today}`)
           .then(({ data }) => setData(d => ({ ...d, deliveryPlans: data || [] })))
-          .catch(() => {}),
+          .catch(() => setFetchErrors(e => e + 1)),
         api.get(`/reports/delivery-status?plan_date=${today}`)
           .then(({ data }) => setData(d => ({ ...d, deliveryStatus: data })))
-          .catch(() => {}),
+          .catch(() => setFetchErrors(e => e + 1)),
       );
     }
 
@@ -194,13 +196,13 @@ function useDashboardData(activeRole) {
       fetches.push(
         api.get("/stock-lots")
           .then(({ data }) => setData(d => ({ ...d, lots: data || [] })))
-          .catch(() => {}),
+          .catch(() => setFetchErrors(e => e + 1)),
         api.get("/stock-taken")
           .then(({ data }) => setData(d => ({ ...d, stockTaken: data || [] })))
-          .catch(() => {}),
+          .catch(() => setFetchErrors(e => e + 1)),
         api.get(`/menus?week_start=${weekStart}`)
           .then(({ data }) => setData(d => ({ ...d, menus: data || [] })))
-          .catch(() => {}),
+          .catch(() => setFetchErrors(e => e + 1)),
       );
     }
 
@@ -209,13 +211,13 @@ function useDashboardData(activeRole) {
       fetches.push(
         api.get("/recipes")
           .then(({ data }) => setData(d => ({ ...d, recipes: data || [] })))
-          .catch(() => {}),
+          .catch(() => setFetchErrors(e => e + 1)),
         api.get("/stock-taken")
           .then(({ data }) => setData(d => ({ ...d, stockTaken: data || [] })))
-          .catch(() => {}),
+          .catch(() => setFetchErrors(e => e + 1)),
         api.get(`/menus?week_start=${weekStart}`)
           .then(({ data }) => setData(d => ({ ...d, menus: data || [] })))
-          .catch(() => {}),
+          .catch(() => setFetchErrors(e => e + 1)),
       );
     }
 
@@ -224,10 +226,10 @@ function useDashboardData(activeRole) {
       fetches.push(
         api.get(`/menus?week_start=${weekStart}`)
           .then(({ data }) => setData(d => ({ ...d, menus: data || [] })))
-          .catch(() => {}),
+          .catch(() => setFetchErrors(e => e + 1)),
         api.get("/stock-taken")
           .then(({ data }) => setData(d => ({ ...d, stockTaken: data || [] })))
-          .catch(() => {}),
+          .catch(() => setFetchErrors(e => e + 1)),
       );
     }
 
@@ -236,7 +238,7 @@ function useDashboardData(activeRole) {
       fetches.push(
         api.get("/stock-lots")
           .then(({ data }) => setData(d => ({ ...d, lots: data || [] })))
-          .catch(() => {}),
+          .catch(() => setFetchErrors(e => e + 1)),
       );
     }
 
@@ -245,14 +247,14 @@ function useDashboardData(activeRole) {
       fetches.push(
         api.get("/stock-lots")
           .then(({ data }) => setData(d => ({ ...d, lots: data || [] })))
-          .catch(() => {}),
+          .catch(() => setFetchErrors(e => e + 1)),
       );
     }
 
     Promise.all(fetches).finally(() => setLoading(false));
   }, [activeRole]);
 
-  return { data, loading };
+  return { data, loading, fetchErrors };
 }
 
 /* ------------------------------------------------------------------ */
@@ -702,8 +704,8 @@ function QuickLinks({ role }) {
 
 export default function DashboardPage() {
   const { activeRole } = useAuth();
-  const role = activeRole || "admin";
-  const { data, loading } = useDashboardData(activeRole);
+  const role = activeRole || "admin_sppg";
+  const { data, loading, fetchErrors } = useDashboardData(activeRole);
 
   const cards = useMemo(() => buildCards(role, data), [role, data]);
   const roleColor = ROLE_COLORS[role] || "#2D2D2D";
@@ -721,6 +723,14 @@ export default function DashboardPage() {
             </span>
           </p>
         </div>
+
+        {/* Fetch error warning banner */}
+        {fetchErrors > 0 && (
+          <div className="bg-[#FEF3C7] border border-[#F59E0B] text-[#92400E] px-4 py-3 rounded-lg text-sm flex items-center gap-2">
+            <AlertTriangle size={16} className="flex-shrink-0" />
+            <span>Beberapa data gagal dimuat. Menampilkan data yang tersedia.</span>
+          </div>
+        )}
 
         {loading ? (
           <SkeletonCards count={cards.length || 6} />
@@ -757,11 +767,7 @@ export default function DashboardPage() {
                 <Database size={40} className="mx-auto mb-3 opacity-30" />
                 <p className="font-display text-lg font-bold">Belum ada data</p>
                 <p className="text-sm mt-1">
-                  Jalankan file{" "}
-                  <code className="bg-[#EAE4D8] px-2 py-0.5 rounded text-xs">
-                    seed.sql
-                  </code>{" "}
-                  di Supabase SQL Editor.
+                  Belum ada data tersedia. Silakan hubungi administrator untuk pengaturan awal.
                 </p>
               </div>
             )}

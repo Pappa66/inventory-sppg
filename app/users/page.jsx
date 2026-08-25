@@ -9,8 +9,24 @@ import { toast } from "sonner";
 import { Plus } from "lucide-react";
 import { SkeletonTable } from "@/components/Skeleton";
 import Pagination from "@/components/Pagination";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function Page() {
+  const { activeRole } = useAuth();
+
+  if (!["admin_apps", "admin_sppg"].includes(activeRole)) {
+    return (
+      <Layout>
+        <div className="flex items-center justify-center min-h-[50vh]">
+          <div className="text-center">
+            <h1 className="font-display text-2xl font-bold text-[#5C5C5C]">Akses Dibatasi</h1>
+            <p className="text-[#5C5C5C] mt-2">Anda tidak memiliki izin untuk mengakses halaman ini.</p>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
+
   const [users, setUsers] = useState([]);
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ email: "", name: "", role: "driver", password: "" });
@@ -57,7 +73,9 @@ export default function Page() {
             <h1 className="font-display text-4xl font-bold">Pengguna & Aktivasi</h1>
             <p className="text-[#5C5C5C] mt-1">Aktifkan / nonaktifkan akun. Penghapusan tidak diizinkan.</p>
           </div>
-          <button data-testid="add-user-btn" onClick={()=>setOpen(true)} className="btn-primary"><Plus size={16}/> Tambah Pengguna</button>
+          {["admin_apps", "admin_sppg"].includes(activeRole) && (
+            <button data-testid="add-user-btn" onClick={()=>setOpen(true)} className="btn-primary"><Plus size={16}/> Tambah Pengguna</button>
+          )}
         </div>
 
         {loading ? (

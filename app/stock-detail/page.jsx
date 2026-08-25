@@ -10,11 +10,24 @@ import autoTable from "jspdf-autotable";
 import { getLogo } from "@/lib/logo";
 import { getSettings, renderLetterhead, todayIndo } from "@/lib/letterhead";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function StockDetailPage() {
+  const { activeRole } = useAuth();
   const [lots, setLots] = useState([]);
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  if (!["admin_apps", "admin_sppg", "kitchen_head", "head_chef", "accountant"].includes(activeRole)) {
+    return (
+      <Layout>
+        <div className="space-y-6">
+          <h1 className="font-display text-4xl font-bold">Akses Dibatasi</h1>
+          <p className="text-[#5C5C5C]">Anda tidak memiliki akses ke halaman ini.</p>
+        </div>
+      </Layout>
+    );
+  }
   const [search, setSearch] = useState("");
   const [filterZone, setFilterZone] = useState("ALL");
   const [filterCategory, setFilterCategory] = useState("");

@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import Layout from "@/components/Layout";
 import { api } from "@/lib/api";
 import { toast } from "sonner";
-import { useAuth } from "contexts/AuthContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
 import {
   Database, Plus, Edit2, Trash2, ChevronRight, ChevronDown,
@@ -219,11 +219,11 @@ export default function ItemHierarchyPage() {
               </div>
               <div>
                 <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Kode</label>
-                <input className="w-full mt-1 px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0] font-mono" value={form.code} onChange={e => setForm({...form, code: e.target.value})} placeholder="Contoh: KH-01-001"/>
+                <input required className="w-full mt-1 px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0] font-mono" value={form.code} onChange={e => setForm({...form, code: e.target.value})} placeholder="Contoh: KH-01-001"/>
               </div>
               <div>
                 <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Nama</label>
-                <input className="w-full mt-1 px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={form.name} onChange={e => setForm({...form, name: e.target.value})} placeholder="Nama item"/>
+                <input required className="w-full mt-1 px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={form.name} onChange={e => setForm({...form, name: e.target.value})} placeholder="Nama item"/>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
