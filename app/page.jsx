@@ -122,6 +122,9 @@ function useDashboardData(activeRole) {
         api.get("/recipes")
           .then(({ data }) => setData(d => ({ ...d, recipes: data || [] })))
           .catch(() => setFetchErrors(e => e + 1)),
+        api.get(`/daily-tasks?task_date=${today}`)
+          .then(({ data }) => setData(d => ({ ...d, dailyReports: data || [] })))
+          .catch(() => setFetchErrors(e => e + 1)),
       );
     }
 
@@ -348,12 +351,15 @@ function buildCards(role, d) {
         t => (t.taken_at || "").slice(0, 10) === today
       );
       const recipeCount = (d.recipes || []).length;
+      const dailyReports = (d.dailyReports || []);
+      const completedReports = dailyReports.filter(t => t.status === "SELESAI").length;
 
       return [
-        { label: "Stok Hari Ini", value: totalLots, icon: Package, color: "#4A7C59", currency: false, suffix: " lot" },
-        { label: "Menu Aktif Minggu Ini", value: activeMenus, icon: CalendarCheck, color: "#D97706", currency: false },
+        { label: "Laporan Masuk Hari Ini", value: completedReports, icon: ClipboardList, color: "#4A7C59", currency: false, suffix: ` / ${dailyReports.length}` },
+        { label: "Stok Hari Ini", value: totalLots, icon: Package, color: "#2C4251", currency: false, suffix: " lot" },
+        { label: "Menu Aktif", value: activeMenus, icon: CalendarCheck, color: "#D97706", currency: false },
         { label: "Pengambilan Barang", value: todayTaken.length, icon: HandPlatter, color: "#C5533B", currency: false, suffix: " hari ini" },
-        { label: "Resep Tersedia", value: recipeCount, icon: ChefHat, color: "#4A7C59", currency: false },
+        { label: "Resep Tersedia", value: recipeCount, icon: ChefHat, color: "#0E7490", currency: false },
       ];
     }
 
@@ -835,6 +841,48 @@ export default function DashboardPage() {
                       </div>
                     ));
                   })}
+                </div>
+              </div>
+            )}
+
+            {/* Kitchen Head - Laporan Masuk */}
+            {role === "kitchen_head" && (data.dailyReports || []).length > 0 && (
+              <div className="card-soft overflow-hidden">
+                <div className="px-5 py-3 border-b border-[#EAE4D8] font-display font-bold flex items-center gap-2 text-[#4A7C59]">
+                  <ClipboardList size={16} /> Laporan Masuk Hari Ini
+                </div>
+                <div className="divide-y divide-[#EAE4D8]">
+                  {(() => {
+                    const ROLE_LABELS_MAP = {
+                      persiapan: "Persiapan", tenaga_masak: "Masak", pemorsian: "Pemorsian",
+                      kebersihan: "Kebersihan", pencuci: "Pencuci", driver: "Driver",
+                    };
+                    const ROLE_COLORS_MAP = {
+                      persiapan: "#16A34A", tenaga_masak: "#EA580C", pemorsian: "#7C3AED",
+                      kebersihan: "#059669", pencuci: "#0284C7", driver: "#0891B2",
+                    };
+                    const CAT_LABELS = {
+                      BALITA: "Balita", PORTION_SMALL: "Porsi Kecil", PORTION_LARGE: "Porsi Besar", BUMIL_BUSUI: "Bumil/Busui",
+                    };
+                    return data.dailyReports.slice(0, 10).map((t) => (
+                      <div key={t.id} className="px-5 py-3 flex justify-between items-center text-sm">
+                        <div className="flex items-center gap-3">
+                          <span className="tag text-xs" style={{ background: `${ROLE_COLORS_MAP[t.role] || "#5C5C5C"}1A`, color: ROLE_COLORS_MAP[t.role] || "#5C5C5C" }}>
+                            {ROLE_LABELS_MAP[t.role] || t.role}
+                          </span>
+                          <span className="font-semibold capitalize">{t.task_type}</span>
+                          {t.category && <span className="text-xs text-[#5C5C5C]">({CAT_LABELS[t.category] || t.category})</span>}
+                          {t.portions > 0 && <span className="text-xs audit-ts">{t.portions} ompreng</span>}
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {t.photo_url && <img src={t.photo_url} alt="" className="w-8 h-8 rounded object-cover" />}
+                          <span className="tag text-xs" style={{ background: t.status === "SELESAI" ? "#4A7C591A" : "#D977061A", color: t.status === "SELESAI" ? "#4A7C59" : "#D97706" }}>
+                            {t.status === "SELESAI" ? "Selesai" : "Proses"}
+                          </span>
+                        </div>
+                      </div>
+                    ));
+                  })()}
                 </div>
               </div>
             )}
