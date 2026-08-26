@@ -44,10 +44,11 @@ function useDashboardData(activeRole) {
   const [fetchErrors, setFetchErrors] = useState(0);
 
   useEffect(() => {
+    if (!activeRole) return;
     setLoading(true);
     setData({});
     setFetchErrors(0);
-    const role = activeRole || "admin_sppg";
+    const role = activeRole;
     const weekStart = thisMonday();
     const today = todayStr();
 
