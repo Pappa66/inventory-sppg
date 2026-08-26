@@ -1,12 +1,13 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import Layout from "@/components/Layout";
 import { api, formatErr } from "@/lib/api";
 import { COMMON_ALLERGENS, MENU_CATEGORIES } from "@/lib/format";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
-import { Plus, Flame, Camera, Calculator, Pencil } from "lucide-react";
+import { Plus, Flame, Camera, Calculator, Pencil, AlertTriangle } from "lucide-react";
 import { SkeletonCards } from "@/components/Skeleton";
 import Pagination from "@/components/Pagination";
 
@@ -127,8 +128,8 @@ export default function Page() {
                           {r.servings} porsi
                           {catInfo && <span className="role-pill" style={{ background: `${catInfo.color}1A`, color: catInfo.color }}>{catInfo.label}</span>}
                           {r.nutrition_auto !== false && <span className="tag bg-[#4A7C59]/10 text-[#4A7C59]">Auto</span>}
-                        </div>
-                      </div>
+                  </div>
+                </div>
                     </div>
                     {CAN_EDIT.includes(activeRole) && (
                       <button onClick={() => {
@@ -262,6 +263,17 @@ export default function Page() {
                     })}
                   </div>
                 </div>
+                {form.nutrition_auto && form.ingredients.some(ing => {
+                  const item = items.find(x => x.id === ing.item_id);
+                  return ing.item_id && item && (!item.nutrition_per_100g || (!item.nutrition_per_100g.calories && !item.nutrition_per_100g.protein));
+                }) && (
+                  <div className="col-span-2 bg-[#FEF3C7] border border-[#F59E0B] text-[#92400E] px-4 py-3 rounded-lg text-sm flex items-start gap-2">
+                    <AlertTriangle size={16} className="mt-0.5 flex-shrink-0" />
+                    <div>
+                      <span className="font-semibold">Beberapa bahan belum punya data gizi.</span> Total gizi hanya dihitung dari bahan yang sudah terisi. Input data gizi bahan di <Link href="/master" className="underline font-semibold">Master Bahan</Link>.
+                    </div>
+                  </div>
+                )}
                 <div className="col-span-2">
                   <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Instruksi (opsional)</label>
                   <textarea rows={3} className="w-full mt-1 px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={form.instructions} onChange={(e) => setForm({ ...form, instructions: e.target.value })} />

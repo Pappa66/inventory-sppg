@@ -20,3 +20,4 @@ PANDUAN.md
 
 # Excel lock files
 .~*
+.playwright-mcp/

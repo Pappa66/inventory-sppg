@@ -3,16 +3,16 @@
 import React, { useEffect, useMemo, useState } from "react";
 import Layout from "@/components/Layout";
 import { api, formatErr } from "@/lib/api";
-import { fmtIDR, fmtDateTime, ZONES, ZONE_COLORS, ZONE_LABELS, COMMON_ALLERGENS } from "@/lib/format";
+import { fmtIDR, fmtDateTime, ZONES, ZONE_COLORS, ZONE_LABELS, COMMON_ALLERGENS, ITEM_CATEGORIES } from "@/lib/format";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { Plus, History } from "lucide-react";
 import { SkeletonTable } from "@/components/Skeleton";
 import Pagination from "@/components/Pagination";
 
-const EMPTY = { name: "", unit: "kg", category: "Sayur", par_level: 0, price_per_unit: 0, zone: "DRY", allergens: [], nutrition_per_100g: { calories: 0, protein: 0, carbs: 0, fats: 0, fiber: 0, sodium: 0 } };
+const EMPTY = { name: "", unit: "kg", category: "SY", par_level: 0, price_per_unit: 0, zone: "DRY", allergens: [], nutrition_per_100g: { calories: 0, protein: 0, carbs: 0, fats: 0, fiber: 0, sodium: 0 } };
 
-const CAN_EDIT = ["admin_apps", "admin_sppg", "kitchen_head", "head_chef"];
+const CAN_EDIT = ["admin_apps", "admin_sppg", "kitchen_head", "head_chef", "nutritionist"];
 
 export default function Page() {
   const { activeRole } = useAuth();
@@ -84,7 +84,7 @@ export default function Page() {
                   <tr key={it.id} className="border-b border-[#EAE4D8] last:border-0">
                     <td className="py-3 px-4 font-semibold">{it.name}</td>
                     <td className="py-3 px-4"><span className="role-pill" style={{background:`${ZONE_COLORS[it.zone||"DRY"]}1A`, color:ZONE_COLORS[it.zone||"DRY"]}}>{ZONE_LABELS[it.zone||"DRY"]}</span></td>
-                    <td className="py-3 px-4">{it.category}</td>
+                    <td className="py-3 px-4">{ITEM_CATEGORIES[it.category]?.label || it.category}</td>
                     <td className="py-3 px-4 audit-ts">{it.unit}</td>
                     <td className="py-3 px-4 text-right audit-ts">{it.par_level}</td>
                     <td className="py-3 px-4 text-right audit-ts">{fmtIDR(it.price_per_unit)}</td>
@@ -108,7 +108,7 @@ export default function Page() {
                   <div className="grid grid-cols-2 gap-2 text-sm">
                     <div>
                       <span className="text-[#5C5C5C]">Kategori</span>
-                      <div>{it.category}</div>
+                      <div>{ITEM_CATEGORIES[it.category]?.label || it.category}</div>
                     </div>
                     <div>
                       <span className="text-[#5C5C5C]">Satuan</span>
@@ -150,7 +150,7 @@ export default function Page() {
                   <div>
                     <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Kategori</label>
                     <select className="w-full mt-1 px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={form.category} onChange={(e)=>setForm({...form, category:e.target.value})}>
-                      {["Sayur","Protein","Karbo","Bumbu","Buah","Lainnya"].map(c=><option key={c}>{c}</option>)}
+                      {Object.entries(ITEM_CATEGORIES).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
                     </select>
                   </div>
                   <div>

@@ -278,7 +278,18 @@ export default function Page() {
                   <div>
                     <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Satuan</label>
                     <select data-testid="item-unit" className="w-full mt-1 px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={itemForm.unit} onChange={(e)=>setItemForm({...itemForm, unit:e.target.value})}>
-                      <option value="kg">kg</option><option value="liter">liter</option><option value="pcs">pcs</option><option value="gram">gram</option>
+                      <optgroup label="Berat">
+                        <option value="kg">kg</option><option value="gram">gram</option>
+                      </optgroup>
+                      <optgroup label="Cair">
+                        <option value="liter">liter</option><option value="ml">ml</option>
+                      </optgroup>
+                      <optgroup label="Jumlah">
+                        <option value="pcs">pcs</option><option value="butir">butir</option><option value="ikat">ikat</option><option value="bungkus">bungkus</option>
+                      </optgroup>
+                      <optgroup label="Kemasan">
+                        <option value="botol">botol</option><option value="sachet">sachet</option><option value="kaleng">kaleng</option><option value="tabung">tabung (LPG)</option><option value="lembar">lembar</option><option value="roll">roll</option>
+                      </optgroup>
                     </select>
                   </div>
                   <div>
@@ -286,6 +297,9 @@ export default function Page() {
                     <select data-testid="item-category" className="w-full mt-1 px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={itemForm.category} onChange={(e)=>setItemForm({...itemForm, category:e.target.value})}>
                       {Object.entries(ITEM_CATEGORIES).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
                     </select>
+                    {["OPR","CLN"].includes(itemForm.category) && (
+                      <p className="text-xs text-[#D97706] mt-1">Barang non-pengolahan — tidak perlu data gizi. Cukup diinput sebagai stok.</p>
+                    )}
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-3">

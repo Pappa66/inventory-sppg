@@ -180,6 +180,9 @@ function useDashboardData(activeRole) {
         api.get("/reports/financial")
           .then(({ data }) => setData(d => ({ ...d, fin: data })))
           .catch(() => setFetchErrors(e => e + 1)),
+        api.get("/items")
+          .then(({ data }) => setData(d => ({ ...d, items: data || [] })))
+          .catch(() => setFetchErrors(e => e + 1)),
       );
     }
 
@@ -409,11 +412,18 @@ function buildCards(role, d) {
       const totalPortionsThisWeek = approvedMenus.reduce(
         (sum, m) => sum + (m.portions || 0), 0
       );
+      const allItems = d.items || [];
+      const foodCategories = ["KH","PH","PN","SY","BU","BB"];
+      const foodItems = allItems.filter(i => foodCategories.includes(i.category));
+      const missingNutrition = foodItems.filter(i => {
+        const n = i.nutrition_per_100g;
+        return !n || (!n.calories && !n.protein && !n.carbs && !n.fats);
+      });
 
       return [
         { label: "Menu Pending Review", value: menusPending.length, icon: Clock, color: "#D97706", currency: false },
         { label: "Menu Disetujui", value: approvedMenus.length, icon: CheckCircle2, color: "#4A7C59", currency: false },
-        { label: "Resep dengan Foto", value: recipesWithPhoto.length, icon: Camera, color: "#6D28D9", currency: false, suffix: ` / ${d.recipes?.length || 0}` },
+        { label: "Bahan Tanpa Data Gizi", value: missingNutrition.length, icon: AlertTriangle, color: missingNutrition.length > 0 ? "#C5533B" : "#4A7C59", currency: false, suffix: ` / ${foodItems.length} bahan` },
         { label: "Porsi Minggu Ini", value: totalPortionsThisWeek, icon: HeartPulse, color: "#2C4251", currency: false, suffix: " porsi" },
       ];
     }
@@ -813,6 +823,43 @@ export default function DashboardPage() {
                 </div>
               </div>
             )}
+
+            {role === "nutritionist" && (() => {
+              const allItems = data.items || [];
+              const foodCategories = ["KH","PH","PN","SY","BU","BB"];
+              const foodItems = allItems.filter(i => foodCategories.includes(i.category));
+              const missing = foodItems.filter(i => {
+                const n = i.nutrition_per_100g;
+                return !n || (!n.calories && !n.protein && !n.carbs && !n.fats);
+              });
+              if (missing.length === 0) return null;
+              return (
+                <div className="card-soft overflow-hidden border border-[#C5533B]/20">
+                  <div className="px-5 py-3 border-b border-[#EAE4D8] font-display font-bold flex items-center gap-2 text-[#C5533B]">
+                    <AlertTriangle size={16} /> Bahan Perlu Input Data Gizi ({missing.length})
+                  </div>
+                  <div className="px-5 py-3 text-sm text-[#5C5C5C]">
+                    Bahan makanan berikut belum punya data gizi per 100g. Resep yang menggunakan bahan ini tidak bisa dihitung AKG-nya.
+                  </div>
+                  <div className="divide-y divide-[#EAE4D8]">
+                    {missing.slice(0, 10).map((it) => (
+                      <div key={it.id} className="px-5 py-3 flex justify-between items-center text-sm">
+                        <div>
+                          <span className="font-semibold">{it.name}</span>
+                          <span className="text-[#5C5C5C] ml-2 text-xs">({it.unit})</span>
+                        </div>
+                        <Link href="/master" className="text-xs font-semibold underline" style={{ color: "#C5533B" }}>Isi Gizi →</Link>
+                      </div>
+                    ))}
+                  </div>
+                  {missing.length > 10 && (
+                    <div className="px-5 py-2 text-xs text-[#5C5C5C] border-t border-[#EAE4D8]">
+                      +{missing.length - 10} bahan lainnya. Lihat semua di Master Bahan.
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
 
             {role === "driver" && (data.deliveryPlans || []).length === 0 && (
               <div className="card-soft p-8 text-center text-[#5C5C5C]">
