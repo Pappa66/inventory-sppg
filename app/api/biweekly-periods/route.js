@@ -11,10 +11,15 @@ export async function GET(request) {
       .eq("is_active", true)
       .order("start_date", { ascending: false });
 
-    if (error) return apiError(error.message);
-    return apiSuccess(data);
+    if (error) {
+      if (error.message?.includes("does not exist") || error.code === "42P01") {
+        return apiSuccess([]);
+      }
+      return apiError(error.message);
+    }
+    return apiSuccess(data || []);
   } catch (e) {
-    return apiError(e.message);
+    return apiSuccess([]);
   }
 }
 

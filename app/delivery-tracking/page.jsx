@@ -348,7 +348,7 @@ export default function Page() {
         ) : (
           <div className="space-y-4">
             {myPlans.map((plan) => {
-              const driverName = plan.delivery_assignments?.[0]?.driver_name || plan.driver_name || "Driver";
+              const driverName = plan.delivery_assignments?.[0]?.users?.name || plan.delivery_assignments?.[0]?.driver_name || "Driver";
               const isExpanded = expandedPlan === plan.id;
               const dests = plan.delivery_plan_items || [];
               const planLogs = logsByPlan[plan.id] || [];
@@ -417,7 +417,7 @@ export default function Page() {
                                 <div className="w-8 h-8 rounded-full bg-[#F9F6F0] border-2 border-[#EAE4D8] flex items-center justify-center text-xs font-bold text-[#5C5C5C] shrink-0">
                                   {idx + 1}
                                 </div>
-                                <div className="min-w-0">
+                                <div className="min-w-0 flex-1">
                                   <div className="font-semibold text-sm flex items-center gap-1.5">
                                     <MapPin size={13} className="text-[#4A7C59] shrink-0" />
                                     <span className="truncate">{dName || `Tujuan ${idx + 1}`}</span>
@@ -443,7 +443,7 @@ export default function Page() {
                                 </div>
                               </div>
 
-                              <div className="flex items-center gap-3 shrink-0 sm:self-center">
+                              <div className="flex flex-row sm:flex-col items-center gap-2 shrink-0 sm:self-center">
                                 <CourierTracker status={destStatus} logs={destLogs} />
                                 {destStatus !== "DELIVERED" && (
                                   <button

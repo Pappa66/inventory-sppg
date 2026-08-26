@@ -44,28 +44,30 @@ export default function BKUPage() {
     return list;
   }, [transaksi, filterAccount, filterDateStart, filterDateEnd]);
 
-  // Group by account code
-  const groupedByAccount = useMemo(() => {
+  // Sort transactions by date
+  const sortedAll = useMemo(() => {
+    return [...filtered].sort((a, b) => a.transaction_date?.localeCompare(b.transaction_date) || 0);
+  }, [filtered]);
+
+  // Paginate individual transactions
+  const paginated = useMemo(() => {
+    const start = (page - 1) * perPage;
+    return sortedAll.slice(start, start + perPage);
+  }, [sortedAll, page, perPage]);
+
+  // Group paginated items by account code
+  const paginatedGrouped = useMemo(() => {
     const groups = {};
-    for (const t of filtered) {
+    for (const t of paginated) {
       if (!groups[t.account_code]) groups[t.account_code] = [];
       groups[t.account_code].push(t);
     }
     return groups;
-  }, [filtered]);
-
-  const sortedEntries = useMemo(() => {
-    return Object.entries(groupedByAccount).sort(([a], [b]) => a.localeCompare(b));
-  }, [groupedByAccount]);
-
-  const paginatedEntries = useMemo(() => {
-    const start = (page - 1) * perPage;
-    return sortedEntries.slice(start, start + perPage);
-  }, [sortedEntries, page, perPage]);
+  }, [paginated]);
 
   const accountTotals = useMemo(() => {
     const totals = {};
-    for (const [code, items] of Object.entries(groupedByAccount)) {
+    for (const [code, items] of Object.entries(paginatedGrouped)) {
       totals[code] = items.reduce((acc, t) => ({
         debit: acc.debit + (t.debit || 0),
         credit: acc.credit + (t.credit || 0),
@@ -73,7 +75,7 @@ export default function BKUPage() {
       }), { debit: 0, credit: 0, saldo: 0 });
     }
     return totals;
-  }, [groupedByAccount]);
+  }, [paginatedGrouped]);
 
   const grandTotal = useMemo(() => {
     return filtered.reduce((acc, t) => ({
@@ -144,7 +146,7 @@ export default function BKUPage() {
           <div className="card-soft p-6 sm:p-12 text-center"><div className="animate-spin w-8 h-8 border-2 border-[#4A7C59] border-t-transparent rounded-full mx-auto" /></div>
         ) : (
           <div className="space-y-4">
-            {paginatedEntries.map(([code, items]) => {
+            {Object.entries(paginatedGrouped).sort(([a], [b]) => a.localeCompare(b)).map(([code, items]) => {
               const tot = accountTotals[code];
               return (
                 <div key={code} className="card-soft overflow-hidden">
@@ -217,14 +219,14 @@ export default function BKUPage() {
                 </div>
               );
             })}
-            {paginatedEntries.length === 0 && (
+            {paginated.length === 0 && (
               <div className="card-soft p-6 sm:p-12 text-center text-[#5C5C5C]">Belum ada transaksi.</div>
             )}
           </div>
         )}
 
-        {sortedEntries.length > perPage && (
-          <Pagination page={page} totalPages={Math.ceil(sortedEntries.length / perPage)} onPageChange={setPage} />
+        {filtered.length > perPage && (
+          <Pagination page={page} totalPages={Math.ceil(filtered.length / perPage)} onPageChange={setPage} />
         )}
       </div>
     </Layout>

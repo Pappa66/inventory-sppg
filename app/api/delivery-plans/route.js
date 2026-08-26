@@ -21,7 +21,8 @@ export async function GET(request) {
           destinations ( name, address )
         ),
         delivery_assignments (
-          id, driver_id, status, started_at, completed_at
+          id, driver_id, status, started_at, completed_at,
+          users ( id, name )
         )
       `)
       .order("plan_date", { ascending: false });

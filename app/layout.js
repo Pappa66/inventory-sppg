@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/sonner";
 export const metadata = {
   title: "SPPG · MBG — Inventory & Procurement",
   description: "Sistem Inventory & Procurement SPPG Makan Bergizi Gratis",
+  icons: { icon: "/favicon.svg" },
 };
 
 export default function RootLayout({ children }) {
