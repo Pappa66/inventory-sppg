@@ -294,11 +294,11 @@ export default function Page() {
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Harga Satuan Kelompok 1 (Balita, PAUD, SD 1-3)</label>
-                      <input type="number" className="w-full mt-1 px-3 py-2 rounded-md border border-[#EAE4D8] bg-[#F9F6F0] text-sm" value={form.harga_satuan1} onChange={e => update("harga_satuan1", parseInt(e.target.value) || 0)} />
+                      <input type="number" className="w-full mt-1 px-3 py-2 rounded-md border border-[#EAE4D8] bg-[#F9F6F0] text-sm" value={form.harga_satuan1 || ""} onChange={e => update("harga_satuan1", parseInt(e.target.value) || 0)} />
                     </div>
                     <div>
                       <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Harga Satuan Kelompok 2 (SD 4-6 s.d. Busui)</label>
-                      <input type="number" className="w-full mt-1 px-3 py-2 rounded-md border border-[#EAE4D8] bg-[#F9F6F0] text-sm" value={form.harga_satuan2} onChange={e => update("harga_satuan2", parseInt(e.target.value) || 0)} />
+                      <input type="number" className="w-full mt-1 px-3 py-2 rounded-md border border-[#EAE4D8] bg-[#F9F6F0] text-sm" value={form.harga_satuan2 || ""} onChange={e => update("harga_satuan2", parseInt(e.target.value) || 0)} />
                     </div>
                   </div>
                   {/* Jumlah Porsi per Kelompok */}

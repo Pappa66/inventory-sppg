@@ -181,7 +181,7 @@ export default function Page() {
                 </div>
                 <div>
                   <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Tahun Anggaran</label>
-                  <input type="number" className="w-full mt-1 px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={settings.tahun_anggaran} onChange={(e)=>setSettings(p=>({...p, tahun_anggaran:parseInt(e.target.value)||0}))}/>
+                  <input type="number" className="w-full mt-1 px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={settings.tahun_anggaran || ""} onChange={(e)=>setSettings(p=>({...p, tahun_anggaran:parseInt(e.target.value)||0}))}/>
                 </div>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -196,7 +196,7 @@ export default function Page() {
               </div>
               <div>
                 <label className="text-xs uppercase tracking-widest text-[#5C5C5C] flex items-center gap-2"><TruckIcon size={12}/> Default Biaya Transport (Rp)</label>
-                <input type="number" className="w-full mt-1 px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={settings.default_transport_cost} onChange={(e)=>setSettings(p=>({...p, default_transport_cost:parseInt(e.target.value)||0}))}/>
+                <input type="number" className="w-full mt-1 px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={settings.default_transport_cost || ""} onChange={(e)=>setSettings(p=>({...p, default_transport_cost:parseInt(e.target.value)||0}))}/>
               </div>
             </div>
           </div>
@@ -207,11 +207,11 @@ export default function Page() {
             <div className="space-y-4">
               <div>
                 <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Harga Kel. 1: Balita / PAUD / SD 1-3 (Rp)</label>
-                <input type="number" className="w-full mt-1 px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={settings.price_balita_paud_sd13} onChange={(e)=>setSettings(p=>({...p, price_balita_paud_sd13:parseInt(e.target.value)||0}))}/>
+                <input type="number" className="w-full mt-1 px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={settings.price_balita_paud_sd13 || ""} onChange={(e)=>setSettings(p=>({...p, price_balita_paud_sd13:parseInt(e.target.value)||0}))}/>
               </div>
               <div>
                 <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Harga Kel. 2: SD 4+ / SMP / SMA / Bumil / Busui (Rp)</label>
-                <input type="number" className="w-full mt-1 px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={settings.price_sd4_smp_sma_bumil_busui} onChange={(e)=>setSettings(p=>({...p, price_sd4_smp_sma_bumil_busui:parseInt(e.target.value)||0}))}/>
+                <input type="number" className="w-full mt-1 px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={settings.price_sd4_smp_sma_bumil_busui || ""} onChange={(e)=>setSettings(p=>({...p, price_sd4_smp_sma_bumil_busui:parseInt(e.target.value)||0}))}/>
               </div>
               <div>
                 <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Jumlah Penerima Manfaat (opsional)</label>
@@ -226,11 +226,11 @@ export default function Page() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Jam Mulai Masak (0-23)</label>
-                <input type="number" min="0" max="23" className="w-full mt-1 px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={settings.cooking_start_hour} onChange={(e)=>setSettings(p=>({...p, cooking_start_hour:parseInt(e.target.value)||0}))}/>
+                <input type="number" min="0" max="23" className="w-full mt-1 px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={settings.cooking_start_hour || ""} onChange={(e)=>setSettings(p=>({...p, cooking_start_hour:parseInt(e.target.value)||0}))}/>
               </div>
               <div>
                 <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Jam Mulai Distribusi (0-23)</label>
-                <input type="number" min="0" max="23" className="w-full mt-1 px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={settings.distribution_start_hour} onChange={(e)=>setSettings(p=>({...p, distribution_start_hour:parseInt(e.target.value)||0}))}/>
+                <input type="number" min="0" max="23" className="w-full mt-1 px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={settings.distribution_start_hour || ""} onChange={(e)=>setSettings(p=>({...p, distribution_start_hour:parseInt(e.target.value)||0}))}/>
               </div>
             </div>
           </div>

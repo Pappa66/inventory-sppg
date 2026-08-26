@@ -86,6 +86,14 @@ export default function TransactionsPage() {
 
   const submitForm = async (e) => {
     e.preventDefault();
+    if (form.debit > 0 && form.credit > 0) {
+      toast.error("Debit dan Kredit tidak boleh diisi bersamaan");
+      return;
+    }
+    if (form.debit === 0 && form.credit === 0) {
+      toast.error("Salah satu Debit atau Kredit harus diisi");
+      return;
+    }
     try {
       if (editId) {
         await api.put(`/transactions/${editId}`, form);

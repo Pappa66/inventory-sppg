@@ -68,11 +68,12 @@ export default function BKUPage() {
   const accountTotals = useMemo(() => {
     const totals = {};
     for (const [code, items] of Object.entries(paginatedGrouped)) {
-      totals[code] = items.reduce((acc, t) => ({
-        debit: acc.debit + (t.debit || 0),
-        credit: acc.credit + (t.credit || 0),
-        saldo: (acc.debit + (t.debit || 0)) - (acc.credit + (t.credit || 0)),
-      }), { debit: 0, credit: 0, saldo: 0 });
+      totals[code] = items.reduce((acc, t) => {
+        const debit = acc.debit + (t.debit || 0);
+        const credit = acc.credit + (t.credit || 0);
+        const isCost = code.startsWith("2") || code.startsWith("3");
+        return { debit, credit, saldo: isCost ? credit - debit : debit - credit };
+      }, { debit: 0, credit: 0, saldo: 0 });
     }
     return totals;
   }, [paginatedGrouped]);

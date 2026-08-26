@@ -410,7 +410,7 @@ export default function Page() {
                           <div className="grid grid-cols-2 gap-3">
                             <div>
                               <label className="text-[10px] uppercase text-[#5C5C5C]">Jumlah Ompreng</label>
-                              <input type="number" min="0" className="w-full mt-1 px-3 py-2 rounded-md border border-[#EAE4D8] bg-white text-sm" value={ompreng[cat.key].qty} onChange={(e) => setOmpreng(p => ({ ...p, [cat.key]: { ...p[cat.key], qty: e.target.value } }))} />
+                              <input type="number" min="0" className="w-full mt-1 px-3 py-2 rounded-md border border-[#EAE4D8] bg-white text-sm" value={ompreng[cat.key].qty || ""} onChange={(e) => setOmpreng(p => ({ ...p, [cat.key]: { ...p[cat.key], qty: parseFloat(e.target.value) || 0 } }))} />
                             </div>
                             <div>
                               <label className="text-[10px] uppercase text-[#5C5C5C]">Foto</label>

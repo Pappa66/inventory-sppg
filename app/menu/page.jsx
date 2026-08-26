@@ -201,7 +201,7 @@ export default function Page() {
                     <div className="mt-2 text-[10px] audit-ts text-[#4A7C59] flex items-start gap-1"><CheckCircle2 size={12} className="mt-0.5 flex-shrink-0"/><span>Disetujui: {m.signature}</span></div>
                   ) : null}
                   <label className="block text-[10px] uppercase tracking-widest text-[#5C5C5C] mt-3">Porsi</label>
-                  <input type="number" className="w-full mt-1 px-3 py-1.5 text-sm rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={m.portions||0} onChange={(e)=>setPortions(d.key, parseInt(e.target.value)||0)}/>
+                  <input type="number" className="w-full mt-1 px-3 py-1.5 text-sm rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={m.portions || ""} onChange={(e)=>setPortions(d.key, parseInt(e.target.value)||0)}/>
                   <div className="mt-3 space-y-1 max-h-60 overflow-y-auto">
                     {recipes.filter(r => catFilter==="ALL" || r.menu_category===catFilter).map(r => {
                       const catInfo = r.menu_category ? MENU_CATEGORIES[r.menu_category] : null;

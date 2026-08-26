@@ -249,7 +249,7 @@ export default function Page() {
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Jumlah</label>
-                    <input data-testid="lot-qty" required type="number" step="0.01" className="w-full mt-1 px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={lotForm.quantity} onChange={(e)=>setLotForm({...lotForm, quantity:parseFloat(e.target.value)||0})}/>
+                    <input data-testid="lot-qty" required type="number" step="0.01" className="w-full mt-1 px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={lotForm.quantity || ""} onChange={(e)=>setLotForm({...lotForm, quantity:parseFloat(e.target.value)||0})}/>
                   </div>
                   <div>
                     <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Kadaluarsa</label>
@@ -305,11 +305,11 @@ export default function Page() {
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Par Level</label>
-                    <input data-testid="item-par" type="number" className="w-full mt-1 px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={itemForm.par_level} onChange={(e)=>setItemForm({...itemForm, par_level:parseFloat(e.target.value)||0})}/>
+                    <input data-testid="item-par" type="number" className="w-full mt-1 px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={itemForm.par_level || ""} onChange={(e)=>setItemForm({...itemForm, par_level:parseFloat(e.target.value)||0})}/>
                   </div>
                   <div>
                     <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Harga/Satuan</label>
-                    <input data-testid="item-price" type="number" className="w-full mt-1 px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={itemForm.price_per_unit} onChange={(e)=>setItemForm({...itemForm, price_per_unit:parseFloat(e.target.value)||0})}/>
+                    <input data-testid="item-price" type="number" className="w-full mt-1 px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={itemForm.price_per_unit || ""} onChange={(e)=>setItemForm({...itemForm, price_per_unit:parseFloat(e.target.value)||0})}/>
                   </div>
                 </div>
                 <div>
@@ -343,7 +343,7 @@ export default function Page() {
                 ))}
               </div>
               <label className="text-xs uppercase tracking-widest text-[#5C5C5C] mt-4 block">Hitungan fisik aktual ({openOpname.unit})</label>
-              <input data-testid="opname-qty" required type="number" step="0.01" className="w-full mt-1 px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={opnameForm.counted_quantity} onChange={(e)=>setOpnameForm(p=>({...p, counted_quantity:parseFloat(e.target.value)||0}))}/>
+              <input data-testid="opname-qty" required type="number" step="0.01" className="w-full mt-1 px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={opnameForm.counted_quantity || ""} onChange={(e)=>setOpnameForm(p=>({...p, counted_quantity:parseFloat(e.target.value)||0}))}/>
               <div className="mt-2 p-2 rounded bg-[#EAE4D8] text-sm">
                 <span className="text-[#5C5C5C]">Stok sistem: </span>
                 <span className="font-semibold">{openOpname.actual_quantity} {openOpname.unit}</span>
@@ -384,7 +384,7 @@ export default function Page() {
               <h2 className="font-display text-2xl font-bold">Pengambilan Barang</h2>
               <p className="text-[#5C5C5C] text-sm mt-1">{openTaken.item_name} · stok tersedia: <span className="font-semibold">{openTaken.actual_quantity} {openTaken.unit}</span></p>
               <label className="text-xs uppercase tracking-widest text-[#5C5C5C] mt-4 block">Jumlah yang diambil ({openTaken.unit})</label>
-              <input data-testid="taken-qty" required type="number" step="0.01" min="0.01" max={openTaken.actual_quantity} className="w-full mt-1 px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={takenForm.quantity} onChange={(e)=>setTakenForm(p=>({...p, quantity:parseFloat(e.target.value)||0}))}/>
+              <input data-testid="taken-qty" required type="number" step="0.01" min="0.01" max={openTaken.actual_quantity} className="w-full mt-1 px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={takenForm.quantity || ""} onChange={(e)=>setTakenForm(p=>({...p, quantity:parseFloat(e.target.value)||0}))}/>
               {takenForm.quantity > 0 && (
                 <div className="mt-2 p-2 rounded bg-[#EAE4D8] text-sm">
                   <span className="text-[#5C5C5C]">Sisa setelah diambil: </span>

@@ -152,11 +152,11 @@ export default function Page() {
                 </div>
                 <div>
                   <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Jumlah manual (Rp)</label>
-                  <input data-testid="purchase-amount" required type="number" className="w-full mt-1 px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={form.amount_idr} onChange={(e)=>setForm({...form, amount_idr:parseFloat(e.target.value)||0})}/>
+                  <input data-testid="purchase-amount" required type="number" className="w-full mt-1 px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={form.amount_idr || ""} onChange={(e)=>setForm({...form, amount_idr:parseFloat(e.target.value)||0})}/>
                 </div>
                 <div>
                   <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Total struk (Rp)</label>
-                  <input type="number" className="w-full mt-1 px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={form.receipt_total_idr} onChange={(e)=>setForm({...form, receipt_total_idr:parseFloat(e.target.value)||0})}/>
+                  <input type="number" className="w-full mt-1 px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={form.receipt_total_idr || ""} onChange={(e)=>setForm({...form, receipt_total_idr:parseFloat(e.target.value)||0})}/>
                 </div>
                 <div>
                   <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Supplier</label>
@@ -164,7 +164,7 @@ export default function Page() {
                 </div>
                 <div>
                   <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Transport / BBM (Rp)</label>
-                  <input type="number" className="w-full mt-1 px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={form.transport_amount_idr} onChange={(e)=>setForm({...form, transport_amount_idr:parseFloat(e.target.value)||0})}/>
+                  <input type="number" className="w-full mt-1 px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={form.transport_amount_idr || ""} onChange={(e)=>setForm({...form, transport_amount_idr:parseFloat(e.target.value)||0})}/>
                 </div>
 
                 {form.category === "STOCK" && (
@@ -180,8 +180,8 @@ export default function Page() {
                             <option value="">— bahan —</option>
                             {items.map(it => <option key={it.id} value={it.id}>{it.name} ({it.unit})</option>)}
                           </select>
-                          <input placeholder="qty" type="number" step="0.01" className="col-span-2 px-2 py-2 rounded-md border border-[#EAE4D8] bg-[#F9F6F0] text-sm" value={row.quantity} onChange={(e)=>updItemRow(i,"quantity",parseFloat(e.target.value)||0)}/>
-                          <input placeholder="harga" type="number" className="col-span-3 px-2 py-2 rounded-md border border-[#EAE4D8] bg-[#F9F6F0] text-sm" value={row.unit_price} onChange={(e)=>updItemRow(i,"unit_price",parseFloat(e.target.value)||0)}/>
+                          <input placeholder="qty" type="number" step="0.01" className="col-span-2 px-2 py-2 rounded-md border border-[#EAE4D8] bg-[#F9F6F0] text-sm" value={row.quantity || ""} onChange={(e)=>updItemRow(i,"quantity",parseFloat(e.target.value)||0)}/>
+                          <input placeholder="harga" type="number" className="col-span-3 px-2 py-2 rounded-md border border-[#EAE4D8] bg-[#F9F6F0] text-sm" value={row.unit_price || ""} onChange={(e)=>updItemRow(i,"unit_price",parseFloat(e.target.value)||0)}/>
                           <button type="button" onClick={()=>removeItemRow(i)} className="col-span-1 text-[#C5533B]">×</button>
                         </div>
                       ))}

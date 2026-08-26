@@ -9,7 +9,7 @@ export async function PUT(request, { params }) {
     const body = await request.json();
     const supabase = await createClient();
 
-    const allowed = ["category","account_code","amount","description","payment_method","reference_no","status"];
+    const allowed = ["period_id","transaction_date","account_code","description","debit","credit","buku_pembantu","notes"];
     const updates = { updated_at: new Date().toISOString() };
     for (const key of allowed) { if (body[key] !== undefined) updates[key] = body[key]; }
 

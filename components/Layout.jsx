@@ -30,7 +30,7 @@ const ALL_NAV = [
   { to: "/recipes", label: "Resep & Gizi", icon: ChefHat, roles: ["admin_apps","admin_sppg","head_chef","kitchen_head","nutritionist","persiapan","tenaga_masak"] },
   { to: "/menu", label: "Menu & Cetak", icon: CalendarDays, roles: ["admin_apps","admin_sppg","head_chef","kitchen_head","nutritionist","persiapan","tenaga_masak","pemorsian"] },
   { to: "/nutrition-calc", label: "Kalkulator Gizi", icon: Calculator, roles: ["nutritionist"] },
-  { to: "/pemorsian", label: "Tugas Harian", icon: Camera, roles: ["pemorsian","persiapan","tenaga_masak","kebersihan","pencuci"] },
+  { to: "/pemorsian", label: "Tugas Harian", icon: Camera, roles: ["pemorsian","persiapan","tenaga_masak","kebersihan","pencuci","kitchen_head"] },
   { divider: true, label: "Pengiriman", roles: ["admin_apps","admin_sppg","field_assistant","driver","kitchen_head","head_chef"] },
   { to: "/destinations", label: "Tujuan Antar", icon: MapPin, roles: ["admin_apps","admin_sppg","field_assistant"] },
   { to: "/deliveries", label: "Rencana Antar", icon: Truck, roles: ["admin_apps","admin_sppg","field_assistant","kitchen_head","head_chef"] },

@@ -161,11 +161,11 @@ export default function Page() {
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Par-Level</label>
-                    <input type="number" step="0.01" className="w-full mt-1 px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={form.par_level} onChange={(e)=>setForm({...form, par_level:parseFloat(e.target.value)||0})}/>
+                    <input type="number" step="0.01" className="w-full mt-1 px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={form.par_level || ""} onChange={(e)=>setForm({...form, par_level:parseFloat(e.target.value)||0})}/>
                   </div>
                   <div>
                     <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Harga / Satuan</label>
-                    <input type="number" step="100" className="w-full mt-1 px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={form.price_per_unit} onChange={(e)=>setForm({...form, price_per_unit:parseFloat(e.target.value)||0})}/>
+                    <input type="number" step="100" className="w-full mt-1 px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={form.price_per_unit || ""} onChange={(e)=>setForm({...form, price_per_unit:parseFloat(e.target.value)||0})}/>
                   </div>
                 </div>
                 <div>
@@ -193,7 +193,7 @@ export default function Page() {
                       <div key={k}>
                         <label className="text-[10px] uppercase text-[#5C5C5C]">{l}</label>
                         <input type="number" step="0.1" className="w-full mt-1 px-2 py-1.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0] text-sm" 
-                          value={form.nutrition_per_100g?.[k]||0} 
+                          value={form.nutrition_per_100g?.[k] || ""} 
                           onChange={(e)=>setForm({...form, nutrition_per_100g:{...form.nutrition_per_100g, [k]:parseFloat(e.target.value)||0}})}/>
                       </div>
                     ))}

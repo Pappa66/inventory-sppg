@@ -114,11 +114,16 @@ export default function Page() {
       const payload = {
         plan_date: form.plan_date,
         notes: form.notes,
-        items: form.destination_ids.map((destId) => ({
-          destination_id: destId,
-          category: "PORTION_LARGE",
-          portions: portions[destId] || 0,
-        })),
+        items: form.destination_ids.flatMap((destId) => {
+          const destPortions = portions[destId] || {};
+          return Object.entries(destPortions)
+            .filter(([, qty]) => qty > 0)
+            .map(([category, qty]) => ({
+              destination_id: destId,
+              category,
+              portions: qty,
+            }));
+        }),
       };
       await api.post("/delivery-plans", payload);
       toast.success("Rencana antar dibuat");

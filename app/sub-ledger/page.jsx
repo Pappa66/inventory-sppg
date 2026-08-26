@@ -114,7 +114,7 @@ export default function SubLedgerPage() {
               <div className="flex flex-wrap gap-2 text-sm">
                 <span>D: <span className="font-bold text-[#4A7C59]">{fmtIDR(totals.debit)}</span></span>
                 <span>K: <span className="font-bold text-[#C5533B]">{fmtIDR(totals.credit)}</span></span>
-                <span>Saldo: <span className={`font-bold ${totals.debit - totals.credit >= 0 ? "text-[#4A7C59]" : "text-[#C5533B]"}`}>{fmtIDR(totals.debit - totals.credit)}</span></span>
+                <span>Saldo: <span className={`font-bold ${(() => { const isCost = ["BAHAN_BAKU","OPERASIONAL","FASILITAS","PAJAK"].includes(activeTab); const saldo = isCost ? totals.credit - totals.debit : totals.debit - totals.credit; return saldo >= 0 ? "text-[#4A7C59]" : "text-[#C5533B]"; })()}`}>{fmtIDR((() => { const isCost = ["BAHAN_BAKU","OPERASIONAL","FASILITAS","PAJAK"].includes(activeTab); return isCost ? totals.credit - totals.debit : totals.debit - totals.credit; })())}</span></span>
               </div>
             </div>
             <div className="md:hidden space-y-3 p-5">

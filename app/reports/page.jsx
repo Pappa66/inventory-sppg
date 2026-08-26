@@ -44,6 +44,7 @@ export default function ReportsPage() {
   const [selectedPeriod, setSelectedPeriod] = useState("");
   const [settings, setSettings] = useState({});
   const [deliveryPlans, setDeliveryPlans] = useState([]);
+  const [globalConfig, setGlobalConfig] = useState({});
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [exportFrom, setExportFrom] = useState("");
@@ -61,6 +62,7 @@ export default function ReportsPage() {
       }),
       api.get("/settings/logo").then(r => setSettings(r.data || {})).catch(() => setSettings({})),
       api.get("/delivery-plans").then(r => setDeliveryPlans(r.data || [])).catch(() => setDeliveryPlans([])),
+      api.get("/global-config").then(r => setGlobalConfig(r.data || {})).catch(() => setGlobalConfig({})),
     ]).finally(() => setLoading(false));
   }, []);
 
@@ -103,19 +105,24 @@ export default function ReportsPage() {
     return dailyMap;
   }, [transaksi]);
 
-  // DafNom: volunteer incentives
+  // DafNom: volunteer incentives — calculated from global config
+  const incentivePerPortion = Number(globalConfig.incentive_per_portion) || 2000;
+  const totalPorsi = deliveryPlans.reduce((sum, dp) => {
+    const items = dp.delivery_plan_items || dp.items || [];
+    return sum + items.reduce((s, it) => s + (it.portions || 0), 0);
+  }, 0);
   const dafnomData = [
-    { jabatan: "Kepala SPPG", jumlah: 1, insentif: 0 },
-    { jabatan: "Pengawas Gizi", jumlah: 1, insentif: 0 },
-    { jabatan: "Pengawas Keuangan", jumlah: 1, insentif: 0 },
-    { jabatan: "Asisten Lapangan", jumlah: 1, insentif: 0 },
-    { jabatan: "Tenaga Persiapan", jumlah: 2, insentif: 0 },
-    { jabatan: "Tenaga Masak", jumlah: 4, insentif: 0 },
-    { jabatan: "Tenaga Pemorsian", jumlah: 2, insentif: 0 },
-    { jabatan: "Petugas Kebersihan", jumlah: 2, insentif: 0 },
-    { jabatan: "Pencuci Ompreng", jumlah: 2, insentif: 0 },
-    { jabatan: "Driver", jumlah: 2, insentif: 0 },
-    { jabatan: "Kader Gizi", jumlah: 5, insentif: 0 },
+    { jabatan: "Kepala SPPG", jumlah: 1, insentif: incentivePerPortion },
+    { jabatan: "Pengawas Gizi", jumlah: 1, insentif: incentivePerPortion },
+    { jabatan: "Pengawas Keuangan", jumlah: 1, insentif: incentivePerPortion },
+    { jabatan: "Asisten Lapangan", jumlah: 1, insentif: incentivePerPortion },
+    { jabatan: "Tenaga Persiapan", jumlah: 2, insentif: incentivePerPortion },
+    { jabatan: "Tenaga Masak", jumlah: 4, insentif: incentivePerPortion },
+    { jabatan: "Tenaga Pemorsian", jumlah: 2, insentif: incentivePerPortion },
+    { jabatan: "Petugas Kebersihan", jumlah: 2, insentif: incentivePerPortion },
+    { jabatan: "Pencuci Ompreng", jumlah: 2, insentif: incentivePerPortion },
+    { jabatan: "Driver", jumlah: 2, insentif: incentivePerPortion },
+    { jabatan: "Kader Gizi", jumlah: 5, insentif: incentivePerPortion },
   ];
 
   const exportPDF = async (tab) => {

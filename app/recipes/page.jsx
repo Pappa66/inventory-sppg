@@ -190,7 +190,7 @@ export default function Page() {
                 </div>
                 <div>
                   <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Porsi standar</label>
-                  <input type="number" className="w-full mt-1 px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={form.servings} onChange={(e) => setForm({ ...form, servings: parseInt(e.target.value) || 1 })} />
+                  <input type="number" className="w-full mt-1 px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={form.servings || ""} onChange={(e) => setForm({ ...form, servings: parseInt(e.target.value) || 1 })} />
                 </div>
                 <div>
                   <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Kategori Menu</label>
@@ -242,7 +242,7 @@ export default function Page() {
                               <option value="">— bahan —</option>
                               {items.map(it => <option key={it.id} value={it.id}>{it.name} ({it.unit})</option>)}
                             </select>
-                            <input placeholder="qty" type="number" step="0.01" className="col-span-3 px-2 py-2 rounded-md border border-[#EAE4D8] bg-[#F9F6F0] text-sm" value={ing.quantity} onChange={(e) => upd(i, "quantity", parseFloat(e.target.value) || 0)} />
+                            <input placeholder="qty" type="number" step="0.01" className="col-span-3 px-2 py-2 rounded-md border border-[#EAE4D8] bg-[#F9F6F0] text-sm" value={ing.quantity || ""} onChange={(e) => upd(i, "quantity", parseFloat(e.target.value) || 0)} />
                             <input placeholder="unit" className="col-span-2 px-2 py-2 rounded-md border border-[#EAE4D8] bg-[#F9F6F0] text-sm" value={ing.unit} onChange={(e) => upd(i, "unit", e.target.value)} />
                             <button type="button" onClick={() => rm(i)} className="col-span-1 text-[#C5533B] p-1.5">×</button>
                           </div>
@@ -297,7 +297,7 @@ export default function Page() {
                           <input data-testid={`nutri-${k}`} type="number" step="0.1"
                             disabled={form.nutrition_auto}
                             className={`w-full mt-1 px-2 py-1.5 rounded-md border border-[#EAE4D8] text-sm font-semibold ${form.nutrition_auto ? "bg-[#F0EDE4] text-[#5C5C5C] cursor-not-allowed" : "bg-[#F9F6F0]"}`}
-                            value={form[k]} onChange={(e) => setForm({ ...form, [k]: parseFloat(e.target.value) || 0 })} />
+                            value={form[k] || ""} onChange={(e) => setForm({ ...form, [k]: parseFloat(e.target.value) || 0 })} />
                         </div>
                       ))}
                     </div>
