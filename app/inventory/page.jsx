@@ -106,7 +106,7 @@ export default function Page() {
       <div className="space-y-6" data-testid="inventory-page">
         <div className="flex items-center justify-between flex-wrap gap-3">
           <div>
-            <h1 className="font-display text-4xl font-bold">Stok (FEFO)</h1>
+            <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold">Stok (FEFO)</h1>
             <p className="text-[#5C5C5C] mt-1">Urut berdasarkan tanggal kadaluarsa terdekat. Filter berdasarkan zona penyimpanan.</p>
           </div>
           <div className="flex items-center gap-2 flex-wrap">
@@ -300,7 +300,7 @@ export default function Page() {
                 </div>
                 <div>
                   <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Zona</label>
-                  <div className="grid grid-cols-3 gap-2 mt-1">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mt-1">
                     {ZONES.map(z => (
                       <button type="button" key={z} onClick={()=>setItemForm({...itemForm, zone:z})} className="px-3 py-2 rounded-md border text-sm font-semibold transition"
                         style={itemForm.zone===z?{background:ZONE_COLORS[z], color:"white", borderColor:ZONE_COLORS[z]}:{background:"#F9F6F0", color:ZONE_COLORS[z], borderColor:"#EAE4D8"}}>{ZONE_LABELS[z]}</button>
@@ -322,7 +322,7 @@ export default function Page() {
               <h2 className="font-display text-2xl font-bold">Opname Fisik</h2>
               <p className="text-[#5C5C5C] text-sm mt-1">{openOpname.item_name} · kadaluarsa <span className="audit-ts">{openOpname.expiry_date}</span></p>
               <label className="text-xs uppercase tracking-widest text-[#5C5C5C] mt-4 block">Pilih Zona Penyimpanan (wajib)</label>
-              <div className="grid grid-cols-3 gap-2 mt-1">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mt-1">
                 {ZONES.map(z => (
                   <button data-testid={`opname-zone-${z}`} type="button" key={z} onClick={()=>setOpnameForm(p=>({...p, zone:z}))} className="px-3 py-2 rounded-md border text-sm font-semibold transition"
                     style={opnameForm.zone===z?{background:ZONE_COLORS[z], color:"white", borderColor:ZONE_COLORS[z], boxShadow:`0 0 0 2px white, 0 0 0 4px ${ZONE_COLORS[z]}`}:{background:"#F9F6F0", color:ZONE_COLORS[z], borderColor:"#EAE4D8"}}>{ZONE_LABELS[z]}</button>

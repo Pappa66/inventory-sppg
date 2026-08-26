@@ -55,7 +55,7 @@ export default function Page() {
       <div className="space-y-6" data-testid="master-data-page">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="font-display text-4xl font-bold">Master Bahan</h1>
+            <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold">Master Bahan</h1>
             <p className="text-[#5C5C5C] mt-1">Daftar bahan baku, satuan, par-level. Setiap perubahan tersimpan sebagai versi baru.</p>
           </div>
           {CAN_EDIT.includes(activeRole) && <button data-testid="add-item-btn" onClick={()=>{setEditing(null); setForm(EMPTY); setOpen(true);}} className="btn-primary"><Plus size={16}/> Bahan Baru</button>}

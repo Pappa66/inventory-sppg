@@ -128,7 +128,7 @@ export default function Page() {
       <div className="space-y-6" data-testid="destinations-page">
         <div className="flex items-center justify-between flex-wrap gap-3">
           <div>
-            <h1 className="font-display text-4xl font-bold">Tujuan Antar</h1>
+            <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold">Tujuan Antar</h1>
             <p className="text-[#5C5C5C] mt-1">Kelola data tujuan pengantaran makanan.</p>
           </div>
           {canWrite && (

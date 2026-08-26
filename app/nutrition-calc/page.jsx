@@ -13,7 +13,7 @@ function NutrientBar({ label, value, unit, standard, color }) {
 
   return (
     <div className="space-y-1">
-      <div className="flex justify-between items-center text-sm">
+      <div className="flex justify-between items-center text-sm flex-wrap gap-x-2">
         <span className="font-medium">{label}</span>
         <span className="font-semibold" style={{ color: statusColor }}>
           {value.toFixed(1)} {unit} / {standard} {unit} ({pct.toFixed(0)}%)
@@ -104,7 +104,7 @@ export default function NutritionCalcPage() {
     <Layout>
       <div className="space-y-6">
         <div>
-          <h1 className="font-display text-4xl font-bold">Kalkulator Gizi</h1>
+          <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold">Kalkulator Gizi</h1>
           <p className="text-[#5C5C5C] mt-1">Gizi dihitung dari bahan per 100g. Rincian per bahan tersedia.</p>
         </div>
 

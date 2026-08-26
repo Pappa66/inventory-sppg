@@ -98,10 +98,10 @@ export default function Page() {
       <div className="space-y-6" data-testid="menu-page">
         <div className="flex items-center justify-between flex-wrap gap-3">
           <div>
-            <h1 className="font-display text-4xl font-bold">Menu {totalDays}-Hari</h1>
+            <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold">Menu {totalDays}-Hari</h1>
             <p className="text-[#5C5C5C] mt-1">Pilih resep dan jumlah porsi per hari.</p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <button onClick={()=>setShowConfig(!showConfig)} className="btn-outline text-sm"><Settings size={14}/> Konfigurasi</button>
             <div className="card-soft px-3 py-2 flex items-center gap-2"><Calendar size={14}/><input type="date" value={weekStart} onChange={(e)=>setWeekStart(mondayOf(e.target.value))} className="audit-ts text-sm bg-transparent"/></div>
             <button onClick={printMenu} className="btn-outline text-sm"><Printer size={14}/> Cetak</button>
@@ -133,7 +133,7 @@ export default function Page() {
           </div>
         )}
 
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           <button onClick={()=>setCatFilter("ALL")} className={`tag ${catFilter==="ALL"?"bg-[#4A7C59] text-white":"bg-[#EAE4D8] text-[#5C5C5C]"}`}>Semua</button>
           {Object.entries(MENU_CATEGORIES).map(([k,v])=>(
             <button key={k} onClick={()=>setCatFilter(k)} className={`tag ${catFilter===k?"text-white":""}`} style={catFilter===k?{background:v.color}:{}}>{v.label}</button>

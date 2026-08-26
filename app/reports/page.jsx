@@ -321,7 +321,7 @@ export default function ReportsPage() {
     <Layout>
       <div className="space-y-6">
         <div>
-          <h1 className="font-display text-4xl font-bold">Laporan</h1>
+          <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold">Laporan</h1>
           <p className="text-[#5C5C5C] mt-1">LR, LPA, Catatan, DafNom, SPTJ, BAPSD</p>
         </div>
 
@@ -366,19 +366,19 @@ export default function ReportsPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div className="card-soft p-5">
                     <div className="text-xs uppercase tracking-widest text-[#5C5C5C]">Pemasukan</div>
-                    <div className="font-display text-2xl font-bold mt-1 text-[#4A7C59]">{fmtIDR(lrData.totalPemasukan)}</div>
+                    <div className="font-display text-xl sm:text-2xl font-bold mt-1 text-[#4A7C59]">{fmtIDR(lrData.totalPemasukan)}</div>
                   </div>
                   <div className="card-soft p-5">
                     <div className="text-xs uppercase tracking-widest text-[#5C5C5C]">Pengeluaran</div>
-                    <div className="font-display text-2xl font-bold mt-1 text-[#C5533B]">{fmtIDR(lrData.totalPengeluaran)}</div>
+                    <div className="font-display text-xl sm:text-2xl font-bold mt-1 text-[#C5533B]">{fmtIDR(lrData.totalPengeluaran)}</div>
                   </div>
                   <div className="card-soft p-5">
                     <div className="text-xs uppercase tracking-widest text-[#5C5C5C]">Saldo</div>
-                    <div className={`font-display text-2xl font-bold mt-1 ${lrData.saldo >= 0 ? "text-[#4A7C59]" : "text-[#C5533B]"}`}>{fmtIDR(lrData.saldo)}</div>
+                    <div className={`font-display text-xl sm:text-2xl font-bold mt-1 ${lrData.saldo >= 0 ? "text-[#4A7C59]" : "text-[#C5533B]"}`}>{fmtIDR(lrData.saldo)}</div>
                   </div>
                 </div>
                 <div className="card-soft overflow-x-auto">
-                  <table className="w-full text-sm">
+                  <table className="w-full text-sm" style={{ minWidth: "600px" }}>
                     <thead className="bg-[#EAE4D8] text-xs uppercase tracking-wider">
                       <tr><th className="text-left py-3 px-4">Tanggal</th><th className="text-left py-3 px-4">Kode</th><th className="text-left py-3 px-4">Keterangan</th><th className="text-right py-3 px-4">Debet</th><th className="text-right py-3 px-4">Kredit</th></tr>
                     </thead>
@@ -405,15 +405,15 @@ export default function ReportsPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div className="card-soft p-5">
                     <div className="text-xs uppercase tracking-widest text-[#5C5C5C]">Pemasukan 2 Pekan</div>
-                    <div className="font-display text-2xl font-bold mt-1 text-[#4A7C59]">{fmtIDR(lpaData.totalPemasukan)}</div>
+                    <div className="font-display text-xl sm:text-2xl font-bold mt-1 text-[#4A7C59]">{fmtIDR(lpaData.totalPemasukan)}</div>
                   </div>
                   <div className="card-soft p-5">
                     <div className="text-xs uppercase tracking-widest text-[#5C5C5C]">Pengeluaran 2 Pekan</div>
-                    <div className="font-display text-2xl font-bold mt-1 text-[#C5533B]">{fmtIDR(lpaData.totalPengeluaran)}</div>
+                    <div className="font-display text-xl sm:text-2xl font-bold mt-1 text-[#C5533B]">{fmtIDR(lpaData.totalPengeluaran)}</div>
                   </div>
                   <div className="card-soft p-5">
                     <div className="text-xs uppercase tracking-widest text-[#5C5C5C]">Saldo 2 Pekan</div>
-                    <div className={`font-display text-2xl font-bold mt-1 ${lpaData.saldo >= 0 ? "text-[#4A7C59]" : "text-[#C5533B]"}`}>{fmtIDR(lpaData.saldo)}</div>
+                    <div className={`font-display text-xl sm:text-2xl font-bold mt-1 ${lpaData.saldo >= 0 ? "text-[#4A7C59]" : "text-[#C5533B]"}`}>{fmtIDR(lpaData.saldo)}</div>
                   </div>
                 </div>
                 <button onClick={() => exportPDF("lpa")} className="btn-outline flex items-center gap-2"><Download size={14}/> Export PDF</button>
@@ -430,7 +430,7 @@ export default function ReportsPage() {
                       <span className="font-bold">Total: {fmtIDR(data.total)}</span>
                     </div>
                     <div className="overflow-x-auto">
-                    <table className="w-full text-sm">
+                    <table className="w-full text-sm" style={{ minWidth: "400px" }}>
                       <tbody>
                         {data.items.map(t => (
                           <tr key={t.id} className="border-b border-[#EAE4D8] last:border-0">
@@ -456,7 +456,7 @@ export default function ReportsPage() {
                     Daftar Nominatif Insentif Relawan
                   </div>
                   <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
+                  <table className="w-full text-sm" style={{ minWidth: "500px" }}>
                     <thead className="bg-[#EAE4D8] text-xs uppercase tracking-wider">
                       <tr><th className="text-left py-3 px-4">No</th><th className="text-left py-3 px-4">Jabatan</th><th className="text-right py-3 px-4">Jumlah Orang</th><th className="text-right py-3 px-4">Insentif/Hari</th><th className="text-right py-3 px-4">Total</th></tr>
                     </thead>
@@ -483,7 +483,7 @@ export default function ReportsPage() {
               <div className="space-y-4">
                 <div className="bg-white border border-[#EAE4D8] rounded-xl shadow-sm max-w-[700px] mx-auto">
                   {/* Paper */}
-                  <div className="p-8 sm:p-12">
+                   <div className="p-4 sm:p-8 md:p-12">
                     {/* Kop Surat */}
                     <div className="flex items-start gap-4 pb-4 border-b-2 border-[#1F1F1F]">
                       <div className="w-14 h-14 rounded-lg bg-[#4A7C59] text-white grid place-items-center shrink-0 text-xl font-bold">S</div>
@@ -550,7 +550,7 @@ export default function ReportsPage() {
             {activeTab === "bapsd" && (
               <div className="space-y-4">
                 <div className="bg-white border border-[#EAE4D8] rounded-xl shadow-sm max-w-[700px] mx-auto">
-                  <div className="p-8 sm:p-12">
+                   <div className="p-4 sm:p-8 md:p-12">
                     {/* Kop Surat */}
                     <div className="flex items-start gap-4 pb-4 border-b-2 border-[#1F1F1F]">
                       <div className="w-14 h-14 rounded-lg bg-[#4A7C59] text-white grid place-items-center shrink-0 text-xl font-bold">S</div>

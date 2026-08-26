@@ -62,7 +62,7 @@ export default function Page() {
     return (
       <Layout>
         <div className="space-y-6">
-          <h1 className="font-display text-4xl font-bold">Akses Dibatasi</h1>
+          <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold">Akses Dibatasi</h1>
           <p className="text-[#5C5C5C]">Anda tidak memiliki akses ke halaman ini.</p>
         </div>
       </Layout>
@@ -72,9 +72,9 @@ export default function Page() {
   return (
     <Layout>
       <div className="space-y-6" data-testid="audit-page">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
-            <h1 className="font-display text-4xl font-bold">Audit Trail</h1>
+            <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold">Audit Trail</h1>
             <p className="text-[#5C5C5C] mt-1">Format flat & human-readable. Siapa, apa, kapan — akurasi detik. Tidak ada penghapusan.</p>
           </div>
           <input data-testid="audit-filter" placeholder="filter (entity/actor/action/zone)…" value={filter} onChange={(e)=>setFilter(e.target.value)} className="card-soft px-3 py-2 text-sm w-full sm:w-72"/>

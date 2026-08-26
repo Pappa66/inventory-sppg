@@ -98,7 +98,7 @@ export default function StockRekapPage() {
     return (
       <Layout>
         <div className="space-y-6">
-          <h1 className="font-display text-4xl font-bold">Akses Dibatasi</h1>
+          <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold">Akses Dibatasi</h1>
           <p className="text-[#5C5C5C]">Anda tidak memiliki akses ke halaman ini.</p>
         </div>
       </Layout>
@@ -108,9 +108,9 @@ export default function StockRekapPage() {
   return (
     <Layout>
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between flex-wrap gap-3">
           <div>
-            <h1 className="font-display text-4xl font-bold">Stock Barang (Rekap)</h1>
+            <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold">Stock Barang (Rekap)</h1>
             <p className="text-[#5C5C5C] mt-1">Stock_Brg (R) - Rekapitulasi per kategori</p>
           </div>
           <button onClick={exportPDF} className="btn-outline flex items-center gap-2"><Download size={14}/> Export PDF</button>
@@ -120,19 +120,19 @@ export default function StockRekapPage() {
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="card-soft p-4">
             <div className="text-xs uppercase tracking-widest text-[#5C5C5C]">Total Item</div>
-            <div className="font-display text-2xl font-bold mt-1">{grandTotal.items}</div>
+            <div className="font-display text-xl sm:text-2xl font-bold mt-1">{grandTotal.items}</div>
           </div>
           <div className="card-soft p-4">
             <div className="text-xs uppercase tracking-widest text-[#5C5C5C]">Total Qty</div>
-            <div className="font-display text-2xl font-bold mt-1">{grandTotal.total_qty.toLocaleString("id-ID")}</div>
+            <div className="font-display text-xl sm:text-2xl font-bold mt-1">{grandTotal.total_qty.toLocaleString("id-ID")}</div>
           </div>
           <div className="card-soft p-4">
             <div className="text-xs uppercase tracking-widest text-[#5C5C5C]">Qty Aktual</div>
-            <div className="font-display text-2xl font-bold mt-1 text-[#4A7C59]">{grandTotal.actual_qty.toLocaleString("id-ID")}</div>
+            <div className="font-display text-xl sm:text-2xl font-bold mt-1 text-[#4A7C59]">{grandTotal.actual_qty.toLocaleString("id-ID")}</div>
           </div>
           <div className="card-soft p-4">
             <div className="text-xs uppercase tracking-widest text-[#5C5C5C]">Total Nilai</div>
-            <div className="font-display text-2xl font-bold mt-1">{fmtIDR(grandTotal.total_value)}</div>
+            <div className="font-display text-xl sm:text-2xl font-bold mt-1">{fmtIDR(grandTotal.total_value)}</div>
           </div>
         </div>
 

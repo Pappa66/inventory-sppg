@@ -111,7 +111,7 @@ export default function GlobalConfigPage() {
     <Layout>
       <div className="space-y-6">
         <div>
-          <h1 className="font-display text-4xl font-bold">Konfigurasi Global</h1>
+          <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold">Konfigurasi Global</h1>
           <p className="text-[#5C5C5C] mt-1">
             Atur nilai dinamis yang digunakan di seluruh aplikasi
           </p>

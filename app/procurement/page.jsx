@@ -88,7 +88,7 @@ export default function Page() {
       <div className="space-y-6" data-testid="procurement-page">
         <div className="flex items-center justify-between flex-wrap gap-3">
           <div>
-            <h1 className="font-display text-4xl font-bold">Belanja & Struk</h1>
+            <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold">Belanja & Struk</h1>
             <p className="text-[#5C5C5C] mt-1">STOCK = bahan baku · OPERATIONAL = transport/bbm. Foto struk wajib untuk setiap entri.</p>
           </div>
           {(activeRole === "field_assistant" || activeRole === "admin_apps" || activeRole === "admin_sppg") &&

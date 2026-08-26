@@ -105,7 +105,7 @@ function RoleDropdown() {
       </button>
 
       {open && (
-        <div className="absolute right-0 mt-2 w-64 bg-white rounded-xl border border-[#EAE4D8] shadow-lg z-50 py-2 max-h-[70vh] overflow-y-auto">
+        <div className="absolute right-0 mt-2 w-56 sm:w-64 bg-white rounded-xl border border-[#EAE4D8] shadow-lg z-50 py-2 max-h-[70vh] overflow-y-auto">
           <div className="px-3 py-1.5 text-[10px] uppercase tracking-widest text-[#5C5C5C] font-semibold">Switch Role</div>
           {filteredGroups.map((group) => (
             <div key={group.label}>

@@ -163,7 +163,7 @@ export default function Page() {
       <div className="space-y-6" data-testid="anggaran-page">
         <div className="flex items-center justify-between flex-wrap gap-3">
           <div>
-            <h1 className="font-display text-4xl font-bold">Anggaran</h1>
+            <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold">Anggaran</h1>
             <p className="text-[#5C5C5C] mt-1">3 Section: Bahan Makanan, Operasional, Insentif Fasilitas</p>
           </div>
           {canEdit && (
@@ -183,22 +183,22 @@ export default function Page() {
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="card-soft p-4">
             <div className="text-xs uppercase tracking-widest text-[#5C5C5C] flex items-center gap-1"><Package size={12}/> Bahan Makanan</div>
-            <div className="font-display text-xl font-bold mt-1">{fmtIDR(totals.bahan_rab)}</div>
+            <div className="font-display text-lg sm:text-xl font-bold mt-1">{fmtIDR(totals.bahan_rab)}</div>
             <div className="text-xs text-[#5C5C5C]">Aktual: {fmtIDR(totals.bahan_actual)}</div>
           </div>
           <div className="card-soft p-4">
             <div className="text-xs uppercase tracking-widest text-[#5C5C5C] flex items-center gap-1"><DollarSign size={12}/> Operasional</div>
-            <div className="font-display text-xl font-bold mt-1">{fmtIDR(totals.ops_rab)}</div>
+            <div className="font-display text-lg sm:text-xl font-bold mt-1">{fmtIDR(totals.ops_rab)}</div>
             <div className="text-xs text-[#5C5C5C]">Aktual: {fmtIDR(totals.ops_actual)}</div>
           </div>
           <div className="card-soft p-4">
             <div className="text-xs uppercase tracking-widest text-[#5C5C5C] flex items-center gap-1"><Users size={12}/> Insentif Fasilitas</div>
-            <div className="font-display text-xl font-bold mt-1">{fmtIDR(totals.ins_rab)}</div>
+            <div className="font-display text-lg sm:text-xl font-bold mt-1">{fmtIDR(totals.ins_rab)}</div>
             <div className="text-xs text-[#5C5C5C]">Aktual: {fmtIDR(totals.ins_actual)}</div>
           </div>
           <div className="card-soft p-4">
             <div className="text-xs uppercase tracking-widest text-[#5C5C5C] flex items-center gap-1"><Calculator size={12}/> Total</div>
-            <div className="font-display text-xl font-bold mt-1">{fmtIDR(totalRab)}</div>
+            <div className="font-display text-lg sm:text-xl font-bold mt-1">{fmtIDR(totalRab)}</div>
             <div className="text-xs text-[#5C5C5C]">Aktual: {fmtIDR(totalActual)}</div>
           </div>
         </div>

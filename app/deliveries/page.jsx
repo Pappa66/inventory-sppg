@@ -180,7 +180,7 @@ export default function Page() {
       <div className="space-y-6" data-testid="deliveries-page">
         <div className="flex items-center justify-between flex-wrap gap-3">
           <div>
-            <h1 className="font-display text-4xl font-bold">Rencana Antar</h1>
+            <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold">Rencana Antar</h1>
             <p className="text-[#5C5C5C] mt-1">Kelola rencana pengantaran harian ke tujuan.</p>
           </div>
           {canWrite && (
@@ -202,7 +202,7 @@ export default function Page() {
               onChange={(e) => setSelectedDate(e.target.value)}
             />
           </div>
-          <div className="relative flex-1 min-w-[200px] max-w-sm">
+          <div className="relative flex-1 min-w-0 max-w-sm">
             <label className="text-xs uppercase tracking-widest text-[#5C5C5C] block mb-1">Cari</label>
             <input
               data-testid="search-plan"

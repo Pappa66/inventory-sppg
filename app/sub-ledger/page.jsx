@@ -57,7 +57,7 @@ export default function SubLedgerPage() {
     return (
       <Layout>
         <div className="space-y-6">
-          <h1 className="font-display text-4xl font-bold">Akses Dibatasi</h1>
+          <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold">Akses Dibatasi</h1>
           <p className="text-[#5C5C5C]">Anda tidak memiliki akses ke halaman ini.</p>
         </div>
       </Layout>
@@ -68,7 +68,7 @@ export default function SubLedgerPage() {
     <Layout>
       <div className="space-y-6">
         <div>
-          <h1 className="font-display text-4xl font-bold">Buku Pembantu</h1>
+          <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold">Buku Pembantu</h1>
           <p className="text-[#5C5C5C] mt-1">6 buku pembantu: Bank, Petty Cash, Bahan Baku, Operasional, Fasilitas, Pajak</p>
         </div>
 
@@ -95,10 +95,10 @@ export default function SubLedgerPage() {
 
         {/* Active Book Detail */}
         {loading ? (
-          <div className="card-soft p-12 text-center"><div className="animate-spin w-8 h-8 border-2 border-[#4A7C59] border-t-transparent rounded-full mx-auto" /></div>
+          <div className="card-soft p-6 sm:p-12 text-center"><div className="animate-spin w-8 h-8 border-2 border-[#4A7C59] border-t-transparent rounded-full mx-auto" /></div>
         ) : (
           <div className="card-soft overflow-hidden">
-            <div className="px-5 py-3 border-b border-[#EAE4D8] bg-[#F9F6F0] flex justify-between items-center">
+            <div className="px-5 py-3 border-b border-[#EAE4D8] bg-[#F9F6F0] flex flex-wrap justify-between items-center gap-2">
               <div className="font-display font-bold flex items-center gap-2">
                 <BookOpen size={16} style={{ color: BUKU_PEMBANTU.find(b => b.value === activeTab)?.color }} />
                 {BUKU_PEMBANTU.find(b => b.value === activeTab)?.label}
@@ -109,7 +109,26 @@ export default function SubLedgerPage() {
                 <span>Saldo: <span className={`font-bold ${totals.debit - totals.credit >= 0 ? "text-[#4A7C59]" : "text-[#C5533B]"}`}>{fmtIDR(totals.debit - totals.credit)}</span></span>
               </div>
             </div>
-            <div className="overflow-x-auto">
+            <div className="md:hidden space-y-3 p-5">
+              {filteredByBP.length === 0 ? (
+                <div className="card-soft p-12 text-center text-[#5C5C5C]">Tidak ada data</div>
+              ) : (
+                filteredByBP.map((t, i) => (
+                  <div key={i} className="card-soft p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-xs text-[#5C5C5C]">{t.transaction_date}</span>
+                      <span className="text-xs font-mono text-[#5C5C5C]">{t.account_code}</span>
+                    </div>
+                    <div className="text-sm font-medium mb-2">{t.description}</div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-[#4A7C59] font-semibold">{t.debit > 0 ? fmtIDR(t.debit) : "—"}</span>
+                      <span className="text-[#C5533B] font-semibold">{t.credit > 0 ? fmtIDR(t.credit) : "—"}</span>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+            <div className="hidden md:block overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="text-xs text-[#5C5C5C] uppercase tracking-wider border-b border-[#EAE4D8] bg-[#F9F6F0]">
@@ -127,7 +146,7 @@ export default function SubLedgerPage() {
                       <td className="py-3 px-4">
                         <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#EAE4D8]">{t.account_code}</span>
                       </td>
-                      <td className="py-3 px-4 max-w-[300px] truncate">{t.description}</td>
+                      <td className="py-3 px-4 max-w-[150px] sm:max-w-[200px] md:max-w-[300px] truncate">{t.description}</td>
                       <td className="py-3 px-4 text-right font-semibold text-[#4A7C59]">{t.debit ? fmtIDR(t.debit) : "—"}</td>
                       <td className="py-3 px-4 text-right font-semibold text-[#C5533B]">{t.credit ? fmtIDR(t.credit) : "—"}</td>
                     </tr>

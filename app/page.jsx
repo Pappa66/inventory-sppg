@@ -722,7 +722,7 @@ export default function DashboardPage() {
       <div className="space-y-6">
         {/* Header */}
         <div>
-          <h1 className="font-display text-4xl font-bold">Dasbor</h1>
+          <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold">Dasbor</h1>
           <p className="text-[#5C5C5C] mt-1">
             Ringkasan untuk{" "}
             <span className="font-semibold" style={{ color: roleColor }}>
@@ -755,7 +755,7 @@ export default function DashboardPage() {
                       <Icon size={18} style={{ color }} />
                     </div>
                     <div
-                      className="font-display font-bold text-2xl mt-2"
+                      className="font-display font-bold text-xl sm:text-2xl mt-2"
                       style={{ color }}
                     >
                       {currency ? fmtIDR(value) : value}
@@ -770,7 +770,7 @@ export default function DashboardPage() {
 
             {/* Empty state */}
             {cards.length === 0 && (
-              <div className="card-soft p-12 text-center text-[#5C5C5C]">
+              <div className="card-soft p-6 sm:p-12 text-center text-[#5C5C5C]">
                 <Database size={40} className="mx-auto mb-3 opacity-30" />
                 <p className="font-display text-lg font-bold">Belum ada data</p>
                 <p className="text-sm mt-1">

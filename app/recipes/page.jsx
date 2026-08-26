@@ -100,7 +100,7 @@ export default function Page() {
       <div className="space-y-6" data-testid="recipes-page">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="font-display text-4xl font-bold">Resep Standar</h1>
+            <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold">Resep Standar</h1>
             <p className="text-[#5C5C5C] mt-1">Gizi dihitung otomatis dari bahan (per 100g). Bisa disesuaikan manual.</p>
           </div>
           {CAN_EDIT.includes(activeRole) && (
@@ -268,7 +268,7 @@ export default function Page() {
                 </div>
                 {(activeRole === "nutritionist" || activeRole === "admin_apps" || activeRole === "admin_sppg") && (
                   <div className="col-span-2 border-t border-[#EAE4D8] pt-3">
-                    <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between flex-wrap gap-3">
                       <label className="text-xs uppercase tracking-widest text-[#5C5C5C] flex items-center gap-2"><Flame size={12} /> Profil Gizi per Porsi</label>
                       <button type="button" onClick={() => setForm(p => {
                         const next = !p.nutrition_auto;

@@ -76,7 +76,7 @@ export default function BKUPage() {
     return (
       <Layout>
         <div className="space-y-6">
-          <h1 className="font-display text-4xl font-bold">Akses Dibatasi</h1>
+          <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold">Akses Dibatasi</h1>
           <p className="text-[#5C5C5C]">Anda tidak memiliki akses ke halaman ini.</p>
         </div>
       </Layout>
@@ -87,7 +87,7 @@ export default function BKUPage() {
     <Layout>
       <div className="space-y-6">
         <div>
-          <h1 className="font-display text-4xl font-bold">BKU - Buku Kas Umum</h1>
+          <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold">BKU - Buku Kas Umum</h1>
           <p className="text-[#5C5C5C] mt-1">Ringkasan transaksi per kode akun (otomatis dari input transaksi)</p>
         </div>
 
@@ -114,22 +114,22 @@ export default function BKUPage() {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="card-soft p-4">
             <div className="text-xs uppercase tracking-widest text-[#5C5C5C]">Total Debet</div>
-            <div className="font-display text-2xl font-bold mt-1 text-[#4A7C59]">{fmtIDR(grandTotal.debit)}</div>
+            <div className="font-display text-xl sm:text-2xl font-bold mt-1 text-[#4A7C59]">{fmtIDR(grandTotal.debit)}</div>
           </div>
           <div className="card-soft p-4">
             <div className="text-xs uppercase tracking-widest text-[#5C5C5C]">Total Kredit</div>
-            <div className="font-display text-2xl font-bold mt-1 text-[#C5533B]">{fmtIDR(grandTotal.credit)}</div>
+            <div className="font-display text-xl sm:text-2xl font-bold mt-1 text-[#C5533B]">{fmtIDR(grandTotal.credit)}</div>
           </div>
           <div className="card-soft p-4">
             <div className="text-xs uppercase tracking-widest text-[#5C5C5C]">Saldo BKU</div>
-            <div className={`font-display text-2xl font-bold mt-1 ${grandTotal.debit - grandTotal.credit >= 0 ? "text-[#4A7C59]" : "text-[#C5533B]"}`}>
+            <div className={`font-display text-xl sm:text-2xl font-bold mt-1 ${grandTotal.debit - grandTotal.credit >= 0 ? "text-[#4A7C59]" : "text-[#C5533B]"}`}>
               {fmtIDR(grandTotal.debit - grandTotal.credit)}
             </div>
           </div>
         </div>
 
         {loading ? (
-          <div className="card-soft p-12 text-center"><div className="animate-spin w-8 h-8 border-2 border-[#4A7C59] border-t-transparent rounded-full mx-auto" /></div>
+          <div className="card-soft p-6 sm:p-12 text-center"><div className="animate-spin w-8 h-8 border-2 border-[#4A7C59] border-t-transparent rounded-full mx-auto" /></div>
         ) : (
           <div className="space-y-4">
             {Object.entries(groupedByAccount).sort(([a], [b]) => a.localeCompare(b)).map(([code, items]) => {
@@ -206,7 +206,7 @@ export default function BKUPage() {
               );
             })}
             {Object.keys(groupedByAccount).length === 0 && (
-              <div className="card-soft p-12 text-center text-[#5C5C5C]">Belum ada transaksi.</div>
+              <div className="card-soft p-6 sm:p-12 text-center text-[#5C5C5C]">Belum ada transaksi.</div>
             )}
           </div>
         )}

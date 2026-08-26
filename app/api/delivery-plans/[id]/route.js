@@ -42,26 +42,33 @@ export async function PATCH(request, { params }) {
     const { data: old } = await supabase.from("delivery_plans").select("*").eq("id", id).single();
     if (!old) return apiError("Delivery plan tidak ditemukan", 404);
 
-    const allowed = ["plan_date","notes","driver_id"];
-    const updates = { updated_at: new Date().toISOString() };
+    const allowed = ["plan_date","notes"];
+    const updates = {};
     for (const key of allowed) { if (body[key] !== undefined) updates[key] = body[key]; }
 
-    const { error } = await supabase.from("delivery_plans").update(updates).eq("id", id);
-    if (error) return apiError(error.message);
+    if (Object.keys(updates).length > 0) {
+      const { error } = await supabase.from("delivery_plans").update(updates).eq("id", id);
+      if (error) return apiError(error.message);
+    }
 
-    if (body.driver_id) {
+    if (body.driver_id !== undefined) {
       const { data: existingAssignment } = await supabase
         .from("delivery_assignments")
         .select("id")
         .eq("plan_id", id)
         .single();
 
-      if (!existingAssignment) {
+      if (existingAssignment) {
+        const { error: assignErr } = await supabase
+          .from("delivery_assignments")
+          .update({ driver_id: body.driver_id || null })
+          .eq("id", existingAssignment.id);
+        if (assignErr) return apiError(assignErr.message);
+      } else if (body.driver_id) {
         const { error: assignErr } = await supabase.from("delivery_assignments").insert({
           plan_id: id,
           driver_id: body.driver_id,
           status: "PENDING",
-          created_at: new Date().toISOString(),
         });
         if (assignErr) return apiError(assignErr.message);
       }

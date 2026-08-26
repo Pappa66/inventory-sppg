@@ -53,7 +53,7 @@ function CourierTracker({ status, logs }) {
   const lastLog = logs?.length > 0 ? logs[logs.length - 1] : null;
 
   return (
-    <div className="flex items-center gap-0 w-full max-w-xs">
+    <div className="flex items-center gap-0 w-full max-w-[160px] sm:max-w-xs">
       {STEPS.map((step, idx) => {
         const isActive = idx <= currentIdx;
         const isCurrent = idx === currentIdx;
@@ -102,6 +102,10 @@ function UpdateFormInline({ planId, destIdx, dest, onUpdate, onCancel }) {
   const [status, setStatus] = useState("IN_TRANSIT");
   const [notes, setNotes] = useState("");
   const [photoUrl, setPhotoUrl] = useState("");
+  const [deliveryTime, setDeliveryTime] = useState(() => {
+    const now = new Date();
+    return `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
+  });
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
 
@@ -128,11 +132,13 @@ function UpdateFormInline({ planId, destIdx, dest, onUpdate, onCancel }) {
     setSubmitting(true);
     setError("");
     try {
+      const timeNote = deliveryTime ? `Jam ${deliveryTime}` : "";
+      const combinedNotes = [notes, timeNote].filter(Boolean).join(". ");
       await api.post("/delivery-logs", {
         assignment_id: planId,
         destination_id: dest.destination_id || dest.id,
         status,
-        notes,
+        notes: combinedNotes || null,
         photo_url: photoUrl || null,
       });
       toast.success(`Status diupdate ke ${DELIVERY_STATUSES[status]?.label}`);
@@ -145,10 +151,10 @@ function UpdateFormInline({ planId, destIdx, dest, onUpdate, onCancel }) {
   };
 
   return (
-    <div className="mt-3 p-4 bg-[#F9F6F0] border border-[#EAE4D8] rounded-xl space-y-3">
-      <div className="flex items-center gap-3">
-        <label className="text-xs uppercase tracking-widest text-[#5C5C5C] font-semibold">Status</label>
-        <div className="flex gap-1">
+    <div className="mt-3 p-4 sm:p-5 bg-[#F9F6F0] border border-[#EAE4D8] rounded-xl space-y-4">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+        <label className="text-xs uppercase tracking-widest text-[#5C5C5C] font-semibold shrink-0">Status</label>
+        <div className="flex flex-wrap gap-2">
           {STEPS.map((s) => (
             <button
               key={s.key}
@@ -166,26 +172,39 @@ function UpdateFormInline({ planId, destIdx, dest, onUpdate, onCancel }) {
         </div>
       </div>
 
-      <div>
-        <label className="text-xs uppercase tracking-widest text-[#5C5C5C] flex items-center gap-1">
-          <FileText size={12} /> Catatan
-        </label>
-        <input
-          type="text"
-          placeholder="Catatan pengantaran (opsional)"
-          className="w-full mt-1 px-3 py-2 rounded-md border border-[#EAE4D8] bg-white text-sm"
-          value={notes}
-          onChange={(e) => setNotes(e.target.value)}
-        />
+      <div className="flex flex-col sm:flex-row gap-3">
+        <div className="flex-1">
+          <label className="text-xs uppercase tracking-widest text-[#5C5C5C] flex items-center gap-1 mb-1">
+            <Clock size={12} /> Jam Pengantaran
+          </label>
+          <input
+            type="time"
+            className="w-full px-3 py-2 rounded-md border border-[#EAE4D8] bg-white text-sm"
+            value={deliveryTime}
+            onChange={(e) => setDeliveryTime(e.target.value)}
+          />
+        </div>
+        <div className="flex-1">
+          <label className="text-xs uppercase tracking-widest text-[#5C5C5C] flex items-center gap-1 mb-1">
+            <FileText size={12} /> Catatan
+          </label>
+          <input
+            type="text"
+            placeholder="Catatan pengantaran (opsional)"
+            className="w-full px-3 py-2 rounded-md border border-[#EAE4D8] bg-white text-sm"
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+          />
+        </div>
       </div>
 
       {status === "DELIVERED" && (
         <div>
-          <label className="text-xs uppercase tracking-widest text-[#5C5C5C] flex items-center gap-1">
+          <label className="text-xs uppercase tracking-widest text-[#5C5C5C] flex items-center gap-1 mb-1">
             <Camera size={12} /> Foto Bukti Pengantaran
             <span className="text-[#C5533B] font-bold">Wajib</span>
           </label>
-          <div className="mt-1 flex items-center gap-3">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3">
             <label className="flex items-center gap-2 px-4 py-2.5 rounded-lg border-2 border-dashed border-[#EAE4D8] bg-white cursor-pointer hover:border-[#4A7C59] transition-colors">
               <Camera size={16} className="text-[#5C5C5C]" />
               <span className="text-sm text-[#5C5C5C]">Pilih Foto</span>
@@ -207,7 +226,7 @@ function UpdateFormInline({ planId, destIdx, dest, onUpdate, onCancel }) {
             )}
           </div>
           {!photoUrl && (
-            <p className="text-[10px] text-[#C5533B] mt-1 flex items-center gap-1">
+            <p className="text-[10px] text-[#C5533B] mt-1.5 flex items-center gap-1">
               <AlertTriangle size={10} /> Foto bukti diperlukan untuk menandai pengantaran selesai
             </p>
           )}
@@ -215,17 +234,17 @@ function UpdateFormInline({ planId, destIdx, dest, onUpdate, onCancel }) {
       )}
 
       {error && (
-        <div className="text-xs text-[#C5533B] flex items-center gap-1">
+        <div className="text-xs text-[#C5533B] flex items-center gap-1.5">
           <AlertTriangle size={12} /> {error}
         </div>
       )}
 
-      <div className="flex justify-end gap-2 pt-1">
-        <button type="button" onClick={onCancel} className="btn-ghost text-sm py-2">Batal</button>
+      <div className="flex justify-end gap-3 pt-1">
+        <button type="button" onClick={onCancel} className="btn-ghost text-sm py-2 px-4">Batal</button>
         <button
           onClick={submit}
           disabled={submitting}
-          className="btn-primary text-sm py-2 disabled:opacity-50"
+          className="btn-primary text-sm py-2 px-4 disabled:opacity-50"
         >
           {submitting ? "Mengirim..." : "Update Status"}
         </button>
@@ -303,7 +322,7 @@ export default function Page() {
       <div className="space-y-6">
         <div className="flex items-center justify-between flex-wrap gap-3">
           <div>
-            <h1 className="font-display text-4xl font-bold">Tracking Pengantaran</h1>
+            <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold">Tracking Pengantaran</h1>
             <p className="text-[#5C5C5C] mt-1">
               {canSeeAll
                 ? "Pantau dan update status pengantaran semua driver."
@@ -348,7 +367,7 @@ export default function Page() {
                     className="p-4 bg-gradient-to-r from-[#EAE4D8]/30 to-transparent border-b border-[#EAE4D8] cursor-pointer"
                     onClick={() => setExpandedPlan(isExpanded ? null : plan.id)}
                   >
-                    <div className="flex items-center justify-between flex-wrap gap-2">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-full bg-[#0891B2] text-white flex items-center justify-center font-bold">
                           <Truck size={18} />
@@ -362,18 +381,18 @@ export default function Page() {
                       </div>
                       <div className="flex items-center gap-3">
                         <CourierTracker status={overallStatus} logs={[]} />
-                        <button className="btn-ghost p-1">
+                        <button className="btn-ghost p-2">
                           {isExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
                         </button>
                       </div>
                     </div>
-                    <div className="mt-3 h-2 bg-[#EAE4D8] rounded-full overflow-hidden">
+                    <div className="mt-4 h-2.5 bg-[#EAE4D8] rounded-full overflow-hidden">
                       <div
                         className="h-full bg-gradient-to-r from-[#4A7C59] to-[#2D5A3B] rounded-full transition-all duration-700"
                         style={{ width: `${dests.length > 0 ? (deliveredCount / dests.length) * 100 : 0}%` }}
                       />
                     </div>
-                    <div className="flex justify-between mt-1.5 text-[10px] text-[#5C5C5C]">
+                    <div className="flex justify-between mt-2 text-[11px] text-[#5C5C5C]">
                       <span>{deliveredCount} selesai</span>
                       <span>{transitCount} dalam perjalanan</span>
                       <span>{dests.length - deliveredCount - transitCount} menunggu</span>
@@ -392,9 +411,9 @@ export default function Page() {
                         const assignmentId = plan.delivery_assignments?.[0]?.id || plan.id;
 
                         return (
-                          <div key={idx} className="p-4">
-                            <div className="flex items-start justify-between gap-3">
-                              <div className="flex items-start gap-3">
+                          <div key={idx} className="p-4 sm:p-5">
+                            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+                              <div className="flex items-start gap-3 min-w-0">
                                 <div className="w-8 h-8 rounded-full bg-[#F9F6F0] border-2 border-[#EAE4D8] flex items-center justify-center text-xs font-bold text-[#5C5C5C] shrink-0">
                                   {idx + 1}
                                 </div>
@@ -403,12 +422,12 @@ export default function Page() {
                                     <MapPin size={13} className="text-[#4A7C59] shrink-0" />
                                     <span className="truncate">{dName || `Tujuan ${idx + 1}`}</span>
                                   </div>
-                                  <div className="flex flex-wrap gap-1 mt-1.5">
+                                  <div className="flex flex-wrap gap-1.5 mt-1.5">
                                     {Object.entries(MENU_CATEGORIES).map(([key, cat]) => {
                                       const portions = dest.portions?.[key] || dest[`${key.toLowerCase()}_portions`] || 0;
                                       if (!portions) return null;
                                       return (
-                                        <span key={key} className="text-[10px] px-1.5 py-0.5 rounded-full font-medium"
+                                        <span key={key} className="text-[10px] px-2 py-0.5 rounded-full font-medium"
                                           style={{ background: `${cat.color}1A`, color: cat.color }}>
                                           {cat.label}: {portions}
                                         </span>
@@ -416,20 +435,20 @@ export default function Page() {
                                     })}
                                   </div>
                                   {lastLog && (
-                                    <div className="mt-2 text-[10px] text-[#5C5C5C] flex items-center gap-1">
-                                      <Clock size={10} /> {timeStr(lastLog.created_at)}
-                                      {lastLog.notes && <span className="italic">— {lastLog.notes}</span>}
+                                    <div className="mt-2 text-[11px] text-[#5C5C5C] flex items-center gap-1.5">
+                                      <Clock size={11} className="shrink-0" /> {timeStr(lastLog.created_at)}
+                                      {lastLog.notes && <span className="italic truncate">— {lastLog.notes}</span>}
                                     </div>
                                   )}
                                 </div>
                               </div>
 
-                              <div className="flex items-center gap-2 shrink-0">
+                              <div className="flex items-center gap-3 shrink-0 sm:self-center">
                                 <CourierTracker status={destStatus} logs={destLogs} />
                                 {destStatus !== "DELIVERED" && (
                                   <button
                                     onClick={() => setExpandedDest(isDestExpanded ? null : destKey)}
-                                    className={`btn-ghost text-xs whitespace-nowrap ${
+                                    className={`btn-ghost text-xs whitespace-nowrap px-3 py-1.5 ${
                                       destStatus === "NOT_DELIVERED" ? "text-[#D97706]" : "text-[#4A7C59]"
                                     }`}
                                   >

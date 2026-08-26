@@ -122,7 +122,7 @@ export default function StockDetailPage() {
     return (
       <Layout>
         <div className="space-y-6">
-          <h1 className="font-display text-4xl font-bold">Akses Dibatasi</h1>
+          <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold">Akses Dibatasi</h1>
           <p className="text-[#5C5C5C]">Anda tidak memiliki akses ke halaman ini.</p>
         </div>
       </Layout>
@@ -132,9 +132,9 @@ export default function StockDetailPage() {
   return (
     <Layout>
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between flex-wrap gap-3">
           <div>
-            <h1 className="font-display text-4xl font-bold">Stock Barang (Detail)</h1>
+            <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold">Stock Barang (Detail)</h1>
             <p className="text-[#5C5C5C] mt-1">Stock_Brg (D) - Detail per kode barang</p>
           </div>
           <button onClick={exportPDF} className="btn-outline flex items-center gap-2"><Download size={14}/> Export PDF</button>
@@ -144,20 +144,20 @@ export default function StockDetailPage() {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="card-soft p-4">
             <div className="text-xs uppercase tracking-widest text-[#5C5C5C]">Total Qty Sistem</div>
-            <div className="font-display text-2xl font-bold mt-1">{totals.total_qty.toLocaleString("id-ID")}</div>
+            <div className="font-display text-xl sm:text-2xl font-bold mt-1">{totals.total_qty.toLocaleString("id-ID")}</div>
           </div>
           <div className="card-soft p-4">
             <div className="text-xs uppercase tracking-widest text-[#5C5C5C]">Total Qty Aktual</div>
-            <div className="font-display text-2xl font-bold mt-1 text-[#4A7C59]">{totals.actual_qty.toLocaleString("id-ID")}</div>
+            <div className="font-display text-xl sm:text-2xl font-bold mt-1 text-[#4A7C59]">{totals.actual_qty.toLocaleString("id-ID")}</div>
           </div>
           <div className="card-soft p-4">
             <div className="text-xs uppercase tracking-widest text-[#5C5C5C]">Total Nilai</div>
-            <div className="font-display text-2xl font-bold mt-1">{fmtIDR(totals.total_value)}</div>
+            <div className="font-display text-xl sm:text-2xl font-bold mt-1">{fmtIDR(totals.total_value)}</div>
           </div>
         </div>
 
         {/* Filters */}
-        <div className="flex gap-3">
+        <div className="flex gap-3 flex-wrap">
           <div className="relative flex-1 max-w-sm">
             <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#5C5C5C]" />
             <input className="w-full pl-9 pr-4 py-2 rounded-md border border-[#EAE4D8] bg-white text-sm" placeholder="Cari nama barang..." value={search} onChange={e => setSearch(e.target.value)} />

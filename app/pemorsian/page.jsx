@@ -237,7 +237,7 @@ export default function Page() {
       <div className="space-y-6">
         <div className="flex items-center justify-between flex-wrap gap-3">
           <div>
-            <h1 className="font-display text-4xl font-bold">{cfg.title}</h1>
+            <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold">{cfg.title}</h1>
             <p className="text-[#5C5C5C] mt-1">{cfg.desc}</p>
           </div>
           <button onClick={() => { setForm({ task_date: selectedDate, description: "" }); setOmpreng({ BALITA: { qty: 0, photo: null }, PORTION_SMALL: { qty: 0, photo: null }, PORTION_LARGE: { qty: 0, photo: null }, BUMIL_BUSUI: { qty: 0, photo: null } }); setPhotos({}); setOpen(true); }} className="btn-primary">
@@ -251,15 +251,15 @@ export default function Page() {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="card-soft p-4 text-center">
             <div className="text-xs uppercase tracking-widest text-[#5C5C5C]">{isPemorsian ? "Total Ompreng" : "Total Foto"}</div>
-            <div className="font-display text-3xl font-bold mt-1" style={{ color: "#2C4251" }}>{isPemorsian ? totalPortions : photoCount}</div>
+            <div className="font-display text-2xl sm:text-3xl font-bold mt-1" style={{ color: "#2C4251" }}>{isPemorsian ? totalPortions : photoCount}</div>
           </div>
           <div className="card-soft p-4 text-center">
             <div className="text-xs uppercase tracking-widest text-[#5C5C5C]">Tugas Selesai</div>
-            <div className="font-display text-3xl font-bold mt-1" style={{ color: "#4A7C59" }}>{completedCount} / {tasks.length}</div>
+            <div className="font-display text-2xl sm:text-3xl font-bold mt-1" style={{ color: "#4A7C59" }}>{completedCount} / {tasks.length}</div>
           </div>
           <div className="card-soft p-4 text-center">
             <div className="text-xs uppercase tracking-widest text-[#5C5C5C]">Foto Terupload</div>
-            <div className="font-display text-3xl font-bold mt-1" style={{ color: "#D97706" }}>{photoCount}</div>
+            <div className="font-display text-2xl sm:text-3xl font-bold mt-1" style={{ color: "#D97706" }}>{photoCount}</div>
           </div>
         </div>
 

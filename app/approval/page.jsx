@@ -49,7 +49,7 @@ export default function Page() {
     <Layout>
       <div className="space-y-6" data-testid="approval-page">
         <div>
-          <h1 className="font-display text-4xl font-bold">Persetujuan Menu</h1>
+          <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold">Persetujuan Menu</h1>
           <p className="text-[#5C5C5C] mt-1">Review menu yang diajukan Chef. Ahli Gizi memberikan tanda tangan digital untuk validasi nutrisi & alergen.</p>
         </div>
 
@@ -80,7 +80,7 @@ export default function Page() {
                   {(m.recipes||[]).map(r => <li key={r.id} className="flex justify-between"><span>{r.name}</span><span className="audit-ts text-[#5C5C5C]">{r.calories_kcal||0} kkal</span></li>)}
                   {(m.recipes||[]).length === 0 && <li className="text-[#C5533B] text-xs">⚠ Belum ada resep terpilih</li>}
                 </ul>
-                <div className="grid grid-cols-5 gap-1 mt-3 text-center">
+                <div className="grid grid-cols-3 sm:grid-cols-5 gap-1 mt-3 text-center">
                   {[["Kkal", totals.calories_kcal, "#D97706"],["Prot", totals.protein_g, "#4A7C59"],["Karbo", totals.carbs_g, "#2C4251"],["Lemak", totals.fats_g, "#C5533B"],["Na", totals.sodium_mg, "#5C5C5C"]].map(([l,v,c],i)=>(
                     <div key={i} className="rounded-md p-1.5" style={{background:`${c}10`}}>
                       <div className="audit-ts font-bold text-sm" style={{color:c}}>{Number(v).toFixed(0)}</div>

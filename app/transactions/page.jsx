@@ -122,7 +122,7 @@ export default function TransactionsPage() {
       <div className="space-y-6">
         <div className="flex items-center justify-between flex-wrap gap-3">
           <div>
-            <h1 className="font-display text-4xl font-bold">Transaksi</h1>
+            <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold">Transaksi</h1>
             <p className="text-[#5C5C5C] mt-1">Input transaksi Debet/Kredit dengan kode akun</p>
           </div>
           {canEdit && (
@@ -152,15 +152,15 @@ export default function TransactionsPage() {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="card-soft p-4">
             <div className="text-xs uppercase tracking-widest text-[#5C5C5C]">Total Debet</div>
-            <div className="font-display text-2xl font-bold mt-1 text-[#4A7C59]">{fmtIDR(totals.debit)}</div>
+            <div className="font-display text-xl sm:text-2xl font-bold mt-1 text-[#4A7C59]">{fmtIDR(totals.debit)}</div>
           </div>
           <div className="card-soft p-4">
             <div className="text-xs uppercase tracking-widest text-[#5C5C5C]">Total Kredit</div>
-            <div className="font-display text-2xl font-bold mt-1 text-[#C5533B]">{fmtIDR(totals.credit)}</div>
+            <div className="font-display text-xl sm:text-2xl font-bold mt-1 text-[#C5533B]">{fmtIDR(totals.credit)}</div>
           </div>
           <div className="card-soft p-4">
             <div className="text-xs uppercase tracking-widest text-[#5C5C5C]">Saldo</div>
-            <div className={`font-display text-2xl font-bold mt-1 ${totals.debit - totals.credit >= 0 ? "text-[#4A7C59]" : "text-[#C5533B]"}`}>
+            <div className={`font-display text-xl sm:text-2xl font-bold mt-1 ${totals.debit - totals.credit >= 0 ? "text-[#4A7C59]" : "text-[#C5533B]"}`}>
               {fmtIDR(totals.debit - totals.credit)}
             </div>
           </div>

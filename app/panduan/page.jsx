@@ -1380,7 +1380,7 @@ export default function PanduanPage() {
     <Layout>
       <div className="space-y-6">
         <div>
-          <h1 className="font-display text-4xl font-bold flex items-center gap-3">
+          <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold flex items-center gap-3">
             <HelpCircle size={28} style={{ color: guide.color }} />
             {guide.title}
           </h1>
