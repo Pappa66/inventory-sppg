@@ -91,6 +91,15 @@ export default function Page() {
     } catch (er) { toast.error(formatErr(er)); }
   };
 
+  const handleDelete = async (r) => {
+    if (!confirm(`Hapus resep "${r.name}"?`)) return;
+    try {
+      await api.delete(`/recipes/${r.id}`);
+      toast.success("Resep dihapus");
+      load();
+    } catch (er) { toast.error(formatErr(er)); }
+  };
+
   const paginatedRecipes = useMemo(() => {
     const start = (page - 1) * perPage;
     return recipes.slice(start, start + perPage);
@@ -132,19 +141,24 @@ export default function Page() {
                 </div>
                     </div>
                     {CAN_EDIT.includes(activeRole) && (
-                      <button onClick={() => {
-                        setEditing(r);
-                        setForm({
-                          name: r.name, servings: r.servings, menu_category: r.menu_category || null,
-                          ingredients: r.ingredients || [], instructions: r.instructions || "",
-                          calories_kcal: r.calories_kcal || 0, protein_g: r.protein_g || 0,
-                          carbs_g: r.carbs_g || 0, fats_g: r.fats_g || 0, fiber_g: r.fiber_g || 0,
-                          sodium_mg: r.sodium_mg || 0, nutrition_auto: r.nutrition_auto !== false,
-                          allergens: r.allergens || [], photo_url: r.photo_url || "",
-                        });
-                        setPhotoPreview(r.photo_url || null);
-                        setOpen(true);
-                      }} className="btn-ghost text-xs">Edit</button>
+                      <div className="flex gap-1">
+                        <button onClick={() => {
+                          setEditing(r);
+                          setForm({
+                            name: r.name, servings: r.servings, menu_category: r.menu_category || null,
+                            ingredients: r.ingredients || [], instructions: r.instructions || "",
+                            calories_kcal: r.calories_kcal || 0, protein_g: r.protein_g || 0,
+                            carbs_g: r.carbs_g || 0, fats_g: r.fats_g || 0, fiber_g: r.fiber_g || 0,
+                            sodium_mg: r.sodium_mg || 0, nutrition_auto: r.nutrition_auto !== false,
+                            allergens: r.allergens || [], photo_url: r.photo_url || "",
+                          });
+                          setPhotoPreview(r.photo_url || null);
+                          setOpen(true);
+                        }} className="btn-ghost text-xs">Edit</button>
+                        {["admin_apps","admin_sppg","head_chef","kitchen_head"].includes(activeRole) && (
+                          <button onClick={() => handleDelete(r)} className="btn-ghost text-xs text-[#C5533B]">Hapus</button>
+                        )}
+                      </div>
                     )}
                   </div>
                   <div className="grid grid-cols-6 gap-1 mt-3 text-center">

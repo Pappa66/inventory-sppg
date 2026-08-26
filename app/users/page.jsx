@@ -16,7 +16,9 @@ export default function Page() {
 
   const [users, setUsers] = useState([]);
   const [open, setOpen] = useState(false);
+  const [editingUser, setEditingUser] = useState(null);
   const [form, setForm] = useState({ email: "", name: "", role: "driver", password: "" });
+  const [editForm, setEditForm] = useState({ name: "", role: "", password: "" });
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const perPage = 15;
@@ -43,6 +45,23 @@ export default function Page() {
       toast.success("Pengguna ditambahkan");
       setOpen(false);
       setForm({ email: "", name: "", role: "driver", password: "" });
+      load();
+    } catch (er) { toast.error(formatErr(er)); }
+  };
+
+  const openEdit = (u) => {
+    setEditingUser(u);
+    setEditForm({ name: u.name, role: u.role, password: "" });
+  };
+
+  const saveEdit = async (e) => {
+    e.preventDefault();
+    try {
+      const payload = { name: editForm.name, role: editForm.role };
+      if (editForm.password.length >= 6) payload.password = editForm.password;
+      await api.patch(`/users/${editingUser.id}`, payload);
+      toast.success("Pengguna diperbarui");
+      setEditingUser(null);
       load();
     } catch (er) { toast.error(formatErr(er)); }
   };
@@ -91,6 +110,7 @@ export default function Page() {
                     <th className="text-left py-3 px-4">Peran</th>
                     <th className="text-left py-3 px-4">Dibuat</th>
                     <th className="text-left py-3 px-4">Aktif</th>
+                    <th className="py-3 px-4"></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -104,6 +124,9 @@ export default function Page() {
                     <td className="py-3 px-4 audit-ts text-xs">{fmtDateTime(u.created_at)}</td>
                       <td className="py-3 px-4">
                         <Switch data-testid={`activate-${u.email}`} checked={!!u.is_active} onCheckedChange={(v)=>toggle(u, v)} disabled={u.email === "admin@sppg.id"} />
+                      </td>
+                      <td className="py-3 px-4">
+                        <button onClick={()=>openEdit(u)} className="btn-ghost text-xs">Edit</button>
                       </td>
                   </tr>
                 ))}
@@ -157,6 +180,29 @@ export default function Page() {
               <div className="flex justify-end gap-2 mt-5">
                 <button type="button" onClick={()=>setOpen(false)} className="btn-ghost">Batal</button>
                 <button data-testid="submit-new-user" type="submit" className="btn-primary">Simpan</button>
+              </div>
+            </form>
+          </div>
+        )}
+
+        {editingUser && (
+          <div className="fixed inset-0 z-40 bg-black/40 grid place-items-center p-4" onClick={()=>setEditingUser(null)}>
+            <form onClick={(e)=>e.stopPropagation()} onSubmit={saveEdit} className="card-soft p-4 sm:p-6 w-full max-w-md">
+              <h2 className="font-display text-2xl font-bold">Edit Pengguna</h2>
+              <p className="text-sm text-[#5C5C5C] mt-1">{editingUser.email}</p>
+              <div className="grid grid-cols-1 gap-3 mt-4">
+                <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Nama</label>
+                <input required className="px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={editForm.name} onChange={(e)=>setEditForm({...editForm, name:e.target.value})}/>
+                <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Peran</label>
+                <select className="px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={editForm.role} onChange={(e)=>setEditForm({...editForm, role:e.target.value})}>
+                  {Object.entries(ROLE_LABELS).map(([k,v])=><option key={k} value={k}>{v}</option>)}
+                </select>
+                <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Password Baru (kosongkan jika tidak ubah)</label>
+                <input minLength={6} type="text" placeholder="Minimal 6 karakter" className="px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={editForm.password} onChange={(e)=>setEditForm({...editForm, password:e.target.value})}/>
+              </div>
+              <div className="flex justify-end gap-2 mt-5">
+                <button type="button" onClick={()=>setEditingUser(null)} className="btn-ghost">Batal</button>
+                <button type="submit" className="btn-primary">Simpan</button>
               </div>
             </form>
           </div>

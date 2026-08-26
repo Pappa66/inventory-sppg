@@ -38,6 +38,15 @@ export default function Page() {
     } catch (er) { toast.error(formatErr(er)); }
   };
 
+  const handleDelete = async (it) => {
+    if (!confirm(`Hapus "${it.name}"? Semua stok terkait juga akan dihapus.`)) return;
+    try {
+      await api.delete(`/items/${it.id}`);
+      toast.success("Bahan dihapus");
+      load();
+    } catch (er) { toast.error(formatErr(er)); }
+  };
+
   const showHistory = async (it) => {
     try {
       const { data } = await api.get(`/versions/items/${it.id}`);
@@ -91,6 +100,7 @@ export default function Page() {
                     <td className="py-3 px-4 text-xs">{(it.allergens||[]).join(", ") || "—"}</td>
                     <td className="py-3 px-4 text-right space-x-2">
                       {CAN_EDIT.includes(activeRole) && <button data-testid={`edit-item-${it.id}`} onClick={()=>{setEditing(it); setForm({name:it.name,unit:it.unit,category:it.category,par_level:it.par_level,price_per_unit:it.price_per_unit,zone:it.zone||"DRY",allergens:it.allergens||[],nutrition_per_100g:it.nutrition_per_100g||{calories:0,protein:0,carbs:0,fats:0,fiber:0,sodium:0}}); setOpen(true);}} className="btn-ghost text-xs">Edit</button>}
+                      {["admin_apps","admin_sppg"].includes(activeRole) && <button data-testid={`delete-item-${it.id}`} onClick={()=>handleDelete(it)} className="btn-ghost text-xs text-[#C5533B]">Hapus</button>}
                       <button data-testid={`history-${it.id}`} onClick={()=>showHistory(it)} className="btn-ghost text-xs"><History size={14}/> Riwayat</button>
                     </td>
                   </tr>
@@ -127,6 +137,7 @@ export default function Page() {
                   </div>
                   <div className="flex justify-end gap-2 pt-1">
                     {CAN_EDIT.includes(activeRole) && <button data-testid={`edit-item-${it.id}`} onClick={()=>{setEditing(it); setForm({name:it.name,unit:it.unit,category:it.category,par_level:it.par_level,price_per_unit:it.price_per_unit,zone:it.zone||"DRY",allergens:it.allergens||[],nutrition_per_100g:it.nutrition_per_100g||{calories:0,protein:0,carbs:0,fats:0,fiber:0,sodium:0}}); setOpen(true);}} className="btn-ghost text-xs">Edit</button>}
+                    {["admin_apps","admin_sppg"].includes(activeRole) && <button data-testid={`delete-item-${it.id}`} onClick={()=>handleDelete(it)} className="btn-ghost text-xs text-[#C5533B]">Hapus</button>}
                     <button data-testid={`history-${it.id}`} onClick={()=>showHistory(it)} className="btn-ghost text-xs"><History size={14}/> Riwayat</button>
                   </div>
                 </div>

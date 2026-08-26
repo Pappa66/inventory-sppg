@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase";
 import { getTokenUser, requireRoles, logAudit, apiError, apiSuccess } from "@/lib/db-helpers";
+import bcrypt from "bcryptjs";
 
 export async function PATCH(request, { params }) {
   try {
@@ -15,6 +16,9 @@ export async function PATCH(request, { params }) {
     if (body.name !== undefined) updates.name = body.name;
     if (body.role !== undefined) updates.role = body.role;
     if (body.is_active !== undefined) updates.is_active = body.is_active;
+    if (body.password && body.password.length >= 6) {
+      updates.password_hash = bcrypt.hashSync(body.password, 10);
+    }
 
     const { error } = await supabase.from("users").update(updates).eq("id", id);
     if (error) return apiError(error.message);
@@ -22,7 +26,7 @@ export async function PATCH(request, { params }) {
     await logAudit(supabase, {
       actor: user, action: "UPDATE_USER", entity: "users", entity_id: id,
       before: { name: old?.name, role: old?.role, is_active: old?.is_active },
-      after: updates,
+      after: { ...updates, password_hash: updates.password_hash ? "[REDACTED]" : undefined },
     });
 
     return apiSuccess({ ok: true });
