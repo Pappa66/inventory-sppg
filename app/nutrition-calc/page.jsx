@@ -204,10 +204,10 @@ export default function NutritionCalcPage() {
                             </tr>
                           ))}
                           <tr className="font-bold bg-[#F9F6F0]">
-                            <td className="py-2 px-2">Total</td>
+                            <td className="py-2 px-2">Total / Porsi</td>
                             <td className="py-2 px-2 text-right">—</td>
                             {NUTRI_COLS.map(([k, , unit]) => {
-                              const total = ingredientBreakdown.reduce((s, r) => s + r[k], 0);
+                              const total = ingredientBreakdown.reduce((s, r) => s + r[k], 0) / (selectedRecipe.servings || 1);
                               return <td key={k} className="py-2 px-2 text-right">{total.toFixed(1)}<span className="text-[10px] text-[#5C5C5C] ml-0.5">{unit}</span></td>;
                             })}
                           </tr>
