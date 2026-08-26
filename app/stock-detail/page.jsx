@@ -11,6 +11,7 @@ import { getLogo } from "@/lib/logo";
 import { getSettings, renderLetterhead, todayIndo } from "@/lib/letterhead";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
+import Pagination from "@/components/Pagination";
 
 export default function StockDetailPage() {
   const { activeRole } = useAuth();
@@ -20,6 +21,11 @@ export default function StockDetailPage() {
   const [search, setSearch] = useState("");
   const [filterZone, setFilterZone] = useState("ALL");
   const [filterCategory, setFilterCategory] = useState("");
+  const [page, setPage] = useState(1);
+  const perPage = 15;
+
+  useEffect(() => { setPage(1); }, [search, filterZone, filterCategory]);
+  const [exportMonth, setExportMonth] = useState("");
 
   useEffect(() => {
     Promise.all([
@@ -79,6 +85,12 @@ export default function StockDetailPage() {
     });
   }, [stockData, search, filterZone, filterCategory]);
 
+  const totalPages = Math.ceil(filtered.length / perPage);
+  const paginated = useMemo(() => {
+    const start = (page - 1) * perPage;
+    return filtered.slice(start, start + perPage);
+  }, [filtered, page]);
+
   const totals = useMemo(() => {
     return filtered.reduce((acc, s) => ({
       total_qty: acc.total_qty + s.total_qty,
@@ -97,24 +109,59 @@ export default function StockDetailPage() {
   };
 
   const exportPDF = async () => {
+    let dataForExport = filtered;
+    if (exportMonth) {
+      const filteredLots = lots.filter(lot => {
+        const expiryMatch = lot.expiry_date && lot.expiry_date.startsWith(exportMonth);
+        const createdMatch = lot.created_at && lot.created_at.startsWith(exportMonth);
+        return expiryMatch || createdMatch;
+      });
+      const exportItemMap = {};
+      for (const i of items) exportItemMap[i.id] = i;
+      const map = {};
+      for (const lot of filteredLots) {
+        const item = exportItemMap[lot.item_id];
+        if (!item) continue;
+        const key = lot.item_id;
+        if (!map[key]) {
+          map[key] = {
+            item_id: lot.item_id, name: item.name, unit: item.unit, category: item.category,
+            zone: item.zone, total_qty: 0, actual_qty: 0, lots: 0,
+            earliest_expiry: null, latest_expiry: null, total_value: 0,
+          };
+        }
+        map[key].total_qty += lot.quantity || 0;
+        map[key].actual_qty += lot.actual_quantity || lot.quantity || 0;
+        map[key].lots += 1;
+        map[key].total_value += (lot.actual_quantity || lot.quantity || 0) * (item.price_per_unit || 0);
+        if (lot.expiry_date) {
+          if (!map[key].earliest_expiry || lot.expiry_date < map[key].earliest_expiry) map[key].earliest_expiry = lot.expiry_date;
+          if (!map[key].latest_expiry || lot.expiry_date > map[key].latest_expiry) map[key].latest_expiry = lot.expiry_date;
+        }
+      }
+      dataForExport = Object.values(map);
+    }
+
     const doc = new jsPDF("l");
     const [logo, settings] = await Promise.all([getLogo(), getSettings()]);
     const titleY = renderLetterhead(doc, settings, logo);
     doc.setFontSize(14);
-    doc.text("STOK BARANG (DETAIL)", 14, titleY);
+    const titleText = exportMonth ? `STOK BARANG (DETAIL) — Bulan ${exportMonth}` : "STOK BARANG (DETAIL)";
+    doc.text(titleText, 14, titleY);
     doc.setFontSize(9);
     doc.text(`Dicetak: ${todayIndo()}`, 14, titleY + 6);
 
     autoTable(doc, {
       startY: titleY + 12,
       head: [["Nama Barang", "Kategori", "Satuan", "Zona", "Total Qty", "Aktual Qty", "Nilai", "Earliest Expiry", "Status"]],
-      body: filtered.map(s => {
+      body: dataForExport.map(s => {
         const status = getExpiryStatus(s.latest_expiry);
         return [s.name, s.category, s.unit, s.zone, s.total_qty, s.actual_qty, fmtIDR(s.total_value), s.earliest_expiry || "—", status.label];
       }),
     });
 
-    doc.save(`stock-detail-${new Date().toISOString().slice(0,10)}.pdf`);
+    const suffix = exportMonth ? `-${exportMonth}` : `-${new Date().toISOString().slice(0,10)}`;
+    doc.save(`stock-detail${suffix}.pdf`);
     toast.success("PDF berhasil diunduh");
   };
 
@@ -137,7 +184,10 @@ export default function StockDetailPage() {
             <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold">Stock Barang (Detail)</h1>
             <p className="text-[#5C5C5C] mt-1">Stock_Brg (D) - Detail per kode barang</p>
           </div>
-          <button onClick={exportPDF} className="btn-outline flex items-center gap-2"><Download size={14}/> Export PDF</button>
+          <div className="flex items-center gap-2">
+            <input type="month" value={exportMonth} onChange={e => setExportMonth(e.target.value)} className="px-3 py-1.5 rounded-md border border-[#EAE4D8] bg-white text-xs" />
+            <button onClick={exportPDF} className="btn-outline text-xs"><Download size={14} /> Export PDF</button>
+          </div>
         </div>
 
         {/* Summary */}
@@ -186,8 +236,8 @@ export default function StockDetailPage() {
           <>
             {/* Mobile card view */}
             <div className="md:hidden space-y-3">
-              {filtered.length === 0 && <div className="card-soft p-10 text-center text-[#5C5C5C]">Tidak ada data.</div>}
-              {filtered.map(s => {
+              {paginated.length === 0 && <div className="card-soft p-10 text-center text-[#5C5C5C]">Tidak ada data.</div>}
+              {paginated.map(s => {
                 const status = getExpiryStatus(s.latest_expiry);
                 return (
                   <div key={s.item_id} className="card-soft p-4 space-y-3">
@@ -248,7 +298,7 @@ export default function StockDetailPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filtered.map(s => {
+                  {paginated.map(s => {
                     const status = getExpiryStatus(s.latest_expiry);
                     return (
                       <tr key={s.item_id} className="border-b border-[#EAE4D8] last:border-0 hover:bg-[#F9F6F0]">
@@ -264,11 +314,12 @@ export default function StockDetailPage() {
                       </tr>
                     );
                   })}
-                  {filtered.length === 0 && <tr><td colSpan={9} className="py-10 text-center text-[#5C5C5C]">Tidak ada data.</td></tr>}
+                  {paginated.length === 0 && <tr><td colSpan={9} className="py-10 text-center text-[#5C5C5C]">Tidak ada data.</td></tr>}
                 </tbody>
               </table>
             </div>
           </div>
+          {totalPages > 1 && <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />}
           </>
         )}
       </div>

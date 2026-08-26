@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import Pagination from "@/components/Pagination";
 import { getLogo } from "@/lib/logo";
 import { getSettings, renderLetterhead, renderLetterTitle, renderSignatureBlock, todayIndo } from "@/lib/letterhead";
 import { toast } from "sonner";
@@ -44,6 +45,10 @@ export default function ReportsPage() {
   const [settings, setSettings] = useState({});
   const [deliveryPlans, setDeliveryPlans] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [exportFrom, setExportFrom] = useState("");
+  const [exportTo, setExportTo] = useState("");
+  const perPage = 15;
 
   useEffect(() => {
     setLoading(true);
@@ -67,6 +72,11 @@ export default function ReportsPage() {
     const totalPengeluaran = pengeluaran.reduce((s, t) => s + (t.credit || 0) - (t.debit || 0), 0);
     return { pemasukan, pengeluaran, totalPemasukan, totalPengeluaran, saldo: totalPemasukan - totalPengeluaran };
   }, [transaksi]);
+
+  const paginatedTransaksi = useMemo(() => {
+    const start = (page - 1) * perPage;
+    return transaksi.slice(start, start + perPage);
+  }, [transaksi, page, perPage]);
 
   // LPA Data: same as LR but filtered by period
   const lpaData = useMemo(() => {
@@ -118,7 +128,19 @@ export default function ReportsPage() {
     doc.text(`Dicetak: ${todayIndo()}`, 14, titleY + 6);
 
     if (tab === "lr" || tab === "lpa") {
-      const data = tab === "lr" ? lrData : lpaData;
+      let data = tab === "lr" ? lrData : lpaData;
+      if (tab === "lr") {
+        let filtered = transaksi;
+        if (exportFrom) filtered = filtered.filter(t => t.transaction_date >= exportFrom);
+        if (exportTo) filtered = filtered.filter(t => t.transaction_date <= exportTo);
+        const fp = filtered.filter(t => ["1300"].includes(t.account_code));
+        const fe = filtered.filter(t => ["2100", "2200", "2300", "3100"].includes(t.account_code));
+        data = {
+          totalPemasukan: fp.reduce((s, t) => s + (t.debit || 0) - (t.credit || 0), 0),
+          totalPengeluaran: fe.reduce((s, t) => s + (t.credit || 0) - (t.debit || 0), 0),
+          saldo: fp.reduce((s, t) => s + (t.debit || 0) - (t.credit || 0), 0) - fe.reduce((s, t) => s + (t.credit || 0) - (t.debit || 0), 0),
+        };
+      }
       autoTable(doc, {
         startY: titleY + 12,
         head: [["Keterangan", "Jumlah"]],
@@ -139,6 +161,9 @@ export default function ReportsPage() {
     const [logo, settings] = await Promise.all([getLogo(), getSettings()]);
     const ml = 20, mr = 20, pw = 210;
     const sppgName = settings.sppg_name || "SPPG MBG";
+    let filteredTransaksi = transaksi;
+    if (exportFrom) filteredTransaksi = filteredTransaksi.filter(t => t.transaction_date >= exportFrom);
+    if (exportTo) filteredTransaksi = filteredTransaksi.filter(t => t.transaction_date <= exportTo);
     const kepala = settings.nama_kepala || "___________________";
     const addr = settings.sppg_address || "___________________";
 
@@ -208,8 +233,11 @@ export default function ReportsPage() {
     const ml = 20, mr = 20, pw = 210;
     const sppgName = settings.sppg_name || "SPPG MBG";
 
+    let filteredPlans = deliveryPlans;
+    if (exportFrom) filteredPlans = filteredPlans.filter(p => p.plan_date >= exportFrom);
+    if (exportTo) filteredPlans = filteredPlans.filter(p => p.plan_date <= exportTo);
     const today = new Date().toISOString().slice(0, 10);
-    const todayPlans = deliveryPlans.filter(p => p.plan_date === today);
+    const todayPlans = filteredPlans.filter(p => p.plan_date === today);
     const totalPortions = todayPlans.reduce((sum, p) => sum + (p.delivery_plan_items || []).reduce((s, item) => s + (item.portions || 0), 0), 0);
     const totalDestinations = todayPlans.reduce((sum, p) => sum + (p.delivery_plan_items || []).length, 0);
     const driverIds = new Set(todayPlans.map(p => p.delivery_assignments?.[0]?.driver_id).filter(Boolean));
@@ -326,6 +354,16 @@ export default function ReportsPage() {
         </div>
 
         {/* Tab Navigation */}
+        <div className="flex flex-wrap items-center gap-3 text-sm">
+          <label className="text-xs uppercase tracking-widest text-[#5C5C5C] font-semibold">Filter Tanggal Export:</label>
+          <input type="date" value={exportFrom} onChange={e => setExportFrom(e.target.value)} className="px-3 py-1.5 rounded-md border border-[#EAE4D8] bg-white text-sm" />
+          <span className="text-[#5C5C5C]">s/d</span>
+          <input type="date" value={exportTo} onChange={e => setExportTo(e.target.value)} className="px-3 py-3 rounded-md border border-[#EAE4D8] bg-white text-sm" />
+          {(exportFrom || exportTo) && (
+            <button onClick={() => { setExportFrom(""); setExportTo(""); }} className="btn-ghost text-xs">Reset</button>
+          )}
+        </div>
+
         <div className="flex gap-2 overflow-x-auto pb-2">
           {REPORT_TABS.map(tab => {
             const Icon = tab.icon;
@@ -383,7 +421,7 @@ export default function ReportsPage() {
                       <tr><th className="text-left py-3 px-4">Tanggal</th><th className="text-left py-3 px-4">Kode</th><th className="text-left py-3 px-4">Keterangan</th><th className="text-right py-3 px-4">Debet</th><th className="text-right py-3 px-4">Kredit</th></tr>
                     </thead>
                     <tbody>
-                      {transaksi.slice(0, 20).map(t => (
+                      {paginatedTransaksi.map(t => (
                         <tr key={t.id} className="border-b border-[#EAE4D8] hover:bg-[#F9F6F0]">
                           <td className="py-2 px-4">{t.transaction_date}</td>
                           <td className="py-2 px-4"><span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#EAE4D8]">{t.account_code}</span></td>
@@ -395,6 +433,7 @@ export default function ReportsPage() {
                     </tbody>
                   </table>
                 </div>
+                <Pagination page={page} totalPages={Math.ceil(transaksi.length / perPage)} onPageChange={setPage} />
                 <button onClick={() => exportPDF("lr")} className="btn-outline flex items-center gap-2"><Download size={14}/> Export PDF</button>
               </div>
             )}

@@ -21,6 +21,7 @@ export default function Page() {
   const [activeDays, setActiveDays] = useState([1,2,3,4,5]);
   const [showConfig, setShowConfig] = useState(false);
   const [catFilter, setCatFilter] = useState("ALL");
+  const [printMonth, setPrintMonth] = useState("");
 
   const load = (w = weekStart) => { setLoading(true); Promise.all([api.get("/recipes"), api.get(`/menus?week_start=${w}`)])
     .then(([a,b]) => { setRecipes(a.data); setMenus(b.data);
@@ -93,6 +94,45 @@ export default function Page() {
     w.document.close();
   };
 
+  const printMenuBulanan = async () => {
+    if (!printMonth) return toast.error("Pilih bulan terlebih dahulu");
+    const [y, m] = printMonth.split("-").map(Number);
+    const firstDay = new Date(y, m - 1, 1);
+    const lastDay = new Date(y, m, 0);
+    const weeks = [];
+    let d = new Date(firstDay);
+    while (d <= lastDay) {
+      weeks.push(mondayOf(d.toISOString().slice(0,10)));
+      d.setDate(d.getDate() + 7);
+    }
+    const uniqueWeeks = [...new Set(weeks)];
+
+    const allRows = [];
+    for (const ws of uniqueWeeks) {
+      try {
+        const res = await api.get(`/menus?week_start=${ws}`);
+        const weekMenus = res.data || [];
+        DAYS.slice(0, totalDays).forEach((day, i) => {
+          if (!activeDays.includes(i + 1)) return;
+          const m = weekMenus.find(mm => mm.day === day.key) || { recipe_ids: [], portions: 0 };
+          const names = m.recipe_ids.map(rid => recipes.find(r=>r.id===rid)?.name).filter(Boolean).join(", ") || "—";
+          const weekLabel = `Minggu ${fmtDate(ws)}`;
+          allRows.push({ week: weekLabel, day: day.label, menu: names, portions: m.portions || 0 });
+        });
+      } catch {}
+    }
+
+    if (allRows.length === 0) return toast.error("Tidak ada menu untuk bulan ini");
+
+    const monthNames = ["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
+    const monthLabel = `${monthNames[m - 1]} ${y}`;
+    const rows = allRows.map(r => `<tr><td style="padding:6px 12px;border:1px solid #ccc">${r.week}</td><td style="font-weight:bold;padding:6px 12px;border:1px solid #ccc">${r.day}</td><td style="padding:6px 12px;border:1px solid #ccc">${r.menu}</td><td style="padding:6px 12px;border:1px solid #ccc;text-align:center">${r.portions}</td></tr>`).join("");
+    const html = `<html><head><title>Menu SPPG - ${monthLabel}</title><style>body{font-family:sans-serif;padding:40px}table{border-collapse:collapse;width:100%}h1{margin-bottom:4px}p{color:#666}</style></head><body><h1>Menu SPPG MBG</h1><p>Bulan ${monthLabel}</p><table><tr><th style="background:#EAE4D8;padding:6px 12px;border:1px solid #ccc">Minggu</th><th style="background:#EAE4D8;padding:6px 12px;border:1px solid #ccc">Hari</th><th style="background:#EAE4D8;padding:6px 12px;border:1px solid #ccc">Menu</th><th style="background:#EAE4D8;padding:6px 12px;border:1px solid #ccc">Porsi</th></tr>${rows}</table><script>window.print()</script></body></html>`;
+    const w = window.open("", "_blank");
+    w.document.write(html);
+    w.document.close();
+  };
+
   return (
     <Layout>
       <div className="space-y-6" data-testid="menu-page">
@@ -104,6 +144,10 @@ export default function Page() {
           <div className="flex items-center gap-2 flex-wrap">
             <button onClick={()=>setShowConfig(!showConfig)} className="btn-outline text-sm"><Settings size={14}/> Konfigurasi</button>
             <div className="card-soft px-3 py-2 flex items-center gap-2"><Calendar size={14}/><input type="date" value={weekStart} onChange={(e)=>setWeekStart(mondayOf(e.target.value))} className="audit-ts text-sm bg-transparent"/></div>
+            <div className="flex items-center gap-2">
+              <input type="month" value={printMonth} onChange={e => setPrintMonth(e.target.value)} className="px-3 py-1.5 rounded-md border border-[#EAE4D8] bg-white text-xs" />
+              <button onClick={printMenuBulanan} className="btn-outline text-sm"><Printer size={14}/> Cetak Bulanan</button>
+            </div>
             <button onClick={printMenu} className="btn-outline text-sm"><Printer size={14}/> Cetak</button>
             <button data-testid="wa-menu" onClick={shareWA} className="btn-outline text-sm"><Share2 size={14}/> Bagikan WA</button>
           </div>

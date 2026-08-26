@@ -1,12 +1,13 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import Layout from "@/components/Layout";
 import { api } from "@/lib/api";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
 import { Save, Package, Search, Filter } from "lucide-react";
+import Pagination from "@/components/Pagination";
 
 export default function OpeningBalancesPage() {
   const { user, activeRole } = useAuth();
@@ -19,6 +20,10 @@ export default function OpeningBalancesPage() {
   const [saving, setSaving] = useState(false);
   const [search, setSearch] = useState("");
   const [filterCat, setFilterCat] = useState("");
+  const [page, setPage] = useState(1);
+  const perPage = 15;
+
+  useEffect(() => { setPage(1); }, [search, filterCat]);
 
   const canWrite = activeRole === "admin_apps" || activeRole === "admin_sppg";
 
@@ -92,11 +97,17 @@ export default function OpeningBalancesPage() {
     }
   };
 
-  const filtered = items.filter(i => {
+  const filtered = useMemo(() => items.filter(i => {
     if (search && !i.name.toLowerCase().includes(search.toLowerCase()) && !i.code.toLowerCase().includes(search.toLowerCase())) return false;
     if (filterCat && i.category !== filterCat) return false;
     return true;
-  });
+  }), [items, search, filterCat]);
+
+  const totalPages = Math.ceil(filtered.length / perPage);
+  const paginated = useMemo(() => {
+    const start = (page - 1) * perPage;
+    return filtered.slice(start, start + perPage);
+  }, [filtered, page]);
 
   const totalValue = filtered.reduce((sum, i) => sum + (balances[i.code]?.value || 0), 0);
 
@@ -164,7 +175,7 @@ export default function OpeningBalancesPage() {
           <>
           {/* Mobile Card View */}
           <div className="md:hidden space-y-3">
-            {filtered.map((item) => (
+            {paginated.map((item) => (
               <div key={item.id} className="card-soft p-4 space-y-3">
                 <div className="flex items-start justify-between">
                   <div>
@@ -209,7 +220,7 @@ export default function OpeningBalancesPage() {
                 </div>
               </div>
             ))}
-            {filtered.length === 0 && (
+                {paginated.length === 0 && (
               <div className="card-soft p-8 text-center text-[#5C5C5C]">Tidak ada data</div>
             )}
           </div>
@@ -230,7 +241,7 @@ export default function OpeningBalancesPage() {
                 </tr>
               </thead>
               <tbody>
-                {filtered.map((item) => (
+                {paginated.map((item) => (
                   <tr key={item.id} className="border-b border-[#EAE4D8] hover:bg-[#F9F6F0]">
                     <td className="px-4 py-2 font-mono text-xs">{item.code}</td>
                     <td className="px-4 py-2 font-medium">{item.name}</td>
@@ -265,7 +276,7 @@ export default function OpeningBalancesPage() {
                     </td>
                   </tr>
                 ))}
-                {filtered.length === 0 && (
+            {paginated.length === 0 && (
                   <tr>
                     <td colSpan={7} className="px-4 py-8 text-center text-[#5C5C5C]">Tidak ada data</td>
                   </tr>
@@ -274,6 +285,7 @@ export default function OpeningBalancesPage() {
             </table>
             </div>
           </div>
+          {totalPages > 1 && <div className="mt-4"><Pagination page={page} totalPages={totalPages} onPageChange={setPage} /></div>}
           </>
         )}
       </div>

@@ -6,6 +6,7 @@ import { api, formatErr } from "@/lib/api";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { Plus, Pencil, Trash2, Save, Filter } from "lucide-react";
+import Pagination from "@/components/Pagination";
 import { fmtIDR } from "@/lib/format";
 
 const ACCOUNT_CODES = [
@@ -47,6 +48,8 @@ export default function TransactionsPage() {
   const [form, setForm] = useState(EMPTY_FORM);
   const [filterAccount, setFilterAccount] = useState("");
   const [filterBP, setFilterBP] = useState("");
+  const [page, setPage] = useState(1);
+  const perPage = 15;
 
   const canEdit = activeRole === "admin_apps" || activeRole === "admin_sppg" || activeRole === "accountant";
 
@@ -65,6 +68,11 @@ export default function TransactionsPage() {
     if (filterBP) list = list.filter(t => t.buku_pembantu === filterBP);
     return list;
   }, [transaksi, filterAccount, filterBP]);
+
+  const paginated = useMemo(() => {
+    const start = (page - 1) * perPage;
+    return filtered.slice(start, start + perPage);
+  }, [filtered, page, perPage]);
 
   const totals = useMemo(() => {
     return filtered.reduce((acc, t) => ({
@@ -134,14 +142,14 @@ export default function TransactionsPage() {
         <div className="card-soft p-4 flex flex-wrap gap-3 items-end">
           <div>
             <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Kode Akun</label>
-            <select className="mt-1 px-3 py-2 rounded-md border border-[#EAE4D8] bg-white text-sm" value={filterAccount} onChange={e => setFilterAccount(e.target.value)}>
+            <select className="mt-1 px-3 py-2 rounded-md border border-[#EAE4D8] bg-white text-sm" value={filterAccount} onChange={e => { setFilterAccount(e.target.value); setPage(1); }}>
               <option value="">Semua</option>
               {ACCOUNT_CODES.map(a => <option key={a.code} value={a.code}>{a.code} - {a.name}</option>)}
             </select>
           </div>
           <div>
             <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Buku Pembantu</label>
-            <select className="mt-1 px-3 py-2 rounded-md border border-[#EAE4D8] bg-white text-sm" value={filterBP} onChange={e => setFilterBP(e.target.value)}>
+            <select className="mt-1 px-3 py-2 rounded-md border border-[#EAE4D8] bg-white text-sm" value={filterBP} onChange={e => { setFilterBP(e.target.value); setPage(1); }}>
               <option value="">Semua</option>
               {BUKU_PEMBANTU.map(b => <option key={b.value} value={b.value}>{b.label}</option>)}
             </select>
@@ -173,10 +181,10 @@ export default function TransactionsPage() {
           <>
           {/* Mobile Card View */}
           <div className="md:hidden space-y-3">
-            {filtered.length === 0 && (
+            {paginated.length === 0 && (
               <div className="card-soft p-12 text-center text-[#5C5C5C]">Belum ada transaksi.</div>
             )}
-            {filtered.map(t => (
+            {paginated.map(t => (
               <div key={t.id} className="card-soft p-4 space-y-3">
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
@@ -220,7 +228,7 @@ export default function TransactionsPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filtered.map(t => (
+                  {paginated.map(t => (
                     <tr key={t.id} className="border-b border-[#EAE4D8] last:border-0 hover:bg-[#F9F6F0]">
                       <td className="py-3 px-3">{t.transaction_date}</td>
                       <td className="py-3 px-3">
@@ -241,12 +249,16 @@ export default function TransactionsPage() {
                       )}
                     </tr>
                   ))}
-                  {filtered.length === 0 && <tr><td colSpan={canEdit ? 7 : 6} className="py-10 text-center text-[#5C5C5C]">Belum ada transaksi.</td></tr>}
+                  {paginated.length === 0 && <tr><td colSpan={canEdit ? 7 : 6} className="py-10 text-center text-[#5C5C5C]">Belum ada transaksi.</td></tr>}
                 </tbody>
               </table>
             </div>
           </div>
           </>
+        )}
+
+        {filtered.length > perPage && (
+          <Pagination page={page} totalPages={Math.ceil(filtered.length / perPage)} onPageChange={setPage} />
         )}
 
         {/* Form Modal */}

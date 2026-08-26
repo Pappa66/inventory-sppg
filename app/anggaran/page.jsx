@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { Plus, Pencil, Trash2, Save, Calculator, DollarSign, Users, Package } from "lucide-react";
 import { BENEFICIARY_TYPES, fmtIDR } from "@/lib/format";
+import Pagination from "@/components/Pagination";
 
 const EMPTY_FORM = {
   plan_date: "",
@@ -68,6 +69,10 @@ export default function Page() {
   const [editId, setEditId] = useState(null);
   const [form, setForm] = useState(EMPTY_FORM);
   const [filterDate, setFilterDate] = useState("");
+  const [page, setPage] = useState(1);
+  const perPage = 15;
+
+  useEffect(() => { setPage(1); }, [filterDate]);
 
   const canEdit = activeRole === "admin_apps" || activeRole === "admin_sppg" || activeRole === "kitchen_head" || activeRole === "accountant";
   const canDelete = activeRole === "admin_apps" || activeRole === "admin_sppg";
@@ -86,6 +91,12 @@ export default function Page() {
     if (filterDate) list = list.filter(a => a.plan_date === filterDate);
     return [...list].sort((a, b) => (a.plan_date || "").localeCompare(b.plan_date || ""));
   }, [data, filterDate]);
+
+  const totalPages = Math.ceil(filtered.length / perPage);
+  const paginated = useMemo(() => {
+    const start = (page - 1) * perPage;
+    return filtered.slice(start, start + perPage);
+  }, [filtered, page]);
 
   const totals = useMemo(() => {
     return filtered.reduce((acc, a) => ({
@@ -225,7 +236,7 @@ export default function Page() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filtered.map(a => {
+                  {paginated.map(a => {
                     const totalR = (a.bahan_rab || 0) + (a.ops_rab || 0) + (a.ins_rab || 0);
                     const totalA = (a.bahan_actual || 0) + (a.ops_actual || 0) + (a.ins_actual || 0);
                     const selisih = totalR - totalA;
@@ -252,12 +263,14 @@ export default function Page() {
                       </tr>
                     );
                   })}
-                  {filtered.length === 0 && <tr><td colSpan={canEdit ? 10 : 9} className="py-10 text-center text-[#5C5C5C]">Belum ada data anggaran.</td></tr>}
+                  {paginated.length === 0 && <tr><td colSpan={canEdit ? 10 : 9} className="py-10 text-center text-[#5C5C5C]">Belum ada data anggaran.</td></tr>}
                 </tbody>
               </table>
             </div>
           </div>
         )}
+
+        {totalPages > 1 && <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />}
 
         {/* Form Modal */}
         {openForm && (

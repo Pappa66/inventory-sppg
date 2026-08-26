@@ -5,6 +5,7 @@ import Layout from "@/components/Layout";
 import { api } from "@/lib/api";
 import { fmtIDR } from "@/lib/format";
 import { BookOpen, Filter } from "lucide-react";
+import Pagination from "@/components/Pagination";
 import { useAuth } from "@/contexts/AuthContext";
 
 const BUKU_PEMBANTU = [
@@ -21,6 +22,8 @@ export default function SubLedgerPage() {
   const [transaksi, setTransaksi] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("BANK");
+  const [page, setPage] = useState(1);
+  const perPage = 15;
 
   useEffect(() => {
     api.get("/transactions")
@@ -32,6 +35,11 @@ export default function SubLedgerPage() {
   const filteredByBP = useMemo(() => {
     return transaksi.filter(t => t.buku_pembantu === activeTab);
   }, [transaksi, activeTab]);
+
+  const paginated = useMemo(() => {
+    const start = (page - 1) * perPage;
+    return filteredByBP.slice(start, start + perPage);
+  }, [filteredByBP, page, perPage]);
 
   const totals = useMemo(() => {
     return filteredByBP.reduce((acc, t) => ({
@@ -79,7 +87,7 @@ export default function SubLedgerPage() {
             return (
               <button
                 key={bp.value}
-                onClick={() => setActiveTab(bp.value)}
+                onClick={() => { setActiveTab(bp.value); setPage(1); }}
                 className={`card-soft p-4 text-left transition-all ${activeTab === bp.value ? "ring-2" : "hover:bg-[#F9F6F0]"}`}
                 style={activeTab === bp.value ? { borderColor: bp.color, ringColor: bp.color } : {}}
               >
@@ -110,10 +118,10 @@ export default function SubLedgerPage() {
               </div>
             </div>
             <div className="md:hidden space-y-3 p-5">
-              {filteredByBP.length === 0 ? (
+              {paginated.length === 0 ? (
                 <div className="card-soft p-12 text-center text-[#5C5C5C]">Tidak ada data</div>
               ) : (
-                filteredByBP.map((t, i) => (
+                paginated.map((t, i) => (
                   <div key={i} className="card-soft p-4">
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-xs text-[#5C5C5C]">{t.transaction_date}</span>
@@ -140,7 +148,7 @@ export default function SubLedgerPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredByBP.map(t => (
+                  {paginated.map(t => (
                     <tr key={t.id} className="border-b border-[#EAE4D8] last:border-0 hover:bg-[#F9F6F0]">
                       <td className="py-3 px-4">{t.transaction_date}</td>
                       <td className="py-3 px-4">
@@ -151,13 +159,17 @@ export default function SubLedgerPage() {
                       <td className="py-3 px-4 text-right font-semibold text-[#C5533B]">{t.credit ? fmtIDR(t.credit) : "—"}</td>
                     </tr>
                   ))}
-                  {filteredByBP.length === 0 && (
+                  {paginated.length === 0 && (
                     <tr><td colSpan={5} className="py-10 text-center text-[#5C5C5C]">Tidak ada transaksi di buku ini.</td></tr>
                   )}
                 </tbody>
               </table>
             </div>
           </div>
+        )}
+
+        {filteredByBP.length > perPage && (
+          <Pagination page={page} totalPages={Math.ceil(filteredByBP.length / perPage)} onPageChange={setPage} />
         )}
       </div>
     </Layout>

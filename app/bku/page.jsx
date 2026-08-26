@@ -5,6 +5,7 @@ import Layout from "@/components/Layout";
 import { api } from "@/lib/api";
 import { fmtIDR } from "@/lib/format";
 import { ScrollText, Filter, Download } from "lucide-react";
+import Pagination from "@/components/Pagination";
 import { useAuth } from "@/contexts/AuthContext";
 
 const ACCOUNT_CODES = [
@@ -25,6 +26,8 @@ export default function BKUPage() {
   const [filterAccount, setFilterAccount] = useState("");
   const [filterDateStart, setFilterDateStart] = useState("");
   const [filterDateEnd, setFilterDateEnd] = useState("");
+  const [page, setPage] = useState(1);
+  const perPage = 20;
 
   useEffect(() => {
     api.get("/transactions")
@@ -50,6 +53,15 @@ export default function BKUPage() {
     }
     return groups;
   }, [filtered]);
+
+  const sortedEntries = useMemo(() => {
+    return Object.entries(groupedByAccount).sort(([a], [b]) => a.localeCompare(b));
+  }, [groupedByAccount]);
+
+  const paginatedEntries = useMemo(() => {
+    const start = (page - 1) * perPage;
+    return sortedEntries.slice(start, start + perPage);
+  }, [sortedEntries, page, perPage]);
 
   const accountTotals = useMemo(() => {
     const totals = {};
@@ -95,18 +107,18 @@ export default function BKUPage() {
         <div className="card-soft p-4 flex flex-wrap gap-3 items-end">
           <div>
             <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Kode Akun</label>
-            <select className="mt-1 px-3 py-2 rounded-md border border-[#EAE4D8] bg-white text-sm" value={filterAccount} onChange={e => setFilterAccount(e.target.value)}>
+            <select className="mt-1 px-3 py-2 rounded-md border border-[#EAE4D8] bg-white text-sm" value={filterAccount} onChange={e => { setFilterAccount(e.target.value); setPage(1); }}>
               <option value="">Semua</option>
               {ACCOUNT_CODES.map(a => <option key={a.code} value={a.code}>{a.code} - {a.name}</option>)}
             </select>
           </div>
           <div>
             <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Dari Tanggal</label>
-            <input type="date" className="mt-1 px-3 py-2 rounded-md border border-[#EAE4D8] bg-white text-sm" value={filterDateStart} onChange={e => setFilterDateStart(e.target.value)} />
+            <input type="date" className="mt-1 px-3 py-2 rounded-md border border-[#EAE4D8] bg-white text-sm" value={filterDateStart} onChange={e => { setFilterDateStart(e.target.value); setPage(1); }} />
           </div>
           <div>
             <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Sampai Tanggal</label>
-            <input type="date" className="mt-1 px-3 py-2 rounded-md border border-[#EAE4D8] bg-white text-sm" value={filterDateEnd} onChange={e => setFilterDateEnd(e.target.value)} />
+            <input type="date" className="mt-1 px-3 py-2 rounded-md border border-[#EAE4D8] bg-white text-sm" value={filterDateEnd} onChange={e => { setFilterDateEnd(e.target.value); setPage(1); }} />
           </div>
         </div>
 
@@ -132,7 +144,7 @@ export default function BKUPage() {
           <div className="card-soft p-6 sm:p-12 text-center"><div className="animate-spin w-8 h-8 border-2 border-[#4A7C59] border-t-transparent rounded-full mx-auto" /></div>
         ) : (
           <div className="space-y-4">
-            {Object.entries(groupedByAccount).sort(([a], [b]) => a.localeCompare(b)).map(([code, items]) => {
+            {paginatedEntries.map(([code, items]) => {
               const tot = accountTotals[code];
               return (
                 <div key={code} className="card-soft overflow-hidden">
@@ -205,10 +217,14 @@ export default function BKUPage() {
                 </div>
               );
             })}
-            {Object.keys(groupedByAccount).length === 0 && (
+            {paginatedEntries.length === 0 && (
               <div className="card-soft p-6 sm:p-12 text-center text-[#5C5C5C]">Belum ada transaksi.</div>
             )}
           </div>
+        )}
+
+        {sortedEntries.length > perPage && (
+          <Pagination page={page} totalPages={Math.ceil(sortedEntries.length / perPage)} onPageChange={setPage} />
         )}
       </div>
     </Layout>

@@ -11,12 +11,16 @@ import { getLogo } from "@/lib/logo";
 import { getSettings, renderLetterhead, todayIndo } from "@/lib/letterhead";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
+import Pagination from "@/components/Pagination";
 
 export default function StockRekapPage() {
   const { activeRole } = useAuth();
   const [lots, setLots] = useState([]);
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const perPage = 10;
+  const [exportMonth, setExportMonth] = useState("");
 
   useEffect(() => {
     Promise.all([
@@ -63,6 +67,12 @@ export default function StockRekapPage() {
     return Object.values(catMap).filter(c => c.items > 0);
   }, [lots, itemMap]);
 
+  const totalPages = Math.ceil(rekapByCategory.length / perPage);
+  const paginatedCategories = useMemo(() => {
+    const start = (page - 1) * perPage;
+    return rekapByCategory.slice(start, start + perPage);
+  }, [rekapByCategory, page]);
+
   const grandTotal = useMemo(() => {
     return rekapByCategory.reduce((acc, c) => ({
       items: acc.items + c.items,
@@ -73,24 +83,68 @@ export default function StockRekapPage() {
   }, [rekapByCategory]);
 
   const exportPDF = async () => {
+    let dataForExport = lots;
+    if (exportMonth) {
+      dataForExport = lots.filter(lot => {
+        const expiryMatch = lot.expiry_date && lot.expiry_date.startsWith(exportMonth);
+        const createdMatch = lot.created_at && lot.created_at.startsWith(exportMonth);
+        return expiryMatch || createdMatch;
+      });
+    }
+
+    const exportItemMap = {};
+    for (const i of items) exportItemMap[i.id] = i;
+
+    const exportCatMap = {};
+    for (const [code, info] of Object.entries(ITEM_CATEGORIES)) {
+      exportCatMap[code] = { code, label: info.label, color: info.color, items: 0, total_qty: 0, actual_qty: 0, total_value: 0, lot_count: 0 };
+    }
+    const exportLabelToCode = {};
+    for (const [code, info] of Object.entries(ITEM_CATEGORIES)) {
+      exportLabelToCode[info.label.toLowerCase()] = code;
+      exportLabelToCode[code.toLowerCase()] = code;
+    }
+    for (const lot of dataForExport) {
+      const item = exportItemMap[lot.item_id];
+      if (!item) continue;
+      const raw = (item.category || "").toLowerCase();
+      const code = exportLabelToCode[raw] || item.category;
+      const cat = exportCatMap[code] || exportCatMap[raw];
+      if (!cat) continue;
+      cat.items += 1;
+      cat.total_qty += lot.quantity || 0;
+      cat.actual_qty += lot.actual_quantity || lot.quantity || 0;
+      cat.total_value += (lot.actual_quantity || lot.quantity || 0) * (item.price_per_unit || 0);
+      cat.lot_count += 1;
+    }
+    const exportRekap = Object.values(exportCatMap).filter(c => c.items > 0);
+    const exportGrand = exportRekap.reduce((acc, c) => ({
+      items: acc.items + c.items,
+      total_qty: acc.total_qty + c.total_qty,
+      actual_qty: acc.actual_qty + c.actual_qty,
+      total_value: acc.total_value + c.total_value,
+    }), { items: 0, total_qty: 0, actual_qty: 0, total_value: 0 });
+
     const doc = new jsPDF();
     const [logo, settings] = await Promise.all([getLogo(), getSettings()]);
     const titleY = renderLetterhead(doc, settings, logo);
     doc.setFontSize(14);
-    doc.text("STOK BARANG (REKAPITULASI)", 14, titleY);
+    const titleText = exportMonth ? `STOK BARANG (REKAPITULASI) — Bulan ${exportMonth}` : "STOK BARANG (REKAPITULASI)";
+    doc.text(titleText, 14, titleY);
     doc.setFontSize(9);
     doc.text(`Dicetak: ${todayIndo()}`, 14, titleY + 6);
 
     autoTable(doc, {
       startY: titleY + 12,
       head: [["Kategori", "Jumlah Item", "Total Qty", "Qty Aktual", "Total Nilai"]],
-      body: rekapByCategory.map(c => [
+      body: exportRekap.map(c => [
         `${c.code} - ${c.label}`, c.items, c.total_qty, c.actual_qty, fmtIDR(c.total_value)
       ]),
-      foot: [["TOTAL", grandTotal.items, grandTotal.total_qty, grandTotal.actual_qty, fmtIDR(grandTotal.total_value)]],
+      foot: [["TOTAL", exportGrand.items, exportGrand.total_qty, exportGrand.actual_qty, fmtIDR(exportGrand.total_value)]],
     });
 
-    doc.save(`stock-rekap-${new Date().toISOString().slice(0,10)}.pdf`);
+    const suffix = exportMonth ? `-${exportMonth}` : `-${new Date().toISOString().slice(0,10)}`;
+    doc.save(`stock-rekap${suffix}.pdf`);
     toast.success("PDF berhasil diunduh");
   };
 
@@ -113,7 +167,10 @@ export default function StockRekapPage() {
             <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold">Stock Barang (Rekap)</h1>
             <p className="text-[#5C5C5C] mt-1">Stock_Brg (R) - Rekapitulasi per kategori</p>
           </div>
-          <button onClick={exportPDF} className="btn-outline flex items-center gap-2"><Download size={14}/> Export PDF</button>
+          <div className="flex items-center gap-2">
+            <input type="month" value={exportMonth} onChange={e => setExportMonth(e.target.value)} className="px-3 py-1.5 rounded-md border border-[#EAE4D8] bg-white text-xs" />
+            <button onClick={exportPDF} className="btn-outline text-xs"><Download size={14} /> Export PDF</button>
+          </div>
         </div>
 
         {/* Grand Total */}
@@ -139,8 +196,9 @@ export default function StockRekapPage() {
         {loading ? (
           <div className="card-soft p-12 text-center"><div className="animate-spin w-8 h-8 border-2 border-[#4A7C59] border-t-transparent rounded-full mx-auto" /></div>
         ) : (
+          <>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {rekapByCategory.map(c => (
+            {paginatedCategories.map(c => (
               <div key={c.code} className="card-soft overflow-hidden">
                 <div className="px-5 py-3 border-b border-[#EAE4D8] flex items-center justify-between">
                   <div className="flex items-center gap-2">
@@ -170,6 +228,8 @@ export default function StockRekapPage() {
               </div>
             ))}
           </div>
+          {totalPages > 1 && <div className="mt-4"><Pagination page={page} totalPages={totalPages} onPageChange={setPage} /></div>}
+          </>
         )}
       </div>
     </Layout>
