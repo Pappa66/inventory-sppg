@@ -22,17 +22,6 @@ export default function SubLedgerPage() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("BANK");
 
-  if (!["admin_apps", "admin_sppg", "accountant"].includes(activeRole)) {
-    return (
-      <Layout>
-        <div className="space-y-6">
-          <h1 className="font-display text-4xl font-bold">Akses Dibatasi</h1>
-          <p className="text-[#5C5C5C]">Anda tidak memiliki akses ke halaman ini.</p>
-        </div>
-      </Layout>
-    );
-  }
-
   useEffect(() => {
     api.get("/transactions")
       .then(r => setTransaksi(r.data || []))
@@ -63,6 +52,17 @@ export default function SubLedgerPage() {
     }
     return result;
   }, [transaksi]);
+
+  if (!["admin_apps", "admin_sppg", "accountant"].includes(activeRole)) {
+    return (
+      <Layout>
+        <div className="space-y-6">
+          <h1 className="font-display text-4xl font-bold">Akses Dibatasi</h1>
+          <p className="text-[#5C5C5C]">Anda tidak memiliki akses ke halaman ini.</p>
+        </div>
+      </Layout>
+    );
+  }
 
   return (
     <Layout>

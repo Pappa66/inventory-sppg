@@ -18,17 +18,6 @@ export default function StockRekapPage() {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  if (!["admin_apps", "admin_sppg", "kitchen_head", "head_chef", "accountant"].includes(activeRole)) {
-    return (
-      <Layout>
-        <div className="space-y-6">
-          <h1 className="font-display text-4xl font-bold">Akses Dibatasi</h1>
-          <p className="text-[#5C5C5C]">Anda tidak memiliki akses ke halaman ini.</p>
-        </div>
-      </Layout>
-    );
-  }
-
   useEffect(() => {
     Promise.all([
       api.get("/stock-lots"),
@@ -96,6 +85,17 @@ export default function StockRekapPage() {
     doc.save(`stock-rekap-${new Date().toISOString().slice(0,10)}.pdf`);
     toast.success("PDF berhasil diunduh");
   };
+
+  if (!["admin_apps", "admin_sppg", "kitchen_head", "head_chef", "accountant"].includes(activeRole)) {
+    return (
+      <Layout>
+        <div className="space-y-6">
+          <h1 className="font-display text-4xl font-bold">Akses Dibatasi</h1>
+          <p className="text-[#5C5C5C]">Anda tidak memiliki akses ke halaman ini.</p>
+        </div>
+      </Layout>
+    );
+  }
 
   return (
     <Layout>

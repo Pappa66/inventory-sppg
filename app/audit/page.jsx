@@ -43,17 +43,6 @@ export default function Page() {
   const [page, setPage] = useState(1);
   const perPage = 10;
 
-  if (!["admin_apps", "admin_sppg", "accountant", "kitchen_head"].includes(activeRole)) {
-    return (
-      <Layout>
-        <div className="space-y-6">
-          <h1 className="font-display text-4xl font-bold">Akses Dibatasi</h1>
-          <p className="text-[#5C5C5C]">Anda tidak memiliki akses ke halaman ini.</p>
-        </div>
-      </Layout>
-    );
-  }
-
   useEffect(() => { setLoading(true); api.get("/audit").then(({data})=>{ setRows(data); setPage(1); }).catch(e => { console.error(e); setRows([]); }).finally(() => setLoading(false)); }, []);
 
   const shown = rows.filter(r => {
@@ -69,10 +58,21 @@ export default function Page() {
     return shown.slice(start, start + perPage);
   }, [shown, page]);
 
+  if (!["admin_apps", "admin_sppg", "accountant", "kitchen_head"].includes(activeRole)) {
+    return (
+      <Layout>
+        <div className="space-y-6">
+          <h1 className="font-display text-4xl font-bold">Akses Dibatasi</h1>
+          <p className="text-[#5C5C5C]">Anda tidak memiliki akses ke halaman ini.</p>
+        </div>
+      </Layout>
+    );
+  }
+
   return (
     <Layout>
       <div className="space-y-6" data-testid="audit-page">
-        <div className="flex items-center justify-between flex-wrap gap-3">
+        <div className="flex items-center justify-between">
           <div>
             <h1 className="font-display text-4xl font-bold">Audit Trail</h1>
             <p className="text-[#5C5C5C] mt-1">Format flat & human-readable. Siapa, apa, kapan — akurasi detik. Tidak ada penghapusan.</p>

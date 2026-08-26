@@ -14,19 +14,6 @@ import { useAuth } from "@/contexts/AuthContext";
 export default function Page() {
   const { activeRole } = useAuth();
 
-  if (!["admin_apps", "admin_sppg"].includes(activeRole)) {
-    return (
-      <Layout>
-        <div className="flex items-center justify-center min-h-[50vh]">
-          <div className="text-center">
-            <h1 className="font-display text-2xl font-bold text-[#5C5C5C]">Akses Dibatasi</h1>
-            <p className="text-[#5C5C5C] mt-2">Anda tidak memiliki izin untuk mengakses halaman ini.</p>
-          </div>
-        </div>
-      </Layout>
-    );
-  }
-
   const [users, setUsers] = useState([]);
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ email: "", name: "", role: "driver", password: "" });
@@ -64,6 +51,19 @@ export default function Page() {
     const start = (page - 1) * perPage;
     return users.slice(start, start + perPage);
   }, [users, page]);
+
+  if (!["admin_apps", "admin_sppg"].includes(activeRole)) {
+    return (
+      <Layout>
+        <div className="flex items-center justify-center min-h-[50vh]">
+          <div className="text-center">
+            <h1 className="font-display text-2xl font-bold text-[#5C5C5C]">Akses Dibatasi</h1>
+            <p className="text-[#5C5C5C] mt-2">Anda tidak memiliki izin untuk mengakses halaman ini.</p>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
 
   return (
     <Layout>

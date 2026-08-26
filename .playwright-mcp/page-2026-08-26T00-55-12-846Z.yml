@@ -1,0 +1,80 @@
+- generic [ref=e1]:
+  - generic [ref=e2]:
+    - generic [ref=e8]:
+      - heading "SPPG · MBG" [level=1] [ref=e13]
+      - paragraph [ref=e14]: Inventory & ProcurementMakan Bergizi Gratis
+      - generic [ref=e15]:
+        - generic [ref=e16]: Manajemen Stok & Inventaris
+        - generic [ref=e22]: Audit Trail Akurat-Detik
+        - generic [ref=e28]: 14 Peran Pengguna
+        - generic [ref=e35]: Laporan Siap BPK
+    - generic [ref=e41]:
+      - generic [ref=e42]:
+        - button "Masuk Sebagai Role Pilih role untuk demo cepat" [active] [ref=e43] [cursor=pointer]:
+          - generic [ref=e48]:
+            - generic [ref=e49]: Masuk Sebagai Role
+            - generic [ref=e50]: Pilih role untuk demo cepat
+        - generic [ref=e70]:
+          - button "Admin Aplikasi Akses penuh ke seluruh sistem" [ref=e71] [cursor=pointer]:
+            - generic [ref=e73]:
+              - generic [ref=e74]: Admin Aplikasi
+              - generic [ref=e75]: Akses penuh ke seluruh sistem
+          - button "Admin SPPG Kelola operasional satu SPPG" [ref=e78] [cursor=pointer]:
+            - generic [ref=e80]:
+              - generic [ref=e81]: Admin SPPG
+              - generic [ref=e82]: Kelola operasional satu SPPG
+          - button "Akuntan Pembukuan & verifikasi" [ref=e85] [cursor=pointer]:
+            - generic [ref=e87]:
+              - generic [ref=e88]: Akuntan
+              - generic [ref=e89]: Pembukuan & verifikasi
+          - button "Kepala SPPG Pengawasan dapur & menu" [ref=e92] [cursor=pointer]:
+            - generic [ref=e94]:
+              - generic [ref=e95]: Kepala SPPG
+              - generic [ref=e96]: Pengawasan dapur & menu
+          - button "Head Chef Buat resep & susun menu" [ref=e99] [cursor=pointer]:
+            - generic [ref=e101]:
+              - generic [ref=e102]: Head Chef
+              - generic [ref=e103]: Buat resep & susun menu
+          - button "Asisten Lapangan Pembelian & pengiriman" [ref=e106] [cursor=pointer]:
+            - generic [ref=e108]:
+              - generic [ref=e109]: Asisten Lapangan
+              - generic [ref=e110]: Pembelian & pengiriman
+          - button "Ahli Gizi Review gizi & setujui menu" [ref=e113] [cursor=pointer]:
+            - generic [ref=e115]:
+              - generic [ref=e116]: Ahli Gizi
+              - generic [ref=e117]: Review gizi & setujui menu
+          - button "Driver Antar makanan ke tujuan" [ref=e120] [cursor=pointer]:
+            - generic [ref=e122]:
+              - generic [ref=e123]: Driver
+              - generic [ref=e124]: Antar makanan ke tujuan
+          - button "Tenaga Persiapan Siapkan bahan sebelum masak" [ref=e127] [cursor=pointer]:
+            - generic [ref=e129]:
+              - generic [ref=e130]: Tenaga Persiapan
+              - generic [ref=e131]: Siapkan bahan sebelum masak
+          - button "Tenaga Masak Masak sesuai resep" [ref=e134] [cursor=pointer]:
+            - generic [ref=e136]:
+              - generic [ref=e137]: Tenaga Masak
+              - generic [ref=e138]: Masak sesuai resep
+          - button "Tenaga Pemorsian Bagi makanan ke ompreng" [ref=e141] [cursor=pointer]:
+            - generic [ref=e143]:
+              - generic [ref=e144]: Tenaga Pemorsian
+              - generic [ref=e145]: Bagi makanan ke ompreng
+          - button "Petugas Kebersihan Jaga kebersihan dapur" [ref=e148] [cursor=pointer]:
+            - generic [ref=e150]:
+              - generic [ref=e151]: Petugas Kebersihan
+              - generic [ref=e152]: Jaga kebersihan dapur
+          - button "Pencuci Ompreng Cuci & steril ompreng" [ref=e155] [cursor=pointer]:
+            - generic [ref=e157]:
+              - generic [ref=e158]: Pencuci Ompreng
+              - generic [ref=e159]: Cuci & steril ompreng
+      - generic [ref=e53]:
+        - heading "Login Manual" [level=2] [ref=e58]
+        - generic [ref=e59]:
+          - text: Email
+          - textbox "email@domain.com" [ref=e60]
+        - generic [ref=e61]:
+          - text: Password
+          - textbox "••••••••" [ref=e62]
+        - button "Masuk" [ref=e63] [cursor=pointer]
+  - region "Notifications alt+T"
+  - alert [ref=e67]
