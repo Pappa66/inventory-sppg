@@ -17,3 +17,6 @@ PROPOSAL.md
 DOKUMENTASI.md
 PANDUAN.md
 .docs/
+
+# Excel lock files
+.~*
