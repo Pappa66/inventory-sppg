@@ -558,12 +558,12 @@ const GUIDES = {
           {
             title: "Jenis Laporan dan Kapan Digunakan",
             content: [
-              { code: "LR", name: "Laporan Realisasi", use: "Membandingkan RAB vs Aktual per kategori. Digunakan untuk rapat pertanggungjawaban dan evaluasi anggaran. Menunjukkan apakah pengeluaran sesuai rencana." },
-              { code: "LPA", name: "Laporan Pertanggungjawaban", use: "Laporan detail penerimaan dan pengeluaran dana. Wajib diserahkan setiap 2 pekan ke dinas terkait. Ini adalah laporan utama untuk pertanggungjawaban." },
-              { code: "Catatan", name: "Catatan Harian", use: "Daftar semua transaksi harian secara chronologis. Berguna untuk audit trail dan verifikasi harian." },
-              { code: "DafNom", name: "Daftar Nomor", use: "Daftar nomor urut transaksi dengan detail. Digunakan untuk pencarian transaksi spesifik berdasarkan nomor." },
-              { code: "SPTJ", name: "Surat Pernyataan Pertanggungjawaban", use: "Surat resmi pernyataan pertanggungjawaban penggunaan dana. Ditandatangani oleh kepala SPPG dan akuntan." },
-              { code: "BAPSD", name: "Berita Acara Pemeriksaan Saldo dan Data", use: "Dokumen pemeriksaan saldo akhir periode. Digunakan saat audit internal atau eksternal." },
+              { code: "LR", name: "Laporan Resume", use: "Ringkasan pemasukan vs pengeluaran per kode akun. Menunjukkan posisi keuangan SPPG secara keseluruhan. Cocok untuk rapat evaluasi anggaran." },
+              { code: "LPA", name: "Laporan 2 Pekanan", use: "Laporan realisasi anggaran 2 pekan: perbandingan RAB vs Aktual untuk bahan, operasional, dan insentif. Wajib diserahkan ke dinas terkait." },
+              { code: "Catatan", name: "Catatan Harian", use: "Daftar pengeluaran harian yang dikelompokkan per tanggal. Menampilkan kode akun, keterangan, dan nominal kredit. Berguna untuk audit trail harian." },
+              { code: "DafNom", name: "Daftar Nominatif Insentif Relawan", use: "Daftar nama relawan beserta jumlah insentif per porsi. Insentif dihitung dari jumlah porsi yang didistribusikan × insentif per porsi (konfigurasi global)." },
+              { code: "SPTJ", name: "Surat Pernyataan Pertanggungjawaban", use: "Surat resmi pernyataan pertanggungjawaban penggunaan dana. Ditandatangani oleh Kepala SPPG dan Akuntan. Memuat total penerimaan, pengeluaran, dan sisa saldo." },
+              { code: "BAPSD", name: "Berita Acara Penyaluran", use: "Dokumen resmi penyaluran makanan siap distribusi. Memuat tanggal, lokasi, jumlah porsi, tujuan pengiriman, dan driver. Ditandatangani saat distribusi." },
             ],
           },
           {

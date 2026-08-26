@@ -175,7 +175,7 @@ export default function Page() {
                   {Object.entries(ROLE_LABELS).map(([k,v])=><option key={k} value={k}>{v}</option>)}
                 </select>
                 <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Password awal</label>
-                <input data-testid="new-user-password" required minLength={6} type="text" className="px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={form.password} onChange={(e)=>setForm({...form, password:e.target.value})}/>
+                <input data-testid="new-user-password" required minLength={6} type="password" className="px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={form.password} onChange={(e)=>setForm({...form, password:e.target.value})}/>
               </div>
               <div className="flex justify-end gap-2 mt-5">
                 <button type="button" onClick={()=>setOpen(false)} className="btn-ghost">Batal</button>
@@ -198,7 +198,7 @@ export default function Page() {
                   {Object.entries(ROLE_LABELS).map(([k,v])=><option key={k} value={k}>{v}</option>)}
                 </select>
                 <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Password Baru (kosongkan jika tidak ubah)</label>
-                <input minLength={6} type="text" placeholder="Minimal 6 karakter" className="px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={editForm.password} onChange={(e)=>setEditForm({...editForm, password:e.target.value})}/>
+                <input minLength={6} type="password" placeholder="Minimal 6 karakter" className="px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={editForm.password} onChange={(e)=>setEditForm({...editForm, password:e.target.value})}/>
               </div>
               <div className="flex justify-end gap-2 mt-5">
                 <button type="button" onClick={()=>setEditingUser(null)} className="btn-ghost">Batal</button>

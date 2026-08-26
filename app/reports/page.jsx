@@ -365,7 +365,7 @@ export default function ReportsPage() {
           <label className="text-xs uppercase tracking-widest text-[#5C5C5C] font-semibold">Filter Tanggal Export:</label>
           <input type="date" value={exportFrom} onChange={e => setExportFrom(e.target.value)} className="px-3 py-1.5 rounded-md border border-[#EAE4D8] bg-white text-sm" />
           <span className="text-[#5C5C5C]">s/d</span>
-          <input type="date" value={exportTo} onChange={e => setExportTo(e.target.value)} className="px-3 py-3 rounded-md border border-[#EAE4D8] bg-white text-sm" />
+          <input type="date" value={exportTo} onChange={e => setExportTo(e.target.value)} className="px-3 py-1.5 rounded-md border border-[#EAE4D8] bg-white text-sm" />
           {(exportFrom || exportTo) && (
             <button onClick={() => { setExportFrom(""); setExportTo(""); }} className="btn-ghost text-xs">Reset</button>
           )}
@@ -477,6 +477,13 @@ export default function ReportsPage() {
                     </div>
                     <div className="overflow-x-auto">
                     <table className="w-full text-sm" style={{ minWidth: "400px" }}>
+                      <thead>
+                        <tr className="border-b border-[#EAE4D8] text-xs uppercase text-[#5C5C5C]">
+                          <th className="py-2 px-4 text-left">Kode</th>
+                          <th className="py-2 px-4 text-left">Keterangan</th>
+                          <th className="py-2 px-4 text-right">Kredit (Rp)</th>
+                        </tr>
+                      </thead>
                       <tbody>
                         {data.items.map(t => (
                           <tr key={t.id} className="border-b border-[#EAE4D8] last:border-0">
@@ -593,7 +600,13 @@ export default function ReportsPage() {
             )}
 
             {/* BAPSD Tab */}
-            {activeTab === "bapsd" && (
+            {activeTab === "bapsd" && (() => {
+              const today = new Date().toISOString().slice(0, 10);
+              const todayPlans = deliveryPlans.filter(p => p.plan_date === today);
+              const bapsdPortions = todayPlans.reduce((sum, p) => sum + (p.delivery_plan_items || []).reduce((s, item) => s + (item.portions || 0), 0), 0);
+              const bapsdDestinations = todayPlans.reduce((sum, p) => sum + (p.delivery_plan_items || []).length, 0);
+              const bapsdDrivers = new Set(todayPlans.map(p => p.delivery_assignments?.[0]?.driver_id).filter(Boolean)).size;
+              return (
               <div className="space-y-4">
                 <div className="bg-white border border-[#EAE4D8] rounded-xl shadow-sm max-w-[700px] mx-auto">
                    <div className="p-4 sm:p-8 md:p-12">
@@ -635,9 +648,9 @@ export default function ReportsPage() {
                           {[
                             ["1", "Tanggal Penyaluran", todayIndo()],
                             ["2", "Lokasi / Tujuan", settings.sppg_address || "___________________"],
-                            ["3", "Total Porsi Didistribusikan", "________ porsi"],
-                            ["4", "Jumlah Tujuan Pengiriman", "________ lokasi"],
-                            ["5", "Jumlah Driver Pengantar", "________ orang"],
+                            ["3", "Total Porsi Didistribusikan", `${bapsdPortions} porsi`],
+                            ["4", "Jumlah Tujuan Pengiriman", `${bapsdDestinations} lokasi`],
+                            ["5", "Jumlah Driver Pengantar", `${bapsdDrivers} orang`],
                             ["6", "Waktu Distribusi", "08:00 — 11:00 WIB"],
                           ].map(([no, uraian, ket], i) => (
                             <tr key={i} className={i % 2 === 1 ? "bg-[#F9F6F0]" : ""}>
@@ -679,7 +692,8 @@ export default function ReportsPage() {
                 </div>
                 <button onClick={cetakBAPSD} className="btn-outline flex items-center gap-2"><Printer size={14}/> Cetak BAPSD (PDF)</button>
               </div>
-            )}
+              );
+            })()}
           </>
         )}
       </div>

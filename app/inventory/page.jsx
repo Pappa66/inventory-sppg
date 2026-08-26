@@ -90,6 +90,7 @@ export default function Page() {
   const submitTaken = async (e) => {
     e.preventDefault();
     if (takenForm.quantity <= 0) return toast.error("Jumlah harus lebih dari 0");
+    if (takenForm.quantity > openTaken.actual_quantity) return toast.error(`Jumlah melebihi stok tersedia (${openTaken.actual_quantity} ${openTaken.unit})`);
     try {
       await api.post("/stock-taken", {
         lot_id: openTaken.id,

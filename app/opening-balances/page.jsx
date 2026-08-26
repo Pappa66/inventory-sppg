@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import Layout from "@/components/Layout";
 import { api } from "@/lib/api";
+import { fmtIDR, ITEM_CATEGORIES } from "@/lib/format";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
@@ -140,7 +141,7 @@ export default function OpeningBalancesPage() {
           </select>
           <div className="flex-1" />
           <div className="text-sm text-[#5C5C5C]">
-            Total: <span className="font-bold">Rp {totalValue.toLocaleString("id-ID")}</span>
+            Total: <span className="font-bold">{fmtIDR(totalValue)}</span>
           </div>
         </div>
 
@@ -214,7 +215,7 @@ export default function OpeningBalancesPage() {
                         onChange={e => handleChange(item.code, "value", e.target.value)}
                       />
                     ) : (
-                      <span className="block text-right font-medium">Rp {(balances[item.code]?.value || 0).toLocaleString("id-ID")}</span>
+                      <span className="block text-right font-medium">{fmtIDR(balances[item.code]?.value || 0)}</span>
                     )}
                   </div>
                 </div>
@@ -246,7 +247,7 @@ export default function OpeningBalancesPage() {
                     <td className="px-4 py-2 font-mono text-xs">{item.code}</td>
                     <td className="px-4 py-2 font-medium">{item.name}</td>
                     <td className="px-4 py-2">
-                      <span className="text-[10px] px-2 py-0.5 rounded bg-[#EAE4D8]">{item.category}</span>
+                      <span className="text-[10px] px-2 py-0.5 rounded bg-[#EAE4D8]">{ITEM_CATEGORIES[item.category]?.label || item.category}</span>
                     </td>
                     <td className="px-4 py-2 text-[#5C5C5C]">{item.unit}</td>
                     <td className="px-4 py-2 text-[#5C5C5C]">{item.zone}</td>
@@ -271,7 +272,7 @@ export default function OpeningBalancesPage() {
                           onChange={e => handleChange(item.code, "value", e.target.value)}
                         />
                       ) : (
-                        <span>Rp {(balances[item.code]?.value || 0).toLocaleString("id-ID")}</span>
+                        <span>{fmtIDR(balances[item.code]?.value || 0)}</span>
                       )}
                     </td>
                   </tr>

@@ -135,7 +135,7 @@ export default function Page() {
       })();
       const dayKeys = ["mon","tue","wed","thu","fri"];
       const dayOfWeek = new Date().getDay();
-      const todayKey = dayKeys[dayOfWeek - 1];
+      const todayKey = dayOfWeek >= 1 && dayOfWeek <= 5 ? dayKeys[dayOfWeek - 1] : null;
       api.get(`/menus?week_start=${weekStart}`)
         .then(({ data }) => {
           const todayMenus = (data || []).filter(m => m.day === todayKey);

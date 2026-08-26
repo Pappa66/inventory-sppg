@@ -71,7 +71,7 @@ export default function BKUPage() {
       totals[code] = items.reduce((acc, t) => {
         const debit = acc.debit + (t.debit || 0);
         const credit = acc.credit + (t.credit || 0);
-        const isCost = code.startsWith("2") || code.startsWith("3");
+        const isCost = code.startsWith("2");
         return { debit, credit, saldo: isCost ? credit - debit : debit - credit };
       }, { debit: 0, credit: 0, saldo: 0 });
     }

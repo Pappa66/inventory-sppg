@@ -59,20 +59,23 @@ export default function Page() {
             const st = MENU_STATUS[m.status||"DRAFT"];
             const dayLabel = DAYS.find(d=>d.key===m.day)?.label || m.day;
             const p = m.portions || 1;
-            const totals = (m.recipes||[]).reduce((acc, r) => ({
-              calories_kcal: acc.calories_kcal + (r.calories_kcal||0) * p,
-              protein_g: acc.protein_g + (r.protein_g||0) * p,
-              carbs_g: acc.carbs_g + (r.carbs_g||0) * p,
-              fats_g: acc.fats_g + (r.fats_g||0) * p,
-              sodium_mg: acc.sodium_mg + (r.sodium_mg||0) * p,
-            }), { calories_kcal:0, protein_g:0, carbs_g:0, fats_g:0, sodium_mg:0 });
+            const totals = (m.recipes||[]).reduce((acc, r) => {
+              const servings = r.servings || 1;
+              return {
+                calories_kcal: acc.calories_kcal + ((r.calories_kcal||0) / servings) * p,
+                protein_g: acc.protein_g + ((r.protein_g||0) / servings) * p,
+                carbs_g: acc.carbs_g + ((r.carbs_g||0) / servings) * p,
+                fats_g: acc.fats_g + ((r.fats_g||0) / servings) * p,
+                sodium_mg: acc.sodium_mg + ((r.sodium_mg||0) / servings) * p,
+              };
+            }, { calories_kcal:0, protein_g:0, carbs_g:0, fats_g:0, sodium_mg:0 });
             const allergens = Array.from(new Set((m.recipes||[]).flatMap(r => r.allergens||[])));
             return (
               <div key={m.id} className="card-soft p-4" data-testid={`approval-card-${m.id}`}>
                 <div className="flex items-center justify-between">
                   <div>
                     <div className="font-display font-bold text-lg">{dayLabel}</div>
-                    <div className="text-xs audit-ts text-[#5C5C5C]">Minggu {m.week_start} · {m.portions} porsi</div>
+                    <div className="text-xs text-[#5C5C5C]">Minggu {m.week_start ? new Date(m.week_start).toLocaleDateString("id-ID",{day:"numeric",month:"short",year:"numeric"}) : "—"} · {m.portions} porsi</div>
                   </div>
                   <span className="role-pill" style={{background:`${st.color}1A`, color:st.color}}>{st.label}</span>
                 </div>
