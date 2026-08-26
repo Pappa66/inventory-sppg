@@ -119,8 +119,40 @@ export default function Page() {
     BUMIL_BUSUI: { qty: 0, photo: null },
   });
   const [photos, setPhotos] = useState({});
+  const [menuTargets, setMenuTargets] = useState(null);
 
   useEffect(() => { setForm(p => ({ ...p, task_date: selectedDate })); }, [selectedDate]);
+
+  useEffect(() => {
+    if (isPemorsian) {
+      const weekStart = (() => {
+        const d = new Date();
+        const day = d.getDay();
+        const diff = (day === 0 ? -6 : 1) - day;
+        d.setDate(d.getDate() + diff);
+        d.setHours(0, 0, 0, 0);
+        return d.toISOString().slice(0, 10);
+      })();
+      const dayKeys = ["mon","tue","wed","thu","fri"];
+      const dayOfWeek = new Date().getDay();
+      const todayKey = dayKeys[dayOfWeek - 1];
+      api.get(`/menus?week_start=${weekStart}`)
+        .then(({ data }) => {
+          const todayMenus = (data || []).filter(m => m.day === todayKey);
+          const targets = { BALITA: 0, PORTION_SMALL: 0, PORTION_LARGE: 0, BUMIL_BUSUI: 0 };
+          for (const m of todayMenus) {
+            const cat = m.menu_category;
+            if (cat && targets[cat] !== undefined) {
+              targets[cat] += m.portions || 0;
+            } else {
+              targets.PORTION_LARGE += m.portions || 0;
+            }
+          }
+          setMenuTargets(targets);
+        })
+        .catch(() => {});
+    }
+  }, [isPemorsian]);
 
   const load = useCallback(() => {
     setLoading(true);
@@ -240,7 +272,21 @@ export default function Page() {
             <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold">{cfg.title}</h1>
             <p className="text-[#5C5C5C] mt-1">{cfg.desc}</p>
           </div>
-          <button onClick={() => { setForm({ task_date: selectedDate, description: "" }); setOmpreng({ BALITA: { qty: 0, photo: null }, PORTION_SMALL: { qty: 0, photo: null }, PORTION_LARGE: { qty: 0, photo: null }, BUMIL_BUSUI: { qty: 0, photo: null } }); setPhotos({}); setOpen(true); }} className="btn-primary">
+          <button onClick={() => {
+            setForm({ task_date: selectedDate, description: "" });
+            if (menuTargets) {
+              setOmpreng({
+                BALITA: { qty: menuTargets.BALITA || 0, photo: null },
+                PORTION_SMALL: { qty: menuTargets.PORTION_SMALL || 0, photo: null },
+                PORTION_LARGE: { qty: menuTargets.PORTION_LARGE || 0, photo: null },
+                BUMIL_BUSUI: { qty: menuTargets.BUMIL_BUSUI || 0, photo: null },
+              });
+            } else {
+              setOmpreng({ BALITA: { qty: 0, photo: null }, PORTION_SMALL: { qty: 0, photo: null }, PORTION_LARGE: { qty: 0, photo: null }, BUMIL_BUSUI: { qty: 0, photo: null } });
+            }
+            setPhotos({});
+            setOpen(true);
+          }} className="btn-primary">
             <UtensilsCrossed size={16} /> Input Tugas
           </button>
         </div>
@@ -349,6 +395,11 @@ export default function Page() {
                 {isPemorsian ? (
                   <div>
                     <label className="text-xs uppercase tracking-widest text-[#5C5C5C] font-semibold mb-2 block">Ompreng per Kategori Penerima</label>
+                    {menuTargets && (
+                      <p className="text-xs text-[#4A7C59] mb-2 bg-[#4A7C59]/10 px-3 py-1.5 rounded-md">
+                        Target dari menu hari ini: BALITA {menuTargets.BALITA || 0} · Porsi Kecil {menuTargets.PORTION_SMALL || 0} · Porsi Besar {menuTargets.PORTION_LARGE || 0} · Bumil/Busui {menuTargets.BUMIL_BUSUI || 0}
+                      </p>
+                    )}
                     <div className="space-y-3">
                       {CATEGORIES.map((cat) => (
                         <div key={cat.key} className="border border-[#EAE4D8] rounded-lg p-3 bg-[#F9F6F0]">

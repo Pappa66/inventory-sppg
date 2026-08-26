@@ -126,6 +126,9 @@ function useDashboardData(activeRole) {
         api.get(`/daily-tasks?task_date=${today}`)
           .then(({ data }) => setData(d => ({ ...d, dailyReports: data || [] })))
           .catch(() => setFetchErrors(e => e + 1)),
+        api.get("/purchases")
+          .then(({ data }) => setData(d => ({ ...d, purchases: data || [] })))
+          .catch(() => setFetchErrors(e => e + 1)),
       );
     }
 
@@ -210,6 +213,12 @@ function useDashboardData(activeRole) {
         api.get(`/menus?week_start=${weekStart}`)
           .then(({ data }) => setData(d => ({ ...d, menus: data || [] })))
           .catch(() => setFetchErrors(e => e + 1)),
+        api.get("/recipes")
+          .then(({ data }) => setData(d => ({ ...d, recipes: data || [] })))
+          .catch(() => setFetchErrors(e => e + 1)),
+        api.get("/items")
+          .then(({ data }) => setData(d => ({ ...d, items: data || [] })))
+          .catch(() => setFetchErrors(e => e + 1)),
       );
     }
 
@@ -224,6 +233,9 @@ function useDashboardData(activeRole) {
           .catch(() => setFetchErrors(e => e + 1)),
         api.get(`/menus?week_start=${weekStart}`)
           .then(({ data }) => setData(d => ({ ...d, menus: data || [] })))
+          .catch(() => setFetchErrors(e => e + 1)),
+        api.get("/items")
+          .then(({ data }) => setData(d => ({ ...d, items: data || [] })))
           .catch(() => setFetchErrors(e => e + 1)),
       );
     }
@@ -243,8 +255,11 @@ function useDashboardData(activeRole) {
     /* ---- Kebersihan ---- */
     if (role === "kebersihan") {
       fetches.push(
-        api.get("/stock-lots")
-          .then(({ data }) => setData(d => ({ ...d, lots: data || [] })))
+        api.get(`/daily-tasks?task_date=${today}&role=kebersihan`)
+          .then(({ data }) => setData(d => ({ ...d, todayTasks: data || [] })))
+          .catch(() => setFetchErrors(e => e + 1)),
+        api.get(`/menus?week_start=${weekStart}`)
+          .then(({ data }) => setData(d => ({ ...d, menus: data || [] })))
           .catch(() => setFetchErrors(e => e + 1)),
       );
     }
@@ -252,8 +267,11 @@ function useDashboardData(activeRole) {
     /* ---- Pencuci ---- */
     if (role === "pencuci") {
       fetches.push(
-        api.get("/stock-lots")
-          .then(({ data }) => setData(d => ({ ...d, lots: data || [] })))
+        api.get(`/daily-tasks?task_date=${today}&role=pencuci`)
+          .then(({ data }) => setData(d => ({ ...d, todayTasks: data || [] })))
+          .catch(() => setFetchErrors(e => e + 1)),
+        api.get(`/delivery-plans?plan_date=${today}`)
+          .then(({ data }) => setData(d => ({ ...d, deliveryPlans: data || [] })))
           .catch(() => setFetchErrors(e => e + 1)),
       );
     }
@@ -489,27 +507,41 @@ function buildCards(role, d) {
     case "pemorsian": {
       const menusToday = (d.menus || []).filter(m => m.day === ["mon","tue","wed","thu","fri"][new Date().getDay() - 1]);
       const totalPortions = menusToday.reduce((sum, m) => sum + (m.portions || 0), 0);
+      const pemorsianTasks = (d.stockTaken || []).filter(t => t.taken_reason === "PORTIONING" || t.taken_at?.slice(0,10) === today);
+      const portionedCount = pemorsianTasks.length;
 
       return [
         { label: "Menu Hari Ini", value: menusToday.length, icon: CalendarDays, color: "#7C3AED", currency: false },
-        { label: "Total Porsi", value: totalPortions, icon: UtensilsCrossed, color: "#7C3AED", currency: false, suffix: " porsi" },
-        { label: "Target Selesai", value: "0/" + totalPortions, icon: CheckCircle2, color: "#5C5C5C", currency: false, suffix: " ompreng" },
+        { label: "Target Porsi", value: totalPortions, icon: UtensilsCrossed, color: "#7C3AED", currency: false, suffix: " porsi" },
+        { label: "Status", value: portionedCount > 0 ? "Dikerjakan" : "Belum Mulai", icon: portionedCount > 0 ? Clock : AlertTriangle, color: portionedCount > 0 ? "#D97706" : "#C5533B", currency: false },
       ];
     }
 
     /* ---------- KEBERSIHAN ---------- */
     case "kebersihan": {
+      const tasks = d.todayTasks || [];
+      const completed = tasks.filter(t => t.status === "SELESAI").length;
+      const totalSlots = 4;
       return [
-        { label: "Status Kebersihan", value: "Harian", icon: CheckCircle2, color: "#059669", currency: false },
-        { label: "Area Dapur", value: "Siap", icon: ClipboardCheck, color: "#059669", currency: false },
+        { label: "Target Area Hari Ini", value: `${completed} / ${totalSlots}`, icon: CheckCircle2, color: completed >= totalSlots ? "#4A7C59" : "#D97706", currency: false, suffix: " area" },
+        { label: "Foto Terupload", value: tasks.filter(t => t.photo_url).length, icon: Camera, color: "#059669", currency: false, suffix: " foto" },
+        { label: "Status", value: completed >= totalSlots ? "Selesai" : "Dikerjakan", icon: completed >= totalSlots ? CheckCircle2 : Clock, color: completed >= totalSlots ? "#4A7C59" : "#D97706", currency: false },
       ];
     }
 
     /* ---------- PENCUCI ---------- */
     case "pencuci": {
+      const tasks = d.todayTasks || [];
+      const completed = tasks.filter(t => t.status === "SELESAI").length;
+      const totalSlots = 3;
+      const plans = d.deliveryPlans || [];
+      const totalDistributed = plans.reduce((sum, plan) => {
+        return sum + (plan.delivery_plan_items || []).reduce((s, item) => s + (item.portions || 0), 0);
+      }, 0);
       return [
-        { label: "Status Pencucian", value: "Harian", icon: CheckCircle2, color: "#0284C7", currency: false },
-        { label: "Ompreng Hari Ini", value: "0", icon: UtensilsCrossed, color: "#0284C7", currency: false, suffix: " buah" },
+        { label: "Ompreng Didistribusi", value: totalDistributed, icon: UtensilsCrossed, color: "#0284C7", currency: false, suffix: " porsi" },
+        { label: "Area Dicuci", value: `${completed} / ${totalSlots}`, icon: CheckCircle2, color: completed >= totalSlots ? "#4A7C59" : "#D97706", currency: false, suffix: " area" },
+        { label: "Status", value: completed >= totalSlots ? "Selesai" : "Dikerjakan", icon: completed >= totalSlots ? CheckCircle2 : Clock, color: completed >= totalSlots ? "#4A7C59" : "#D97706", currency: false },
       ];
     }
 
@@ -543,6 +575,110 @@ function LowStockList({ items }) {
             +{items.length - 8} item lainnya
           </div>
         )}
+      </div>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  Ingredient calculator (shared for persiapan & tenaga_masak)        */
+/* ------------------------------------------------------------------ */
+
+function IngredientCalculator({ menus, recipes, items }) {
+  const today = ["mon","tue","wed","thu","fri"][new Date().getDay() - 1];
+  const menusToday = (menus || []).filter(m => m.day === today);
+  if (menusToday.length === 0 || !recipes || !items) return null;
+
+  const ingredientMap = {};
+  for (const menu of menusToday) {
+    const portions = menu.portions || 0;
+    const menuRecipes = recipes.filter(r => {
+      const ids = menu.recipe_ids || [];
+      return ids.includes(r.id);
+    });
+    for (const recipe of menuRecipes) {
+      const servings = recipe.servings || 100;
+      const multiplier = portions / servings;
+      for (const ing of (recipe.ingredients || [])) {
+        if (!ing.item_id) continue;
+        const item = items.find(x => x.id === ing.item_id);
+        const key = ing.item_id;
+        if (!ingredientMap[key]) {
+          ingredientMap[key] = { name: item?.name || "Unknown", unit: item?.unit || "", total: 0 };
+        }
+        ingredientMap[key].total += (ing.quantity || 0) * multiplier;
+      }
+    }
+  }
+
+  const ingredients = Object.values(ingredientMap).sort((a, b) => b.total - a.total);
+  if (ingredients.length === 0) return null;
+
+  return (
+    <div className="card-soft overflow-hidden">
+      <div className="px-5 py-3 border-b border-[#EAE4D8] font-display font-bold flex items-center gap-2 text-[#4A7C59]">
+        <Package size={16} /> Kebutuhan Bahan Hari Ini ({menusToday.length} menu, {menusToday.reduce((s, m) => s + (m.portions || 0), 0)} porsi)
+      </div>
+      <div className="px-5 py-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+        {ingredients.map((ing, i) => (
+          <div key={i} className="flex justify-between items-center text-sm bg-[#F9F6F0] rounded-lg px-3 py-2">
+            <span className="font-medium">{ing.name}</span>
+            <span className="font-bold text-[#4A7C59]">{ing.total.toFixed(1)} {ing.unit}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  Daily readiness checklist (shared for kitchen_head)               */
+/* ------------------------------------------------------------------ */
+
+function DailyReadiness({ menus, recipes, lots, dailyReports, purchases }) {
+  const today = ["mon","tue","wed","thu","fri"][new Date().getDay() - 1];
+  const menusToday = (menus || []).filter(m => m.day === today);
+  const totalPortions = menusToday.reduce((s, m) => s + (m.portions || 0), 0);
+
+  const hasMenus = menusToday.length > 0;
+  const hasRecipes = menusToday.every(m => (m.recipe_ids || []).length > 0);
+  const lowStockItems = (lots || []).filter(l => l.actual_quantity <= (l.par_level || 0) * 0.5);
+  const hasStock = lowStockItems.length === 0;
+  const pendingPurchases = (purchases || []).filter(p => !p.verified);
+  const hasNoPendingPurchase = pendingPurchases.length === 0;
+  const reportsToday = (dailyReports || []).filter(t => t.status === "SELESAI");
+  const staffRoles = ["persiapan", "tenaga_masak", "pemorsian", "kebersihan", "pencuci"];
+  const staffReported = staffRoles.filter(r => reportsToday.some(t => t.role === r));
+
+  const checks = [
+    { label: "Menu hari ini sudah diset", ok: hasMenus, detail: hasMenus ? `${menusToday.length} menu, ${totalPortions} porsi` : "Belum ada menu" },
+    { label: "Semua menu punya resep", ok: hasRecipes, detail: hasRecipes ? "Lengkap" : "Ada menu tanpa resep" },
+    { label: "Stok bahan mencukupi", ok: hasStock, detail: hasStock ? "Semua stok aman" : `${lowStockItems.length} bahan menipis` },
+    { label: "Tidak ada belanja pending", ok: hasNoPendingPurchase, detail: hasNoPendingPurchase ? "Semua verified" : `${pendingPurchases.length} menunggu verifikasi` },
+    { label: `Laporan staf (${staffReported.length}/${staffRoles.length})`, ok: staffReported.length >= 3, detail: staffReported.length >= 3 ? `${staffReported.length} staf sudah lapor` : `${staffRoles.length - staffReported.length} staf belum lapor` },
+  ];
+
+  const completedChecks = checks.filter(c => c.ok).length;
+  const allReady = completedChecks === checks.length;
+
+  return (
+    <div className={`card-soft overflow-hidden ${allReady ? "border border-[#4A7C59]/30" : "border border-[#D97706]/30"}`}>
+      <div className="px-5 py-3 border-b border-[#EAE4D8] font-display font-bold flex items-center gap-2" style={{ color: allReady ? "#4A7C59" : "#D97706" }}>
+        {allReady ? <CheckCircle2 size={16} /> : <AlertTriangle size={16} />}
+        Kesiapan Distribusi Hari Ini ({completedChecks}/{checks.length})
+      </div>
+      <div className="divide-y divide-[#EAE4D8]">
+        {checks.map((c, i) => (
+          <div key={i} className="px-5 py-3 flex items-center justify-between text-sm">
+            <div className="flex items-center gap-3">
+              <span className={`w-5 h-5 rounded-full grid place-items-center text-[10px] text-white ${c.ok ? "bg-[#4A7C59]" : "bg-[#D97706]"}`}>
+                {c.ok ? "✓" : "!"}
+              </span>
+              <span className="font-medium">{c.label}</span>
+            </div>
+            <span className={`text-xs ${c.ok ? "text-[#4A7C59]" : "text-[#D97706]"}`}>{c.detail}</span>
+          </div>
+        ))}
       </div>
     </div>
   );
@@ -802,6 +938,24 @@ export default function DashboardPage() {
               <DeliveryStatusDetail
                 deliveryStatus={data.deliveryStatus}
                 deliveryPlans={data.deliveryPlans}
+              />
+            )}
+
+            {(role === "persiapan" || role === "tenaga_masak") && (
+              <IngredientCalculator
+                menus={data.menus}
+                recipes={data.recipes}
+                items={data.items}
+              />
+            )}
+
+            {role === "kitchen_head" && (
+              <DailyReadiness
+                menus={data.menus}
+                recipes={data.recipes}
+                lots={data.lots}
+                dailyReports={data.dailyReports}
+                purchases={data.purchases}
               />
             )}
 
