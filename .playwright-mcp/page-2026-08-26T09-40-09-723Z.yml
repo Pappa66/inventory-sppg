@@ -1,0 +1,161 @@
+- generic [active] [ref=f8e1]:
+  - generic [ref=f8e2]:
+    - complementary [ref=f8e3]:
+      - generic [ref=f8e10]:
+        - generic [ref=f8e11]: SPPG · MBG
+        - generic [ref=f8e12]: Inventory & Procurement
+      - navigation [ref=f8e13]:
+        - link "Dasbor" [ref=f8e14] [cursor=pointer]:
+          - /url: /
+        - link "Pengguna" [ref=f8e43] [cursor=pointer]:
+          - /url: /users
+        - link "Pengaturan SPPG" [ref=f8e49] [cursor=pointer]:
+          - /url: /settings
+        - generic [ref=f8e53]: Konfigurasi Sistem
+        - link "Konfigurasi Global" [ref=f8e54] [cursor=pointer]:
+          - /url: /global-config
+        - generic [ref=f8e58]: Master & Persediaan
+        - link "Master Bahan" [ref=f8e59] [cursor=pointer]:
+          - /url: /master
+        - link "Hirarki Barang" [ref=f8e64] [cursor=pointer]:
+          - /url: /item-hierarchy
+        - link "Saldo Awal Barang" [ref=f8e69] [cursor=pointer]:
+          - /url: /opening-balances
+        - link "Stok & Opname" [ref=f8e74] [cursor=pointer]:
+          - /url: /inventory
+        - link "Stock Detail" [ref=f8e85] [cursor=pointer]:
+          - /url: /stock-detail
+        - link "Stock Rekap" [ref=f8e96] [cursor=pointer]:
+          - /url: /stock-rekap
+        - link "Belanja & Struk" [ref=f8e107] [cursor=pointer]:
+          - /url: /procurement
+        - generic [ref=f8e114]: Dapur & Menu
+        - link "Resep & Gizi" [ref=f8e115] [cursor=pointer]:
+          - /url: /recipes
+        - link "Menu & Cetak" [ref=f8e118] [cursor=pointer]:
+          - /url: /menu
+        - generic [ref=f8e121]: Pengiriman
+        - link "Tujuan Antar" [ref=f8e122] [cursor=pointer]:
+          - /url: /destinations
+        - link "Rencana Antar" [ref=f8e126] [cursor=pointer]:
+          - /url: /deliveries
+        - link "Tracking Driver" [ref=f8e132] [cursor=pointer]:
+          - /url: /delivery-tracking
+        - generic [ref=f8e135]: Keuangan & Pembukuan
+        - link "Anggaran" [ref=f8e136] [cursor=pointer]:
+          - /url: /anggaran
+        - link "Transaksi (D/K)" [ref=f8e140] [cursor=pointer]:
+          - /url: /transactions
+        - link "BKU" [ref=f8e144] [cursor=pointer]:
+          - /url: /bku
+        - link "Buku Pembantu" [ref=f8e148] [cursor=pointer]:
+          - /url: /sub-ledger
+        - generic [ref=f8e152]: Laporan & Approval
+        - link "Persetujuan Menu" [ref=f8e153] [cursor=pointer]:
+          - /url: /approval
+        - link "Laporan" [ref=f8e157] [cursor=pointer]:
+          - /url: /reports
+        - link "Audit Trail" [ref=f8e161] [cursor=pointer]:
+          - /url: /audit
+        - generic [ref=f8e165]: Bantuan
+        - link "Panduan Penggunaan" [ref=f8e21] [cursor=pointer]:
+          - /url: /panduan
+      - generic [ref=f8e25]:
+        - generic [ref=f8e26]: Login sebagai
+        - generic [ref=f8e166]: Admin Aplikasi
+        - generic [ref=f8e167]: admin@sppg.id
+        - button "Keluar" [ref=f8e27] [cursor=pointer]
+    - main [ref=f8e31]:
+      - generic [ref=f8e33]:
+        - heading "Tracking Driver" [level=1] [ref=f8e168]
+        - button "Admin Aplikasi" [ref=f8e169] [cursor=pointer]
+      - generic [ref=f8e39]:
+        - generic [ref=f8e40]:
+          - generic [ref=f8e174]:
+            - heading "Tracking Pengantaran" [level=1] [ref=f8e175]
+            - paragraph [ref=f8e176]: Pantau dan update status pengantaran semua driver.
+          - generic [ref=f8e177]: Rabu, 26 Agustus 2026
+        - generic [ref=f8e184]:
+          - generic [ref=f8e185]:
+            - generic [ref=f8e186] [cursor=pointer]:
+              - generic [ref=f8e187]:
+                - generic [ref=f8e195]:
+                  - generic [ref=f8e196]: Driver
+                  - generic [ref=f8e197]: 2026-08-26 · 4/4 tujuan selesai
+                - generic [ref=f8e198]:
+                  - generic [ref=f8e199]:
+                    - generic [ref=f8e200]: Belum Diantar
+                    - generic [ref=f8e206]: Sedang Diantar
+                    - generic [ref=f8e214]: Selesai Diantar
+                  - button [ref=f8e220]
+              - generic [ref=f8e225]:
+                - generic [ref=f8e226]: 4 selesai
+                - generic [ref=f8e227]: 0 dalam perjalanan
+                - generic [ref=f8e228]: 0 menunggu
+            - generic [ref=f8e284]:
+              - generic [ref=f8e286]:
+                - generic [ref=f8e287]:
+                  - generic [ref=f8e288]: "1"
+                  - generic [ref=f8e289]:
+                    - generic [ref=f8e290]: SDN 01 Jagakarsa
+                    - generic [ref=f8e295]:
+                      - text: "07.44"
+                      - generic [ref=f8e299]: — DELIVERED ke SDN 01 Jagakarsa
+                - generic [ref=f8e301]:
+                  - generic [ref=f8e302]: Belum Diantar
+                  - generic [ref=f8e308]: Sedang Diantar
+                  - generic [ref=f8e316]: Selesai Diantar
+              - generic [ref=f8e323]:
+                - generic [ref=f8e324]:
+                  - generic [ref=f8e325]: "2"
+                  - generic [ref=f8e326]:
+                    - generic [ref=f8e327]: PAUD Melati
+                    - generic [ref=f8e332]:
+                      - text: "07.44"
+                      - generic [ref=f8e336]: — DELIVERED ke PAUD Melati
+                - generic [ref=f8e338]:
+                  - generic [ref=f8e339]: Belum Diantar
+                  - generic [ref=f8e345]: Sedang Diantar
+                  - generic [ref=f8e353]: Selesai Diantar
+              - generic [ref=f8e360]:
+                - generic [ref=f8e361]:
+                  - generic [ref=f8e362]: "3"
+                  - generic [ref=f8e363]:
+                    - generic [ref=f8e364]: Posyandu Mawar
+                    - generic [ref=f8e369]:
+                      - text: "07.44"
+                      - generic [ref=f8e373]: — DELIVERED ke Posyandu Mawar
+                - generic [ref=f8e375]:
+                  - generic [ref=f8e376]: Belum Diantar
+                  - generic [ref=f8e382]: Sedang Diantar
+                  - generic [ref=f8e390]: Selesai Diantar
+              - generic [ref=f8e397]:
+                - generic [ref=f8e398]:
+                  - generic [ref=f8e399]: "4"
+                  - generic [ref=f8e400]:
+                    - generic [ref=f8e401]: Panti Asuhan Harapan
+                    - generic [ref=f8e406]:
+                      - text: "07.44"
+                      - generic [ref=f8e410]: — DELIVERED ke Panti Asuhan Harapan
+                - generic [ref=f8e412]:
+                  - generic [ref=f8e413]: Belum Diantar
+                  - generic [ref=f8e419]: Sedang Diantar
+                  - generic [ref=f8e427]: Selesai Diantar
+          - generic [ref=f8e230] [cursor=pointer]:
+            - generic [ref=f8e231]:
+              - generic [ref=f8e239]:
+                - generic [ref=f8e240]: Driver
+                - generic [ref=f8e241]: 2026-08-26 · 0/0 tujuan selesai
+              - generic [ref=f8e242]:
+                - generic [ref=f8e243]:
+                  - generic [ref=f8e244]: Belum Diantar
+                  - generic [ref=f8e250]: Sedang Diantar
+                  - generic [ref=f8e258]: Selesai Diantar
+                - button [ref=f8e264]
+            - generic [ref=f8e268]:
+              - generic [ref=f8e269]: 0 selesai
+              - generic [ref=f8e270]: 0 dalam perjalanan
+              - generic [ref=f8e271]: 0 menunggu
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=f8e277] [cursor=pointer]
+  - alert [ref=f8e281]

@@ -1,0 +1,37 @@
+- generic [active] [ref=f42e1]:
+  - generic [ref=f42e2]:
+    - complementary [ref=f42e3]:
+      - generic [ref=f42e10]:
+        - generic [ref=f42e11]: SPPG · MBG
+        - generic [ref=f42e12]: Inventory & Procurement
+      - navigation [ref=f42e13]:
+        - link "Dasbor" [ref=f42e14] [cursor=pointer]:
+          - /url: /
+        - generic [ref=f42e20]: Bantuan
+        - link "Panduan Penggunaan" [ref=f42e21] [cursor=pointer]:
+          - /url: /panduan
+      - generic [ref=f42e25]:
+        - generic [ref=f42e26]: Login sebagai
+        - button "Keluar" [ref=f42e27] [cursor=pointer]
+    - main [ref=f42e31]:
+      - heading "Dasbor" [level=1] [ref=f42e35]
+      - generic [ref=f42e39]:
+        - generic [ref=f42e40]:
+          - generic [ref=f42e41]:
+            - heading "Menu 5-Hari" [level=1] [ref=f42e42]
+            - paragraph [ref=f42e43]: Pilih resep dan jumlah porsi per hari.
+          - generic [ref=f42e44]:
+            - button "Konfigurasi" [ref=f42e45] [cursor=pointer]
+            - textbox [ref=f42e52]: 2026-08-23
+            - generic [ref=f42e53]:
+              - textbox [ref=f42e54]
+              - button "Cetak Bulanan" [ref=f42e55] [cursor=pointer]
+            - button "Cetak" [ref=f42e60] [cursor=pointer]
+            - button "Bagikan WA" [ref=f42e65] [cursor=pointer]
+        - generic [ref=f42e72]:
+          - button "Semua" [ref=f42e73] [cursor=pointer]
+          - button "Balita" [ref=f42e74] [cursor=pointer]
+          - button "Porsi Kecil" [ref=f42e75] [cursor=pointer]
+          - button "Porsi Besar" [ref=f42e76] [cursor=pointer]
+          - button "Bumil/Busui" [ref=f42e77] [cursor=pointer]
+  - region "Notifications alt+T"

@@ -1,0 +1,207 @@
+- generic [active] [ref=f35e1]:
+  - generic [ref=f35e1012]:
+    - complementary [ref=f35e1013]:
+      - generic [ref=f35e1020]:
+        - generic [ref=f35e1021]: SPPG · MBG
+        - generic [ref=f35e1022]: Inventory & Procurement
+      - navigation [ref=f35e1023]:
+        - link "Dasbor" [ref=f35e1024] [cursor=pointer]:
+          - /url: /
+        - link "Pengguna" [ref=f35e1030] [cursor=pointer]:
+          - /url: /users
+        - link "Pengaturan SPPG" [ref=f35e1036] [cursor=pointer]:
+          - /url: /settings
+        - generic [ref=f35e1040]: Konfigurasi Sistem
+        - link "Konfigurasi Global" [ref=f35e1041] [cursor=pointer]:
+          - /url: /global-config
+        - generic [ref=f35e1045]: Master & Persediaan
+        - link "Master Bahan" [ref=f35e1046] [cursor=pointer]:
+          - /url: /master
+        - link "Hirarki Barang" [ref=f35e1051] [cursor=pointer]:
+          - /url: /item-hierarchy
+        - link "Saldo Awal Barang" [ref=f35e1056] [cursor=pointer]:
+          - /url: /opening-balances
+        - link "Stok & Opname" [ref=f35e1061] [cursor=pointer]:
+          - /url: /inventory
+        - link "Stock Detail" [ref=f35e1072] [cursor=pointer]:
+          - /url: /stock-detail
+        - link "Stock Rekap" [ref=f35e1083] [cursor=pointer]:
+          - /url: /stock-rekap
+        - link "Belanja & Struk" [ref=f35e1094] [cursor=pointer]:
+          - /url: /procurement
+        - generic [ref=f35e1101]: Dapur & Menu
+        - link "Resep & Gizi" [ref=f35e1102] [cursor=pointer]:
+          - /url: /recipes
+        - link "Menu & Cetak" [ref=f35e1105] [cursor=pointer]:
+          - /url: /menu
+        - generic [ref=f35e1108]: Pengiriman
+        - link "Tujuan Antar" [ref=f35e1109] [cursor=pointer]:
+          - /url: /destinations
+        - link "Rencana Antar" [ref=f35e1113] [cursor=pointer]:
+          - /url: /deliveries
+        - link "Tracking Driver" [ref=f35e1119] [cursor=pointer]:
+          - /url: /delivery-tracking
+        - generic [ref=f35e1122]: Keuangan & Pembukuan
+        - link "Anggaran" [ref=f35e1123] [cursor=pointer]:
+          - /url: /anggaran
+        - link "Transaksi (D/K)" [ref=f35e1127] [cursor=pointer]:
+          - /url: /transactions
+        - link "BKU" [ref=f35e1131] [cursor=pointer]:
+          - /url: /bku
+        - link "Buku Pembantu" [ref=f35e1135] [cursor=pointer]:
+          - /url: /sub-ledger
+        - generic [ref=f35e1139]: Laporan & Approval
+        - link "Persetujuan Menu" [ref=f35e1140] [cursor=pointer]:
+          - /url: /approval
+        - link "Laporan" [ref=f35e1144] [cursor=pointer]:
+          - /url: /reports
+        - link "Audit Trail" [ref=f35e1148] [cursor=pointer]:
+          - /url: /audit
+        - generic [ref=f35e1152]: Bantuan
+        - link "Panduan Penggunaan" [ref=f35e1153] [cursor=pointer]:
+          - /url: /panduan
+      - generic [ref=f35e1157]:
+        - generic [ref=f35e1158]: Login sebagai
+        - generic [ref=f35e1159]: Admin Aplikasi
+        - generic [ref=f35e1160]: admin@sppg.id
+        - button "Keluar" [ref=f35e1161] [cursor=pointer]
+    - main [ref=f35e1165]:
+      - generic [ref=f35e1167]:
+        - heading "Saldo Awal Barang" [level=1] [ref=f35e1169]
+        - button "Admin Aplikasi" [ref=f35e1171] [cursor=pointer]
+      - generic [ref=f35e1177]:
+        - generic [ref=f35e1178]:
+          - generic [ref=f35e1179]:
+            - heading "Saldo Awal Barang" [level=1] [ref=f35e1180]
+            - paragraph [ref=f35e1181]: Atur saldo awal per kode barang per periode
+          - button "Simpan Saldo Awal" [ref=f35e1182] [cursor=pointer]
+        - generic [ref=f35e1187]:
+          - generic [ref=f35e1188]: "Periode:"
+          - combobox [ref=f35e1189]
+          - generic [ref=f35e1190]:
+            - text: "Total:"
+            - generic [ref=f35e1191]: Rp 0
+        - generic [ref=f35e1192]:
+          - textbox "Cari kode atau nama barang..." [ref=f35e1197]
+          - combobox [ref=f35e1198]:
+            - option "Semua Kategori" [selected]
+            - option "KH - Karbohidrat"
+            - option "PH - Protein Hewani"
+            - option "PN - Protein Nabati"
+            - option "SY - Sayuran"
+            - option "BU - Buah-buahan"
+            - option "BB - Bahan Baku Lain"
+        - table [ref=f35e1203]:
+          - rowgroup [ref=f35e1204]:
+            - row [ref=f35e1205]:
+              - columnheader "Kode" [ref=f35e1206]
+              - columnheader "Nama Barang" [ref=f35e1207]
+              - columnheader "Kategori" [ref=f35e1208]
+              - columnheader "Satuan" [ref=f35e1209]
+              - columnheader "Zona" [ref=f35e1210]
+              - columnheader "Saldo Qty" [ref=f35e1211]
+              - columnheader "Saldo Nilai (Rp)" [ref=f35e1212]
+          - rowgroup [ref=f35e1213]:
+            - row [ref=f35e1214]:
+              - cell "BB-001-001" [ref=f35e1215]
+              - cell "Bayam" [ref=f35e1216]
+              - cell "BB-SAY" [ref=f35e1217]
+              - cell "kg" [ref=f35e1218]
+              - cell "CHILL" [ref=f35e1219]
+              - cell [ref=f35e1220]:
+                - spinbutton [ref=f35e1221]
+              - cell [ref=f35e1222]:
+                - spinbutton [ref=f35e1223]
+            - row [ref=f35e1224]:
+              - cell "BB-001-002" [ref=f35e1225]
+              - cell "Wortel" [ref=f35e1226]
+              - cell "BB-SAY" [ref=f35e1227]
+              - cell "kg" [ref=f35e1228]
+              - cell "CHILL" [ref=f35e1229]
+              - cell [ref=f35e1230]:
+                - spinbutton [ref=f35e1231]
+              - cell [ref=f35e1232]:
+                - spinbutton [ref=f35e1233]
+            - row [ref=f35e1234]:
+              - cell "BB-001-003" [ref=f35e1235]
+              - cell "Brokoli" [ref=f35e1236]
+              - cell "BB-SAY" [ref=f35e1237]
+              - cell "kg" [ref=f35e1238]
+              - cell "CHILL" [ref=f35e1239]
+              - cell [ref=f35e1240]:
+                - spinbutton [ref=f35e1241]
+              - cell [ref=f35e1242]:
+                - spinbutton [ref=f35e1243]
+            - row [ref=f35e1244]:
+              - cell "BB-002-001" [ref=f35e1245]
+              - cell "Ayam Fillet" [ref=f35e1246]
+              - cell "BB-PRO" [ref=f35e1247]
+              - cell "kg" [ref=f35e1248]
+              - cell "FROZEN" [ref=f35e1249]
+              - cell [ref=f35e1250]:
+                - spinbutton [ref=f35e1251]
+              - cell [ref=f35e1252]:
+                - spinbutton [ref=f35e1253]
+            - row [ref=f35e1254]:
+              - cell "BB-002-002" [ref=f35e1255]
+              - cell "Ikan Tongkol" [ref=f35e1256]
+              - cell "BB-PRO" [ref=f35e1257]
+              - cell "kg" [ref=f35e1258]
+              - cell "FROZEN" [ref=f35e1259]
+              - cell [ref=f35e1260]:
+                - spinbutton [ref=f35e1261]
+              - cell [ref=f35e1262]:
+                - spinbutton [ref=f35e1263]
+            - row [ref=f35e1264]:
+              - cell "BB-002-003" [ref=f35e1265]
+              - cell "Telur" [ref=f35e1266]
+              - cell "BB-PRO" [ref=f35e1267]
+              - cell "kg" [ref=f35e1268]
+              - cell "DRY" [ref=f35e1269]
+              - cell [ref=f35e1270]:
+                - spinbutton [ref=f35e1271]
+              - cell [ref=f35e1272]:
+                - spinbutton [ref=f35e1273]
+            - row [ref=f35e1274]:
+              - cell "BB-003-001" [ref=f35e1275]
+              - cell "Beras" [ref=f35e1276]
+              - cell "BB-KAR" [ref=f35e1277]
+              - cell "kg" [ref=f35e1278]
+              - cell "DRY" [ref=f35e1279]
+              - cell [ref=f35e1280]:
+                - spinbutton [ref=f35e1281]
+              - cell [ref=f35e1282]:
+                - spinbutton [ref=f35e1283]
+            - row [ref=f35e1284]:
+              - cell "BB-003-002" [ref=f35e1285]
+              - cell "Kentang" [ref=f35e1286]
+              - cell "BB-KAR" [ref=f35e1287]
+              - cell "kg" [ref=f35e1288]
+              - cell "DRY" [ref=f35e1289]
+              - cell [ref=f35e1290]:
+                - spinbutton [ref=f35e1291]
+              - cell [ref=f35e1292]:
+                - spinbutton [ref=f35e1293]
+            - row [ref=f35e1294]:
+              - cell "BM-001-001" [ref=f35e1295]
+              - cell "Bawang Merah" [ref=f35e1296]
+              - cell "BM" [ref=f35e1297]
+              - cell "kg" [ref=f35e1298]
+              - cell "DRY" [ref=f35e1299]
+              - cell [ref=f35e1300]:
+                - spinbutton [ref=f35e1301]
+              - cell [ref=f35e1302]:
+                - spinbutton [ref=f35e1303]
+            - row [ref=f35e1304]:
+              - cell "BM-001-002" [ref=f35e1305]
+              - cell "Bawang Putih" [ref=f35e1306]
+              - cell "BM" [ref=f35e1307]
+              - cell "kg" [ref=f35e1308]
+              - cell "DRY" [ref=f35e1309]
+              - cell [ref=f35e1310]:
+                - spinbutton [ref=f35e1311]
+              - cell [ref=f35e1312]:
+                - spinbutton [ref=f35e1313]
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=f35e293] [cursor=pointer]
+  - alert [ref=f35e297]: SPPG · MBG — Inventory & Procurement

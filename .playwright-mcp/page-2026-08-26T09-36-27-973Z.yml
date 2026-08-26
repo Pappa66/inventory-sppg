@@ -1,0 +1,101 @@
+- generic [active] [ref=f7e1]:
+  - generic [ref=f7e171]:
+    - complementary [ref=f7e172]:
+      - generic [ref=f7e179]:
+        - generic [ref=f7e180]: SPPG · MBG
+        - generic [ref=f7e181]: Inventory & Procurement
+      - navigation [ref=f7e182]:
+        - link "Dasbor" [ref=f7e183] [cursor=pointer]:
+          - /url: /
+        - generic [ref=f7e508]: Master & Persediaan
+        - link "Master Bahan" [ref=f7e740] [cursor=pointer]:
+          - /url: /master
+        - link "Stok & Opname" [ref=f7e745] [cursor=pointer]:
+          - /url: /inventory
+        - link "Belanja & Struk" [ref=f7e756] [cursor=pointer]:
+          - /url: /procurement
+        - generic [ref=f7e763]: Pengiriman
+        - link "Tujuan Antar" [ref=f7e764] [cursor=pointer]:
+          - /url: /destinations
+        - link "Rencana Antar" [ref=f7e768] [cursor=pointer]:
+          - /url: /deliveries
+        - link "Tracking Driver" [ref=f7e774] [cursor=pointer]:
+          - /url: /delivery-tracking
+        - generic [ref=f7e777]: Laporan & Approval
+        - link "Laporan" [ref=f7e778] [cursor=pointer]:
+          - /url: /reports
+        - generic [ref=f7e782]: Bantuan
+        - link "Panduan Penggunaan" [ref=f7e312] [cursor=pointer]:
+          - /url: /panduan
+      - generic [ref=f7e316]:
+        - generic [ref=f7e317]: Login sebagai
+        - generic [ref=f7e318]: Admin Aplikasi
+        - generic [ref=f7e319]: admin@sppg.id
+        - button "Keluar" [ref=f7e320] [cursor=pointer]
+    - main [ref=f7e324]:
+      - generic [ref=f7e326]:
+        - heading "Dasbor" [level=1] [ref=f7e328]
+        - button "Asisten Lapangan" [ref=f7e783] [cursor=pointer]
+      - generic [ref=f7e336]:
+        - generic [ref=f7e337]:
+          - heading "Dasbor" [level=1] [ref=f7e338]
+          - paragraph [ref=f7e339]: Ringkasan untuk Asisten Lapangan
+        - generic [ref=f7e784]:
+          - generic [ref=f7e785]:
+            - generic [ref=f7e786]: Stok Menipis
+            - generic [ref=f7e790]: 2 item
+          - generic [ref=f7e791]:
+            - generic [ref=f7e792]: Rencana Antar Hari Ini
+            - generic [ref=f7e799]: 4 (2 rencana)
+          - generic [ref=f7e800]:
+            - generic [ref=f7e801]: Belanja Pending
+            - generic [ref=f7e806]: "15"
+          - generic [ref=f7e807]:
+            - generic [ref=f7e808]: Pengiriman Terkirim
+            - generic [ref=f7e813]: 52 / 80
+        - generic [ref=f7e814]:
+          - generic [ref=f7e815]: Stok Menipis
+          - generic [ref=f7e818]:
+            - generic [ref=f7e819]:
+              - generic [ref=f7e820]: Bawang Merah
+              - generic [ref=f7e821]: 4 / 5 kg
+            - generic [ref=f7e822]:
+              - generic [ref=f7e823]: Minyak Goreng
+              - generic [ref=f7e824]: 9 / 10 liter
+        - generic [ref=f7e825]:
+          - generic [ref=f7e826]: Status Pengiriman Hari Ini
+          - generic [ref=f7e832]:
+            - generic [ref=f7e833]:
+              - generic [ref=f7e834]:
+                - text: SDN 01 Jagakarsa
+                - generic [ref=f7e838]: PORTION_LARGE
+              - generic [ref=f7e839]: 1020 porsi
+            - generic [ref=f7e840]:
+              - generic [ref=f7e841]:
+                - text: PAUD Melati
+                - generic [ref=f7e845]: PORTION_SMALL
+              - generic [ref=f7e846]: 520 porsi
+            - generic [ref=f7e847]:
+              - generic [ref=f7e848]:
+                - text: Posyandu Mawar
+                - generic [ref=f7e852]: BALITA
+              - generic [ref=f7e853]: 320 porsi
+          - generic [ref=f7e854]:
+            - generic [ref=f7e855]: "Terkirim: 52"
+            - generic [ref=f7e856]: "Dalam Perjalanan: 8"
+            - generic [ref=f7e857]: "Belum: 0"
+            - generic [ref=f7e858]: "Pending: 20"
+        - generic [ref=f7e859]:
+          - link "Stok & Opname" [ref=f7e860] [cursor=pointer]:
+            - /url: /inventory
+          - link "Belanja & Struk" [ref=f7e867] [cursor=pointer]:
+            - /url: /procurement
+          - link "Tujuan Antar" [ref=f7e876] [cursor=pointer]:
+            - /url: /destinations
+          - link "Rencana Antar" [ref=f7e882] [cursor=pointer]:
+            - /url: /deliveries
+          - link "Laporan" [ref=f7e890] [cursor=pointer]:
+            - /url: /reports
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=f7e72] [cursor=pointer]
+  - alert [ref=f7e76]

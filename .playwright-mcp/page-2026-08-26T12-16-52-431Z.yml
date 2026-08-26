@@ -1,0 +1,21 @@
+- generic [active] [ref=f38e1]:
+  - generic [ref=f38e2]:
+    - complementary [ref=f38e3]:
+      - generic [ref=f38e10]:
+        - generic [ref=f38e11]: SPPG · MBG
+        - generic [ref=f38e12]: Inventory & Procurement
+      - navigation [ref=f38e13]:
+        - link "Dasbor" [ref=f38e14] [cursor=pointer]:
+          - /url: /
+        - generic [ref=f38e20]: Bantuan
+        - link "Panduan Penggunaan" [ref=f38e21] [cursor=pointer]:
+          - /url: /panduan
+      - generic [ref=f38e25]:
+        - generic [ref=f38e26]: Login sebagai
+        - button "Keluar" [ref=f38e27] [cursor=pointer]
+    - main [ref=f38e31]:
+      - heading "Dasbor" [level=1] [ref=f38e35]
+      - generic [ref=f38e40]:
+        - heading "Dasbor" [level=1] [ref=f38e41]
+        - paragraph [ref=f38e42]: Ringkasan untuk Admin SPPG
+  - region "Notifications alt+T"

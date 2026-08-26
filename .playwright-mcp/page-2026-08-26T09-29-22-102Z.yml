@@ -1,0 +1,25 @@
+- generic [active] [ref=f7e1]:
+  - generic [ref=f7e2]:
+    - generic [ref=f7e8]:
+      - heading "SPPG · MBG" [level=1] [ref=f7e13]
+      - paragraph [ref=f7e14]: Inventory & ProcurementMakan Bergizi Gratis
+      - generic [ref=f7e15]:
+        - generic [ref=f7e16]: Manajemen Stok & Inventaris
+        - generic [ref=f7e22]: Audit Trail Akurat-Detik
+        - generic [ref=f7e28]: 14 Peran Pengguna
+        - generic [ref=f7e35]: Laporan Siap BPK
+    - generic [ref=f7e41]:
+      - button "Masuk Sebagai Role Pilih role untuk demo cepat" [ref=f7e43] [cursor=pointer]:
+        - generic [ref=f7e48]:
+          - generic [ref=f7e49]: Masuk Sebagai Role
+          - generic [ref=f7e50]: Pilih role untuk demo cepat
+      - generic [ref=f7e53]:
+        - heading "Login Manual" [level=2] [ref=f7e58]
+        - generic [ref=f7e59]:
+          - text: Email
+          - textbox "email@domain.com" [ref=f7e60]
+        - generic [ref=f7e61]:
+          - text: Password
+          - textbox "••••••••" [ref=f7e62]
+        - button "Masuk" [ref=f7e63] [cursor=pointer]
+  - region "Notifications alt+T"

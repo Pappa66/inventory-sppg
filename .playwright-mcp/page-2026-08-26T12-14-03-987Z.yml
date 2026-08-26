@@ -1,0 +1,252 @@
+- generic [active] [ref=f35e1]:
+  - generic [ref=f35e298]:
+    - complementary [ref=f35e299]:
+      - generic [ref=f35e306]:
+        - generic [ref=f35e307]: SPPG · MBG
+        - generic [ref=f35e308]: Inventory & Procurement
+      - navigation [ref=f35e309]:
+        - link "Dasbor" [ref=f35e310] [cursor=pointer]:
+          - /url: /
+        - link "Pengguna" [ref=f35e316] [cursor=pointer]:
+          - /url: /users
+        - link "Pengaturan SPPG" [ref=f35e322] [cursor=pointer]:
+          - /url: /settings
+        - generic [ref=f35e326]: Konfigurasi Sistem
+        - link "Konfigurasi Global" [ref=f35e327] [cursor=pointer]:
+          - /url: /global-config
+        - generic [ref=f35e331]: Master & Persediaan
+        - link "Master Bahan" [ref=f35e332] [cursor=pointer]:
+          - /url: /master
+        - link "Hirarki Barang" [ref=f35e337] [cursor=pointer]:
+          - /url: /item-hierarchy
+        - link "Saldo Awal Barang" [ref=f35e342] [cursor=pointer]:
+          - /url: /opening-balances
+        - link "Stok & Opname" [ref=f35e347] [cursor=pointer]:
+          - /url: /inventory
+        - link "Stock Detail" [ref=f35e358] [cursor=pointer]:
+          - /url: /stock-detail
+        - link "Stock Rekap" [ref=f35e369] [cursor=pointer]:
+          - /url: /stock-rekap
+        - link "Belanja & Struk" [ref=f35e380] [cursor=pointer]:
+          - /url: /procurement
+        - generic [ref=f35e387]: Dapur & Menu
+        - link "Resep & Gizi" [ref=f35e388] [cursor=pointer]:
+          - /url: /recipes
+        - link "Menu & Cetak" [ref=f35e391] [cursor=pointer]:
+          - /url: /menu
+        - generic [ref=f35e394]: Pengiriman
+        - link "Tujuan Antar" [ref=f35e395] [cursor=pointer]:
+          - /url: /destinations
+        - link "Rencana Antar" [ref=f35e399] [cursor=pointer]:
+          - /url: /deliveries
+        - link "Tracking Driver" [ref=f35e405] [cursor=pointer]:
+          - /url: /delivery-tracking
+        - generic [ref=f35e408]: Keuangan & Pembukuan
+        - link "Anggaran" [ref=f35e409] [cursor=pointer]:
+          - /url: /anggaran
+        - link "Transaksi (D/K)" [ref=f35e413] [cursor=pointer]:
+          - /url: /transactions
+        - link "BKU" [ref=f35e417] [cursor=pointer]:
+          - /url: /bku
+        - link "Buku Pembantu" [ref=f35e421] [cursor=pointer]:
+          - /url: /sub-ledger
+        - generic [ref=f35e425]: Laporan & Approval
+        - link "Persetujuan Menu" [ref=f35e426] [cursor=pointer]:
+          - /url: /approval
+        - link "Laporan" [ref=f35e430] [cursor=pointer]:
+          - /url: /reports
+        - link "Audit Trail" [ref=f35e434] [cursor=pointer]:
+          - /url: /audit
+        - generic [ref=f35e438]: Bantuan
+        - link "Panduan Penggunaan" [ref=f35e439] [cursor=pointer]:
+          - /url: /panduan
+      - generic [ref=f35e443]:
+        - generic [ref=f35e444]: Login sebagai
+        - generic [ref=f35e445]: Admin Aplikasi
+        - generic [ref=f35e446]: admin@sppg.id
+        - button "Keluar" [ref=f35e447] [cursor=pointer]
+    - main [ref=f35e451]:
+      - generic [ref=f35e453]:
+        - heading "BKU" [level=1] [ref=f35e455]
+        - button "Admin Aplikasi" [ref=f35e457] [cursor=pointer]
+      - generic [ref=f35e463]:
+        - generic [ref=f35e464]:
+          - heading "BKU - Buku Kas Umum" [level=1] [ref=f35e465]
+          - paragraph [ref=f35e466]: Ringkasan transaksi per kode akun (otomatis dari input transaksi)
+        - generic [ref=f35e467]:
+          - generic [ref=f35e468]:
+            - text: Kode Akun
+            - combobox [ref=f35e469]:
+              - option "Semua"
+              - option "1000 - BUKU KAS UMUM" [selected]
+              - option "1100 - Petty Cash"
+              - option "1200 - Kas di Bank"
+              - option "1300 - Dana Bantuan Pemerintah"
+              - option "2100 - Biaya Bahan Baku"
+              - option "2200 - Biaya Operasional"
+              - option "2300 - Biaya Insentif Fasilitas"
+              - option "3100 - PPN"
+          - generic [ref=f35e470]:
+            - text: Dari Tanggal
+            - textbox [ref=f35e471]
+          - generic [ref=f35e472]:
+            - text: Sampai Tanggal
+            - textbox [ref=f35e473]
+        - generic [ref=f35e474]:
+          - generic [ref=f35e475]:
+            - generic [ref=f35e476]: Total Debet
+            - generic [ref=f35e477]: Rp 0
+          - generic [ref=f35e478]:
+            - generic [ref=f35e479]: Total Kredit
+            - generic [ref=f35e480]: Rp 210.000.000
+          - generic [ref=f35e481]:
+            - generic [ref=f35e482]: Saldo BKU
+            - generic [ref=f35e483]: Rp -210.000.000
+        - generic [ref=f35e486]:
+          - generic [ref=f35e487]:
+            - generic [ref=f35e488]:
+              - generic [ref=f35e492]: "1000"
+              - text: BUKU KAS UMUM
+            - generic [ref=f35e493]:
+              - generic [ref=f35e494]: "D: Rp 0"
+              - generic [ref=f35e495]: "K: Rp 105.000.000"
+              - generic [ref=f35e496]: "Saldo: Rp -105.000.000"
+          - table [ref=f35e498]:
+            - rowgroup [ref=f35e499]:
+              - row [ref=f35e500]:
+                - columnheader "Tanggal" [ref=f35e501]
+                - columnheader "Keterangan" [ref=f35e502]
+                - columnheader "Debet" [ref=f35e503]
+                - columnheader "Kredit" [ref=f35e504]
+                - columnheader "Buku Pembantu" [ref=f35e505]
+            - rowgroup [ref=f35e506]:
+              - row [ref=f35e910]:
+                - cell "2026-08-24" [ref=f35e911]
+                - cell "Saldo Awal Kas 2026-08-24" [ref=f35e912]
+                - cell "—" [ref=f35e913]
+                - cell "Rp 5.500.000" [ref=f35e914]
+                - cell "PETTY_CASH" [ref=f35e915]
+              - row [ref=f35e916]:
+                - cell "2026-08-24" [ref=f35e917]
+                - cell "Penarikan Kas dari Bank 2026-08-24" [ref=f35e918]
+                - cell "—" [ref=f35e919]
+                - cell "Rp 5.000.000" [ref=f35e920]
+                - cell "BANK" [ref=f35e921]
+              - row [ref=f35e922]:
+                - cell "2026-08-25" [ref=f35e923]
+                - cell "Saldo Awal Kas 2026-08-25" [ref=f35e924]
+                - cell "—" [ref=f35e925]
+                - cell "Rp 5.500.000" [ref=f35e926]
+                - cell "PETTY_CASH" [ref=f35e927]
+              - row [ref=f35e788]:
+                - cell "2026-08-25" [ref=f35e789]
+                - cell "Penarikan Kas dari Bank 2026-08-25" [ref=f35e790]
+                - cell "—" [ref=f35e791]
+                - cell "Rp 5.000.000" [ref=f35e792]
+                - cell "BANK" [ref=f35e793]
+              - row [ref=f35e794]:
+                - cell "2026-08-26" [ref=f35e795]
+                - cell "Saldo Awal Kas 2026-08-26" [ref=f35e796]
+                - cell "—" [ref=f35e797]
+                - cell "Rp 5.500.000" [ref=f35e798]
+                - cell "PETTY_CASH" [ref=f35e799]
+              - row [ref=f35e800]:
+                - cell "2026-08-26" [ref=f35e801]
+                - cell "Penarikan Kas dari Bank 2026-08-26" [ref=f35e802]
+                - cell "—" [ref=f35e803]
+                - cell "Rp 5.000.000" [ref=f35e804]
+                - cell "BANK" [ref=f35e805]
+              - row [ref=f35e928]:
+                - cell "2026-08-27" [ref=f35e929]
+                - cell "Saldo Awal Kas 2026-08-27" [ref=f35e930]
+                - cell "—" [ref=f35e931]
+                - cell "Rp 5.500.000" [ref=f35e932]
+                - cell "PETTY_CASH" [ref=f35e933]
+              - row [ref=f35e934]:
+                - cell "2026-08-27" [ref=f35e935]
+                - cell "Penarikan Kas dari Bank 2026-08-27" [ref=f35e936]
+                - cell "—" [ref=f35e937]
+                - cell "Rp 5.000.000" [ref=f35e938]
+                - cell "BANK" [ref=f35e939]
+              - row [ref=f35e940]:
+                - cell "2026-08-28" [ref=f35e941]
+                - cell "Saldo Awal Kas 2026-08-28" [ref=f35e942]
+                - cell "—" [ref=f35e943]
+                - cell "Rp 5.500.000" [ref=f35e944]
+                - cell "PETTY_CASH" [ref=f35e945]
+              - row [ref=f35e946]:
+                - cell "2026-08-28" [ref=f35e947]
+                - cell "Penarikan Kas dari Bank 2026-08-28" [ref=f35e948]
+                - cell "—" [ref=f35e949]
+                - cell "Rp 5.000.000" [ref=f35e950]
+                - cell "BANK" [ref=f35e951]
+              - row [ref=f35e952]:
+                - cell "2026-08-31" [ref=f35e953]
+                - cell "Saldo Awal Kas 2026-08-31" [ref=f35e954]
+                - cell "—" [ref=f35e955]
+                - cell "Rp 5.500.000" [ref=f35e956]
+                - cell "PETTY_CASH" [ref=f35e957]
+              - row [ref=f35e958]:
+                - cell "2026-08-31" [ref=f35e959]
+                - cell "Penarikan Kas dari Bank 2026-08-31" [ref=f35e960]
+                - cell "—" [ref=f35e961]
+                - cell "Rp 5.000.000" [ref=f35e962]
+                - cell "BANK" [ref=f35e963]
+              - row [ref=f35e964]:
+                - cell "2026-09-01" [ref=f35e965]
+                - cell "Saldo Awal Kas 2026-09-01" [ref=f35e966]
+                - cell "—" [ref=f35e967]
+                - cell "Rp 5.500.000" [ref=f35e968]
+                - cell "PETTY_CASH" [ref=f35e969]
+              - row [ref=f35e970]:
+                - cell "2026-09-01" [ref=f35e971]
+                - cell "Penarikan Kas dari Bank 2026-09-01" [ref=f35e972]
+                - cell "—" [ref=f35e973]
+                - cell "Rp 5.000.000" [ref=f35e974]
+                - cell "BANK" [ref=f35e975]
+              - row [ref=f35e976]:
+                - cell "2026-09-02" [ref=f35e977]
+                - cell "Saldo Awal Kas 2026-09-02" [ref=f35e978]
+                - cell "—" [ref=f35e979]
+                - cell "Rp 5.500.000" [ref=f35e980]
+                - cell "PETTY_CASH" [ref=f35e981]
+              - row [ref=f35e982]:
+                - cell "2026-09-02" [ref=f35e983]
+                - cell "Penarikan Kas dari Bank 2026-09-02" [ref=f35e984]
+                - cell "—" [ref=f35e985]
+                - cell "Rp 5.000.000" [ref=f35e986]
+                - cell "BANK" [ref=f35e987]
+              - row [ref=f35e988]:
+                - cell "2026-09-03" [ref=f35e989]
+                - cell "Saldo Awal Kas 2026-09-03" [ref=f35e990]
+                - cell "—" [ref=f35e991]
+                - cell "Rp 5.500.000" [ref=f35e992]
+                - cell "PETTY_CASH" [ref=f35e993]
+              - row [ref=f35e994]:
+                - cell "2026-09-03" [ref=f35e995]
+                - cell "Penarikan Kas dari Bank 2026-09-03" [ref=f35e996]
+                - cell "—" [ref=f35e997]
+                - cell "Rp 5.000.000" [ref=f35e998]
+                - cell "BANK" [ref=f35e999]
+              - row [ref=f35e1000]:
+                - cell "2026-09-04" [ref=f35e1001]
+                - cell "Saldo Awal Kas 2026-09-04" [ref=f35e1002]
+                - cell "—" [ref=f35e1003]
+                - cell "Rp 5.500.000" [ref=f35e1004]
+                - cell "PETTY_CASH" [ref=f35e1005]
+              - row [ref=f35e1006]:
+                - cell "2026-09-04" [ref=f35e1007]
+                - cell "Penarikan Kas dari Bank 2026-09-04" [ref=f35e1008]
+                - cell "—" [ref=f35e1009]
+                - cell "Rp 5.000.000" [ref=f35e1010]
+                - cell "BANK" [ref=f35e1011]
+        - generic [ref=f35e774]:
+          - generic [ref=f35e775]: Halaman 1 dari 2
+          - generic [ref=f35e776]:
+            - button [disabled] [ref=f35e777]
+            - button "1" [ref=f35e780] [cursor=pointer]
+            - button "2" [ref=f35e781] [cursor=pointer]
+            - button [ref=f35e785] [cursor=pointer]
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=f35e293] [cursor=pointer]
+  - alert [ref=f35e297]: SPPG · MBG — Inventory & Procurement

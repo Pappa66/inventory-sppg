@@ -1,0 +1,287 @@
+- generic [active] [ref=f41e1]:
+  - generic [ref=f41e2]:
+    - complementary [ref=f41e3]:
+      - generic [ref=f41e10]:
+        - generic [ref=f41e11]: SPPG · MBG
+        - generic [ref=f41e12]: Inventory & Procurement
+      - navigation [ref=f41e13]:
+        - link "Dasbor" [ref=f41e14] [cursor=pointer]:
+          - /url: /
+        - link "Pengguna" [ref=f41e124] [cursor=pointer]:
+          - /url: /users
+        - link "Pengaturan SPPG" [ref=f41e130] [cursor=pointer]:
+          - /url: /settings
+        - generic [ref=f41e134]: Konfigurasi Sistem
+        - link "Konfigurasi Global" [ref=f41e135] [cursor=pointer]:
+          - /url: /global-config
+        - generic [ref=f41e139]: Master & Persediaan
+        - link "Master Bahan" [ref=f41e140] [cursor=pointer]:
+          - /url: /master
+        - link "Hirarki Barang" [ref=f41e145] [cursor=pointer]:
+          - /url: /item-hierarchy
+        - link "Saldo Awal Barang" [ref=f41e150] [cursor=pointer]:
+          - /url: /opening-balances
+        - link "Stok & Opname" [ref=f41e155] [cursor=pointer]:
+          - /url: /inventory
+        - link "Stock Detail" [ref=f41e166] [cursor=pointer]:
+          - /url: /stock-detail
+        - link "Stock Rekap" [ref=f41e177] [cursor=pointer]:
+          - /url: /stock-rekap
+        - link "Belanja & Struk" [ref=f41e188] [cursor=pointer]:
+          - /url: /procurement
+        - generic [ref=f41e195]: Dapur & Menu
+        - link "Resep & Gizi" [ref=f41e196] [cursor=pointer]:
+          - /url: /recipes
+        - link "Menu & Cetak" [ref=f41e199] [cursor=pointer]:
+          - /url: /menu
+        - generic [ref=f41e202]: Pengiriman
+        - link "Tujuan Antar" [ref=f41e203] [cursor=pointer]:
+          - /url: /destinations
+        - link "Rencana Antar" [ref=f41e207] [cursor=pointer]:
+          - /url: /deliveries
+        - link "Tracking Driver" [ref=f41e213] [cursor=pointer]:
+          - /url: /delivery-tracking
+        - generic [ref=f41e216]: Keuangan & Pembukuan
+        - link "Anggaran" [ref=f41e217] [cursor=pointer]:
+          - /url: /anggaran
+        - link "Transaksi (D/K)" [ref=f41e221] [cursor=pointer]:
+          - /url: /transactions
+        - link "BKU" [ref=f41e225] [cursor=pointer]:
+          - /url: /bku
+        - link "Buku Pembantu" [ref=f41e229] [cursor=pointer]:
+          - /url: /sub-ledger
+        - generic [ref=f41e233]: Laporan & Approval
+        - link "Persetujuan Menu" [ref=f41e234] [cursor=pointer]:
+          - /url: /approval
+        - link "Laporan" [ref=f41e238] [cursor=pointer]:
+          - /url: /reports
+        - link "Audit Trail" [ref=f41e242] [cursor=pointer]:
+          - /url: /audit
+        - generic [ref=f41e246]: Bantuan
+        - link "Panduan Penggunaan" [ref=f41e21] [cursor=pointer]:
+          - /url: /panduan
+      - generic [ref=f41e25]:
+        - generic [ref=f41e26]: Login sebagai
+        - generic [ref=f41e247]: Admin Aplikasi
+        - generic [ref=f41e248]: admin@sppg.id
+        - button "Keluar" [ref=f41e27] [cursor=pointer]
+    - main [ref=f41e31]:
+      - generic [ref=f41e33]:
+        - heading "Stok & Opname" [level=1] [ref=f41e249]
+        - button "Admin Aplikasi" [ref=f41e250] [cursor=pointer]
+      - generic [ref=f41e39]:
+        - generic [ref=f41e40]:
+          - generic [ref=f41e41]:
+            - heading "Stok (FEFO)" [level=1] [ref=f41e42]
+            - paragraph [ref=f41e43]: Urut berdasarkan tanggal kadaluarsa terdekat. Filter berdasarkan zona penyimpanan.
+          - generic [ref=f41e44]:
+            - generic [ref=f41e45]:
+              - button "Semua" [ref=f41e46] [cursor=pointer]
+              - button "Kering" [ref=f41e47] [cursor=pointer]
+              - button "Chiller (0–4°C)" [ref=f41e48] [cursor=pointer]
+              - button "Freezer (-18°C)" [ref=f41e49] [cursor=pointer]
+            - button "Tambah Bahan" [ref=f41e255] [cursor=pointer]
+            - button "Tambah Lot" [ref=f41e257] [cursor=pointer]
+        - generic [ref=f41e259]:
+          - table [ref=f41e261]:
+            - rowgroup [ref=f41e262]:
+              - row [ref=f41e263]:
+                - columnheader "Bahan" [ref=f41e264]
+                - columnheader "Kategori" [ref=f41e265]
+                - columnheader "Zona" [ref=f41e266]
+                - columnheader "Awal" [ref=f41e267]
+                - columnheader "Aktual" [ref=f41e268]
+                - columnheader "Kadaluarsa" [ref=f41e269]
+                - columnheader "Status" [ref=f41e270]
+                - columnheader "Aksi" [ref=f41e271]
+            - rowgroup [ref=f41e272]:
+              - row [ref=f41e273]:
+                - cell "Bayam" [ref=f41e274]
+                - cell "Bahan Baku Lain" [ref=f41e275]
+                - cell "Chiller (0–4°C)" [ref=f41e276]
+                - cell "15 kg" [ref=f41e277]
+                - cell "14 kg" [ref=f41e278]
+                - cell "2026-08-28" [ref=f41e279]
+                - cell "Hampir Kadaluarsa" [ref=f41e280]
+                - cell [ref=f41e281]:
+                  - generic [ref=f41e282]:
+                    - button "Ambil" [ref=f41e283] [cursor=pointer]
+                    - button "Opname" [ref=f41e289] [cursor=pointer]
+              - row [ref=f41e294]:
+                - cell "Tahu" [ref=f41e295]
+                - cell "Bahan Baku Lain" [ref=f41e296]
+                - cell "Chiller (0–4°C)" [ref=f41e297]
+                - cell "10 kg" [ref=f41e298]
+                - cell "9 kg" [ref=f41e299]
+                - cell "2026-08-30" [ref=f41e300]
+                - cell "Hampir Kadaluarsa" [ref=f41e301]
+                - cell [ref=f41e302]:
+                  - generic [ref=f41e303]:
+                    - button "Ambil" [ref=f41e304] [cursor=pointer]
+                    - button "Opname" [ref=f41e310] [cursor=pointer]
+              - row [ref=f41e315]:
+                - cell "Tempe" [ref=f41e316]
+                - cell "Bahan Baku Lain" [ref=f41e317]
+                - cell "Chiller (0–4°C)" [ref=f41e318]
+                - cell "10 kg" [ref=f41e319]
+                - cell "9 kg" [ref=f41e320]
+                - cell "2026-09-01" [ref=f41e321]
+                - cell "Aman" [ref=f41e322]
+                - cell [ref=f41e323]:
+                  - generic [ref=f41e324]:
+                    - button "Ambil" [ref=f41e325] [cursor=pointer]
+                    - button "Opname" [ref=f41e331] [cursor=pointer]
+              - row [ref=f41e336]:
+                - cell "Brokoli" [ref=f41e337]
+                - cell "Bahan Baku Lain" [ref=f41e338]
+                - cell "Chiller (0–4°C)" [ref=f41e339]
+                - cell "8 kg" [ref=f41e340]
+                - cell "8 kg" [ref=f41e341]
+                - cell "2026-09-02" [ref=f41e342]
+                - cell "Aman" [ref=f41e343]
+                - cell [ref=f41e344]:
+                  - generic [ref=f41e345]:
+                    - button "Ambil" [ref=f41e346] [cursor=pointer]
+                    - button "Opname" [ref=f41e352] [cursor=pointer]
+              - row [ref=f41e357]:
+                - cell "Kangkung" [ref=f41e358]
+                - cell "Bahan Baku Lain" [ref=f41e359]
+                - cell "Chiller (0–4°C)" [ref=f41e360]
+                - cell "10 kg" [ref=f41e361]
+                - cell "9 kg" [ref=f41e362]
+                - cell "2026-09-03" [ref=f41e363]
+                - cell "Aman" [ref=f41e364]
+                - cell [ref=f41e365]:
+                  - generic [ref=f41e366]:
+                    - button "Ambil" [ref=f41e367] [cursor=pointer]
+                    - button "Opname" [ref=f41e373] [cursor=pointer]
+              - row [ref=f41e378]:
+                - cell "Wortel" [ref=f41e379]
+                - cell "Bahan Baku Lain" [ref=f41e380]
+                - cell "Chiller (0–4°C)" [ref=f41e381]
+                - cell "12 kg" [ref=f41e382]
+                - cell "11 kg" [ref=f41e383]
+                - cell "2026-09-05" [ref=f41e384]
+                - cell "Aman" [ref=f41e385]
+                - cell [ref=f41e386]:
+                  - generic [ref=f41e387]:
+                    - button "Ambil" [ref=f41e388] [cursor=pointer]
+                    - button "Opname" [ref=f41e394] [cursor=pointer]
+              - row [ref=f41e399]:
+                - cell "Cabai Merah" [ref=f41e400]
+                - cell "Bahan Baku Lain" [ref=f41e401]
+                - cell "Chiller (0–4°C)" [ref=f41e402]
+                - cell "4 kg" [ref=f41e403]
+                - cell "3 kg" [ref=f41e404]
+                - cell "2026-09-06" [ref=f41e405]
+                - cell "Aman" [ref=f41e406]
+                - cell [ref=f41e407]:
+                  - generic [ref=f41e408]:
+                    - button "Ambil" [ref=f41e409] [cursor=pointer]
+                    - button "Opname" [ref=f41e415] [cursor=pointer]
+              - row [ref=f41e420]:
+                - cell "Kol" [ref=f41e421]
+                - cell "Bahan Baku Lain" [ref=f41e422]
+                - cell "Kering" [ref=f41e423]
+                - cell "10 kg" [ref=f41e424]
+                - cell "10 kg" [ref=f41e425]
+                - cell "2026-09-08" [ref=f41e426]
+                - cell "Aman" [ref=f41e427]
+                - cell [ref=f41e428]:
+                  - generic [ref=f41e429]:
+                    - button "Ambil" [ref=f41e430] [cursor=pointer]
+                    - button "Opname" [ref=f41e436] [cursor=pointer]
+              - row [ref=f41e441]:
+                - cell "Telur" [ref=f41e442]
+                - cell "Bahan Baku Lain" [ref=f41e443]
+                - cell "Kering" [ref=f41e444]
+                - cell "50 kg" [ref=f41e445]
+                - cell "48 kg" [ref=f41e446]
+                - cell "2026-09-10" [ref=f41e447]
+                - cell "Aman" [ref=f41e448]
+                - cell [ref=f41e449]:
+                  - generic [ref=f41e450]:
+                    - button "Ambil" [ref=f41e451] [cursor=pointer]
+                    - button "Opname" [ref=f41e457] [cursor=pointer]
+              - row [ref=f41e462]:
+                - cell "Kentang" [ref=f41e463]
+                - cell "Bahan Baku Lain" [ref=f41e464]
+                - cell "Kering" [ref=f41e465]
+                - cell "12 kg" [ref=f41e466]
+                - cell "11 kg" [ref=f41e467]
+                - cell "2026-09-12" [ref=f41e468]
+                - cell "Aman" [ref=f41e469]
+                - cell [ref=f41e470]:
+                  - generic [ref=f41e471]:
+                    - button "Ambil" [ref=f41e472] [cursor=pointer]
+                    - button "Opname" [ref=f41e478] [cursor=pointer]
+              - row [ref=f41e483]:
+                - cell "Ayam Fillet" [ref=f41e484]
+                - cell "Bahan Baku Lain" [ref=f41e485]
+                - cell "Freezer (-18°C)" [ref=f41e486]
+                - cell "30 kg" [ref=f41e487]
+                - cell "28 kg" [ref=f41e488]
+                - cell "2026-09-15" [ref=f41e489]
+                - cell "Aman" [ref=f41e490]
+                - cell [ref=f41e491]:
+                  - generic [ref=f41e492]:
+                    - button "Ambil" [ref=f41e493] [cursor=pointer]
+                    - button "Opname" [ref=f41e499] [cursor=pointer]
+              - row [ref=f41e504]:
+                - cell "Ikan Tongkol" [ref=f41e505]
+                - cell "Bahan Baku Lain" [ref=f41e506]
+                - cell "Freezer (-18°C)" [ref=f41e507]
+                - cell "20 kg" [ref=f41e508]
+                - cell "19 kg" [ref=f41e509]
+                - cell "2026-09-20" [ref=f41e510]
+                - cell "Aman" [ref=f41e511]
+                - cell [ref=f41e512]:
+                  - generic [ref=f41e513]:
+                    - button "Ambil" [ref=f41e514] [cursor=pointer]
+                    - button "Opname" [ref=f41e520] [cursor=pointer]
+              - row [ref=f41e525]:
+                - cell "Bawang Merah" [ref=f41e526]
+                - cell "Bahan Baku Lain" [ref=f41e527]
+                - cell "Kering" [ref=f41e528]
+                - cell "5 kg" [ref=f41e529]
+                - cell "4 kg" [ref=f41e530]
+                - cell "2026-10-15" [ref=f41e531]
+                - cell "Aman" [ref=f41e532]
+                - cell [ref=f41e533]:
+                  - generic [ref=f41e534]:
+                    - button "Ambil" [ref=f41e535] [cursor=pointer]
+                    - button "Opname" [ref=f41e541] [cursor=pointer]
+              - row [ref=f41e546]:
+                - cell "Bawang Putih" [ref=f41e547]
+                - cell "Bahan Baku Lain" [ref=f41e548]
+                - cell "Kering" [ref=f41e549]
+                - cell "4 kg" [ref=f41e550]
+                - cell "4 kg" [ref=f41e551]
+                - cell "2026-11-01" [ref=f41e552]
+                - cell "Aman" [ref=f41e553]
+                - cell [ref=f41e554]:
+                  - generic [ref=f41e555]:
+                    - button "Ambil" [ref=f41e556] [cursor=pointer]
+                    - button "Opname" [ref=f41e562] [cursor=pointer]
+              - row [ref=f41e567]:
+                - cell "Mie Instan" [ref=f41e568]
+                - cell "Bahan Baku Lain" [ref=f41e569]
+                - cell "Kering" [ref=f41e570]
+                - cell "25 kg" [ref=f41e571]
+                - cell "24 kg" [ref=f41e572]
+                - cell "2026-12-01" [ref=f41e573]
+                - cell "Aman" [ref=f41e574]
+                - cell [ref=f41e575]:
+                  - generic [ref=f41e576]:
+                    - button "Ambil" [ref=f41e577] [cursor=pointer]
+                    - button "Opname" [ref=f41e583] [cursor=pointer]
+          - generic [ref=f41e588]:
+            - generic [ref=f41e589]: Halaman 1 dari 2
+            - generic [ref=f41e590]:
+              - button [disabled] [ref=f41e591]
+              - button "1" [ref=f41e594] [cursor=pointer]
+              - button "2" [ref=f41e595] [cursor=pointer]
+              - button [ref=f41e596] [cursor=pointer]
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=f41e604] [cursor=pointer]
+  - alert [ref=f41e608]

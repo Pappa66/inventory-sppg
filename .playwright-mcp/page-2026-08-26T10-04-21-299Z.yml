@@ -1,0 +1,38 @@
+- generic [active] [ref=f16e1]:
+  - generic [ref=f16e2]:
+    - complementary [ref=f16e3]:
+      - generic [ref=f16e10]:
+        - generic [ref=f16e11]: SPPG · MBG
+        - generic [ref=f16e12]: Inventory & Procurement
+      - navigation [ref=f16e13]:
+        - link "Dasbor" [ref=f16e14] [cursor=pointer]:
+          - /url: /
+        - generic [ref=f16e20]: Bantuan
+        - link "Panduan Penggunaan" [ref=f16e21] [cursor=pointer]:
+          - /url: /panduan
+      - generic [ref=f16e25]:
+        - generic [ref=f16e26]: Login sebagai
+        - button "Keluar" [ref=f16e27] [cursor=pointer]
+    - main [ref=f16e31]:
+      - heading "Dasbor" [level=1] [ref=f16e35]
+      - generic [ref=f16e39]:
+        - generic [ref=f16e41]:
+          - heading "Saldo Awal Barang" [level=1] [ref=f16e42]
+          - paragraph [ref=f16e43]: Atur saldo awal per kode barang per periode
+        - generic [ref=f16e44]:
+          - generic [ref=f16e45]: "Periode:"
+          - combobox [ref=f16e46]
+          - generic [ref=f16e47]:
+            - text: "Total:"
+            - generic [ref=f16e48]: Rp 0
+        - generic [ref=f16e49]:
+          - textbox "Cari kode atau nama barang..." [ref=f16e54]
+          - combobox [ref=f16e55]:
+            - option "Semua Kategori" [selected]
+            - option "KH - Karbohidrat"
+            - option "PH - Protein Hewani"
+            - option "PN - Protein Nabati"
+            - option "SY - Sayuran"
+            - option "BU - Buah-buahan"
+            - option "BB - Bahan Baku Lain"
+  - region "Notifications alt+T"

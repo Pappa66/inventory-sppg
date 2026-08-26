@@ -1,0 +1,21 @@
+- generic [active] [ref=f37e1]:
+  - generic [ref=f37e2]:
+    - complementary [ref=f37e3]:
+      - generic [ref=f37e10]:
+        - generic [ref=f37e11]: SPPG · MBG
+        - generic [ref=f37e12]: Inventory & Procurement
+      - navigation [ref=f37e13]:
+        - link "Dasbor" [ref=f37e14] [cursor=pointer]:
+          - /url: /
+        - generic [ref=f37e20]: Bantuan
+        - link "Panduan Penggunaan" [ref=f37e21] [cursor=pointer]:
+          - /url: /panduan
+      - generic [ref=f37e25]:
+        - generic [ref=f37e26]: Login sebagai
+        - button "Keluar" [ref=f37e27] [cursor=pointer]
+    - main [ref=f37e31]:
+      - heading "Dasbor" [level=1] [ref=f37e35]
+      - generic [ref=f37e40]:
+        - heading "Akses Dibatasi" [level=1] [ref=f37e41]
+        - paragraph [ref=f37e42]: Anda tidak memiliki izin untuk mengakses halaman ini.
+  - region "Notifications alt+T"

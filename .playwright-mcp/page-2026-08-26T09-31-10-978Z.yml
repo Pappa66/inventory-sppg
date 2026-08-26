@@ -1,0 +1,141 @@
+- generic [ref=f7e1]:
+  - generic [ref=f7e171]:
+    - complementary [ref=f7e172]:
+      - generic [ref=f7e179]:
+        - generic [ref=f7e180]: SPPG · MBG
+        - generic [ref=f7e181]: Inventory & Procurement
+      - navigation [ref=f7e182]:
+        - link "Dasbor" [ref=f7e183] [cursor=pointer]:
+          - /url: /
+        - link "Pengguna" [ref=f7e189] [cursor=pointer]:
+          - /url: /users
+        - link "Pengaturan SPPG" [ref=f7e195] [cursor=pointer]:
+          - /url: /settings
+        - generic [ref=f7e199]: Konfigurasi Sistem
+        - link "Konfigurasi Global" [ref=f7e200] [cursor=pointer]:
+          - /url: /global-config
+        - generic [ref=f7e204]: Master & Persediaan
+        - link "Master Bahan" [ref=f7e205] [cursor=pointer]:
+          - /url: /master
+        - link "Hirarki Barang" [ref=f7e210] [cursor=pointer]:
+          - /url: /item-hierarchy
+        - link "Saldo Awal Barang" [ref=f7e215] [cursor=pointer]:
+          - /url: /opening-balances
+        - link "Stok & Opname" [ref=f7e220] [cursor=pointer]:
+          - /url: /inventory
+        - link "Stock Detail" [ref=f7e231] [cursor=pointer]:
+          - /url: /stock-detail
+        - link "Stock Rekap" [ref=f7e242] [cursor=pointer]:
+          - /url: /stock-rekap
+        - link "Belanja & Struk" [ref=f7e253] [cursor=pointer]:
+          - /url: /procurement
+        - generic [ref=f7e260]: Dapur & Menu
+        - link "Resep & Gizi" [ref=f7e261] [cursor=pointer]:
+          - /url: /recipes
+        - link "Menu & Cetak" [ref=f7e264] [cursor=pointer]:
+          - /url: /menu
+        - generic [ref=f7e267]: Pengiriman
+        - link "Tujuan Antar" [ref=f7e268] [cursor=pointer]:
+          - /url: /destinations
+        - link "Rencana Antar" [ref=f7e272] [cursor=pointer]:
+          - /url: /deliveries
+        - link "Tracking Driver" [ref=f7e278] [cursor=pointer]:
+          - /url: /delivery-tracking
+        - generic [ref=f7e281]: Keuangan & Pembukuan
+        - link "Anggaran" [ref=f7e282] [cursor=pointer]:
+          - /url: /anggaran
+        - link "Transaksi (D/K)" [ref=f7e286] [cursor=pointer]:
+          - /url: /transactions
+        - link "BKU" [ref=f7e290] [cursor=pointer]:
+          - /url: /bku
+        - link "Buku Pembantu" [ref=f7e294] [cursor=pointer]:
+          - /url: /sub-ledger
+        - generic [ref=f7e298]: Laporan & Approval
+        - link "Persetujuan Menu" [ref=f7e299] [cursor=pointer]:
+          - /url: /approval
+        - link "Laporan" [ref=f7e303] [cursor=pointer]:
+          - /url: /reports
+        - link "Audit Trail" [ref=f7e307] [cursor=pointer]:
+          - /url: /audit
+        - generic [ref=f7e311]: Bantuan
+        - link "Panduan Penggunaan" [ref=f7e312] [cursor=pointer]:
+          - /url: /panduan
+      - generic [ref=f7e316]:
+        - generic [ref=f7e317]: Login sebagai
+        - generic [ref=f7e318]: Admin Aplikasi
+        - generic [ref=f7e319]: admin@sppg.id
+        - button "Keluar" [ref=f7e320] [cursor=pointer]
+    - main [ref=f7e324]:
+      - generic [ref=f7e326]:
+        - heading "Dasbor" [level=1] [ref=f7e328]
+        - generic [ref=f7e329]:
+          - button "Admin Aplikasi" [active] [ref=f7e330] [cursor=pointer]
+          - generic [ref=f7e455]:
+            - generic [ref=f7e456]: Switch Role
+            - generic [ref=f7e457]:
+              - generic [ref=f7e458]: Admin
+              - button "Admin Aplikasi" [ref=f7e459] [cursor=pointer]
+              - button "Admin SPPG" [ref=f7e464] [cursor=pointer]
+            - generic [ref=f7e467]:
+              - generic [ref=f7e468]: Manajemen
+              - button "Kepala SPPG" [ref=f7e469] [cursor=pointer]
+              - button "Akuntan" [ref=f7e472] [cursor=pointer]
+              - button "Ahli Gizi" [ref=f7e475] [cursor=pointer]
+            - generic [ref=f7e478]:
+              - generic [ref=f7e479]: Dapur
+              - button "Head Chef" [ref=f7e480] [cursor=pointer]
+              - button "Tenaga Persiapan" [ref=f7e483] [cursor=pointer]
+              - button "Tenaga Masak" [ref=f7e486] [cursor=pointer]
+              - button "Tenaga Pemorsian" [ref=f7e489] [cursor=pointer]
+            - generic [ref=f7e492]:
+              - generic [ref=f7e493]: Lapangan
+              - button "Asisten Lapangan" [ref=f7e494] [cursor=pointer]
+              - button "Driver" [ref=f7e497] [cursor=pointer]
+            - generic [ref=f7e500]:
+              - generic [ref=f7e501]: Penunjang
+              - button "Petugas Kebersihan" [ref=f7e502] [cursor=pointer]
+              - button "Pencuci Ompreng" [ref=f7e505] [cursor=pointer]
+      - generic [ref=f7e336]:
+        - generic [ref=f7e337]:
+          - heading "Dasbor" [level=1] [ref=f7e338]
+          - paragraph [ref=f7e339]: Ringkasan untuk Admin Aplikasi
+        - generic [ref=f7e371]:
+          - generic [ref=f7e372]:
+            - generic [ref=f7e373]: Total Stok
+            - generic [ref=f7e379]: Rp 0
+          - generic [ref=f7e380]:
+            - generic [ref=f7e381]: Total Anggaran
+            - generic [ref=f7e386]: Rp 0
+          - generic [ref=f7e387]:
+            - generic [ref=f7e388]: Transaksi Hari Ini
+            - generic [ref=f7e392]: 2 transaksi
+          - generic [ref=f7e393]:
+            - generic [ref=f7e394]: Pengiriman Pending
+            - generic [ref=f7e401]: "4"
+          - generic [ref=f7e402]:
+            - generic [ref=f7e403]: Low Stock
+            - generic [ref=f7e407]: "2"
+          - generic [ref=f7e408]:
+            - generic [ref=f7e409]: User Aktif
+            - generic [ref=f7e416]: 14 / 14
+        - generic [ref=f7e417]:
+          - generic [ref=f7e418]: Stok Menipis
+          - generic [ref=f7e421]:
+            - generic [ref=f7e422]:
+              - generic [ref=f7e423]: Bawang Merah
+              - generic [ref=f7e424]: 4 / 5 kg
+            - generic [ref=f7e425]:
+              - generic [ref=f7e426]: Minyak Goreng
+              - generic [ref=f7e427]: 9 / 10 liter
+        - generic [ref=f7e428]:
+          - link "Konfigurasi Global" [ref=f7e429] [cursor=pointer]:
+            - /url: /global-config
+          - link "Pengguna" [ref=f7e435] [cursor=pointer]:
+            - /url: /users
+          - link "Laporan" [ref=f7e443] [cursor=pointer]:
+            - /url: /reports
+          - link "Audit Trail" [ref=f7e449] [cursor=pointer]:
+            - /url: /audit
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=f7e72] [cursor=pointer]
+  - alert [ref=f7e76]

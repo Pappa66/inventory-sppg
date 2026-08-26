@@ -1,0 +1,56 @@
+- generic [active] [ref=f7e1]:
+  - generic [ref=f7e171]:
+    - complementary [ref=f7e172]:
+      - generic [ref=f7e179]:
+        - generic [ref=f7e180]: SPPG · MBG
+        - generic [ref=f7e181]: Inventory & Procurement
+      - navigation [ref=f7e182]:
+        - link "Dasbor" [ref=f7e183] [cursor=pointer]:
+          - /url: /
+        - generic [ref=f7e508]: Master & Persediaan
+        - generic [ref=f7e625]: Dapur & Menu
+        - link "Resep & Gizi" [ref=f7e626] [cursor=pointer]:
+          - /url: /recipes
+        - link "Menu & Cetak" [ref=f7e629] [cursor=pointer]:
+          - /url: /menu
+        - link "Tugas Harian" [ref=f7e632] [cursor=pointer]:
+          - /url: /pemorsian
+        - generic [ref=f7e636]: Bantuan
+        - link "Panduan Penggunaan" [ref=f7e312] [cursor=pointer]:
+          - /url: /panduan
+      - generic [ref=f7e316]:
+        - generic [ref=f7e317]: Login sebagai
+        - generic [ref=f7e318]: Admin Aplikasi
+        - generic [ref=f7e319]: admin@sppg.id
+        - button "Keluar" [ref=f7e320] [cursor=pointer]
+    - main [ref=f7e324]:
+      - generic [ref=f7e326]:
+        - heading "Dasbor" [level=1] [ref=f7e328]
+        - button "Tenaga Masak" [ref=f7e637] [cursor=pointer]
+      - generic [ref=f7e336]:
+        - generic [ref=f7e337]:
+          - heading "Dasbor" [level=1] [ref=f7e338]
+          - paragraph [ref=f7e339]: Ringkasan untuk Tenaga Masak
+        - generic [ref=f7e638]:
+          - generic [ref=f7e639]:
+            - generic [ref=f7e640]: Resep Tersedia
+            - generic [ref=f7e644]: "25"
+          - generic [ref=f7e645]:
+            - generic [ref=f7e646]: Bahan Diambil
+            - generic [ref=f7e653]: 1 item
+          - generic [ref=f7e654]:
+            - generic [ref=f7e655]: Menu Hari Ini
+            - generic [ref=f7e659]: "0"
+          - generic [ref=f7e660]:
+            - generic [ref=f7e661]: Target Porsi
+            - generic [ref=f7e668]: 0 porsi
+        - generic [ref=f7e669]:
+          - link "Resep & Gizi" [ref=f7e670] [cursor=pointer]:
+            - /url: /recipes
+          - link "Menu & Porsi" [ref=f7e675] [cursor=pointer]:
+            - /url: /menu
+          - link "Stok Bahan" [ref=f7e680] [cursor=pointer]:
+            - /url: /inventory
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=f7e72] [cursor=pointer]
+  - alert [ref=f7e76]

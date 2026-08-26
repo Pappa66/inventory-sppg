@@ -1,0 +1,107 @@
+- generic [active] [ref=f35e1]:
+  - generic [ref=f35e298]:
+    - complementary [ref=f35e299]:
+      - generic [ref=f35e306]:
+        - generic [ref=f35e307]: SPPG · MBG
+        - generic [ref=f35e308]: Inventory & Procurement
+      - navigation [ref=f35e309]:
+        - link "Dasbor" [ref=f35e310] [cursor=pointer]:
+          - /url: /
+        - link "Pengguna" [ref=f35e316] [cursor=pointer]:
+          - /url: /users
+        - link "Pengaturan SPPG" [ref=f35e322] [cursor=pointer]:
+          - /url: /settings
+        - generic [ref=f35e326]: Konfigurasi Sistem
+        - link "Konfigurasi Global" [ref=f35e327] [cursor=pointer]:
+          - /url: /global-config
+        - generic [ref=f35e331]: Master & Persediaan
+        - link "Master Bahan" [ref=f35e332] [cursor=pointer]:
+          - /url: /master
+        - link "Hirarki Barang" [ref=f35e337] [cursor=pointer]:
+          - /url: /item-hierarchy
+        - link "Saldo Awal Barang" [ref=f35e342] [cursor=pointer]:
+          - /url: /opening-balances
+        - link "Stok & Opname" [ref=f35e347] [cursor=pointer]:
+          - /url: /inventory
+        - link "Stock Detail" [ref=f35e358] [cursor=pointer]:
+          - /url: /stock-detail
+        - link "Stock Rekap" [ref=f35e369] [cursor=pointer]:
+          - /url: /stock-rekap
+        - link "Belanja & Struk" [ref=f35e380] [cursor=pointer]:
+          - /url: /procurement
+        - generic [ref=f35e387]: Dapur & Menu
+        - link "Resep & Gizi" [ref=f35e388] [cursor=pointer]:
+          - /url: /recipes
+        - link "Menu & Cetak" [ref=f35e391] [cursor=pointer]:
+          - /url: /menu
+        - generic [ref=f35e394]: Pengiriman
+        - link "Tujuan Antar" [ref=f35e395] [cursor=pointer]:
+          - /url: /destinations
+        - link "Rencana Antar" [ref=f35e399] [cursor=pointer]:
+          - /url: /deliveries
+        - link "Tracking Driver" [ref=f35e405] [cursor=pointer]:
+          - /url: /delivery-tracking
+        - generic [ref=f35e408]: Keuangan & Pembukuan
+        - link "Anggaran" [ref=f35e409] [cursor=pointer]:
+          - /url: /anggaran
+        - link "Transaksi (D/K)" [ref=f35e413] [cursor=pointer]:
+          - /url: /transactions
+        - link "BKU" [ref=f35e417] [cursor=pointer]:
+          - /url: /bku
+        - link "Buku Pembantu" [ref=f35e421] [cursor=pointer]:
+          - /url: /sub-ledger
+        - generic [ref=f35e425]: Laporan & Approval
+        - link "Persetujuan Menu" [ref=f35e426] [cursor=pointer]:
+          - /url: /approval
+        - link "Laporan" [ref=f35e430] [cursor=pointer]:
+          - /url: /reports
+        - link "Audit Trail" [ref=f35e434] [cursor=pointer]:
+          - /url: /audit
+        - generic [ref=f35e438]: Bantuan
+        - link "Panduan Penggunaan" [ref=f35e439] [cursor=pointer]:
+          - /url: /panduan
+      - generic [ref=f35e443]:
+        - generic [ref=f35e444]: Login sebagai
+        - generic [ref=f35e445]: Admin Aplikasi
+        - generic [ref=f35e446]: admin@sppg.id
+        - button "Keluar" [ref=f35e447] [cursor=pointer]
+    - main [ref=f35e451]:
+      - generic [ref=f35e453]:
+        - heading "BKU" [level=1] [ref=f35e455]
+        - button "Admin Aplikasi" [ref=f35e457] [cursor=pointer]
+      - generic [ref=f35e463]:
+        - generic [ref=f35e464]:
+          - heading "BKU - Buku Kas Umum" [level=1] [ref=f35e465]
+          - paragraph [ref=f35e466]: Ringkasan transaksi per kode akun (otomatis dari input transaksi)
+        - generic [ref=f35e467]:
+          - generic [ref=f35e468]:
+            - text: Kode Akun
+            - combobox [ref=f35e469]:
+              - option "Semua" [selected]
+              - option "1000 - BUKU KAS UMUM"
+              - option "1100 - Petty Cash"
+              - option "1200 - Kas di Bank"
+              - option "1300 - Dana Bantuan Pemerintah"
+              - option "2100 - Biaya Bahan Baku"
+              - option "2200 - Biaya Operasional"
+              - option "2300 - Biaya Insentif Fasilitas"
+              - option "3100 - PPN"
+          - generic [ref=f35e470]:
+            - text: Dari Tanggal
+            - textbox [ref=f35e471]
+          - generic [ref=f35e472]:
+            - text: Sampai Tanggal
+            - textbox [ref=f35e473]
+        - generic [ref=f35e474]:
+          - generic [ref=f35e475]:
+            - generic [ref=f35e476]: Total Debet
+            - generic [ref=f35e477]: Rp 0
+          - generic [ref=f35e478]:
+            - generic [ref=f35e479]: Total Kredit
+            - generic [ref=f35e480]: Rp 0
+          - generic [ref=f35e481]:
+            - generic [ref=f35e482]: Saldo BKU
+            - generic [ref=f35e483]: Rp 0
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=f35e293] [cursor=pointer]
+  - alert [ref=f35e297]: SPPG · MBG — Inventory & Procurement

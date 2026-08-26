@@ -1,0 +1,57 @@
+- generic [active] [ref=f6e1]:
+  - generic [ref=f6e2]:
+    - complementary [ref=f6e3]:
+      - generic [ref=f6e10]:
+        - generic [ref=f6e11]: SPPG · MBG
+        - generic [ref=f6e12]: Inventory & Procurement
+      - navigation [ref=f6e13]:
+        - link "Dasbor" [ref=f6e14] [cursor=pointer]:
+          - /url: /
+        - generic [ref=f6e20]: Pengiriman
+        - link "Tracking Driver" [ref=f6e75] [cursor=pointer]:
+          - /url: /delivery-tracking
+        - generic [ref=f6e78]: Bantuan
+        - link "Panduan Penggunaan" [ref=f6e21] [cursor=pointer]:
+          - /url: /panduan
+      - generic [ref=f6e25]:
+        - generic [ref=f6e26]: Login sebagai
+        - generic [ref=f6e79]: Driver
+        - generic [ref=f6e80]: driver@sppg.id
+        - button "Keluar" [ref=f6e27] [cursor=pointer]
+    - main [ref=f6e31]:
+      - generic [ref=f6e33]:
+        - heading "Dasbor" [level=1] [ref=f6e35]
+        - generic [ref=f6e36]: Driver
+      - generic [ref=f6e39]:
+        - generic [ref=f6e40]:
+          - heading "Dasbor" [level=1] [ref=f6e41]
+          - paragraph [ref=f6e42]: Ringkasan untuk Driver
+        - generic [ref=f6e82]:
+          - generic [ref=f6e83]:
+            - generic [ref=f6e84]: Pengiriman Hari Ini
+            - generic [ref=f6e91]: 4 tujuan
+          - generic [ref=f6e92]:
+            - generic [ref=f6e93]: Status Per Tujuan
+            - generic [ref=f6e98]: 4/4 terkirim
+          - generic [ref=f6e99]:
+            - generic [ref=f6e100]: Foto Terkirim
+            - generic [ref=f6e105]: 0 foto
+        - generic [ref=f6e106]:
+          - generic [ref=f6e107]: Pengiriman Hari Ini
+          - generic [ref=f6e113]:
+            - generic [ref=f6e114]:
+              - generic [ref=f6e115]: SDN 01 Jagakarsa
+              - generic [ref=f6e119]: 1020 porsi
+            - generic [ref=f6e120]:
+              - generic [ref=f6e121]: PAUD Melati
+              - generic [ref=f6e125]: 520 porsi
+            - generic [ref=f6e126]:
+              - generic [ref=f6e127]: Posyandu Mawar
+              - generic [ref=f6e131]: 320 porsi
+            - generic [ref=f6e132]:
+              - generic [ref=f6e133]: Panti Asuhan Harapan
+              - generic [ref=f6e137]: 220 porsi
+        - link "Tracking Pengantaran" [ref=f6e139] [cursor=pointer]:
+          - /url: /delivery-tracking
+  - region "Notifications alt+T"
+  - alert [ref=f6e74]

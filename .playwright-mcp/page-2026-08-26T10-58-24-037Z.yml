@@ -1,0 +1,66 @@
+- generic [active] [ref=f21e1]:
+  - generic [ref=f21e2]:
+    - complementary [ref=f21e3]:
+      - generic [ref=f21e10]:
+        - generic [ref=f21e11]: SPPG · MBG
+        - generic [ref=f21e12]: Inventory & Procurement
+      - navigation [ref=f21e13]:
+        - link "Dasbor" [ref=f21e14] [cursor=pointer]:
+          - /url: /
+        - generic [ref=f21e351]: Master & Persediaan
+        - link "Master Bahan" [ref=f21e90] [cursor=pointer]:
+          - /url: /master
+        - link "Stok & Opname" [ref=f21e105] [cursor=pointer]:
+          - /url: /inventory
+        - link "Stock Detail" [ref=f21e116] [cursor=pointer]:
+          - /url: /stock-detail
+        - link "Stock Rekap" [ref=f21e127] [cursor=pointer]:
+          - /url: /stock-rekap
+        - generic [ref=f21e352]: Dapur & Menu
+        - link "Resep & Gizi" [ref=f21e146] [cursor=pointer]:
+          - /url: /recipes
+        - link "Menu & Cetak" [ref=f21e149] [cursor=pointer]:
+          - /url: /menu
+        - generic [ref=f21e353]: Pengiriman
+        - link "Rencana Antar" [ref=f21e157] [cursor=pointer]:
+          - /url: /deliveries
+        - generic [ref=f21e354]: Laporan & Approval
+        - generic [ref=f21e355]: Bantuan
+        - link "Panduan Penggunaan" [ref=f21e21] [cursor=pointer]:
+          - /url: /panduan
+      - generic [ref=f21e25]:
+        - generic [ref=f21e26]: Login sebagai
+        - generic [ref=f21e197]: Admin Aplikasi
+        - generic [ref=f21e198]: admin@sppg.id
+        - button "Keluar" [ref=f21e27] [cursor=pointer]
+    - main [ref=f21e31]:
+      - generic [ref=f21e33]:
+        - heading "Dasbor" [level=1] [ref=f21e35]
+        - button "Head Chef" [ref=f21e356] [cursor=pointer]
+      - generic [ref=f21e39]:
+        - generic [ref=f21e40]:
+          - heading "Dasbor" [level=1] [ref=f21e41]
+          - paragraph [ref=f21e42]: Ringkasan untuk Head Chef
+        - generic [ref=f21e357]:
+          - generic [ref=f21e358]:
+            - generic [ref=f21e359]: Resep Tersedia
+            - generic [ref=f21e363]: "25"
+          - generic [ref=f21e364]:
+            - generic [ref=f21e365]: Menu Minggu Ini
+            - generic [ref=f21e369]: 0 hari
+          - generic [ref=f21e370]:
+            - generic [ref=f21e371]: Pengambilan Barang
+            - generic [ref=f21e378]: 1 hari ini
+          - generic [ref=f21e379]:
+            - generic [ref=f21e380]: Stok Bahan Masak
+            - generic [ref=f21e387]: 17 lot tersedia
+        - generic [ref=f21e388]:
+          - link "Resep" [ref=f21e389] [cursor=pointer]:
+            - /url: /recipes
+          - link "Menu" [ref=f21e394] [cursor=pointer]:
+            - /url: /menu
+          - link "Stok" [ref=f21e399] [cursor=pointer]:
+            - /url: /inventory
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=f21e293] [cursor=pointer]
+  - alert [ref=f21e297]
