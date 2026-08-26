@@ -1538,7 +1538,25 @@ function SectionDetail({ section, color }) {
           {section.details?.map((d, i) => (
             <div key={i}>
               <h4 className="font-semibold text-sm mb-1">{d.title}</h4>
-              <p className="text-sm text-[#5C5C5C] leading-relaxed">{d.content}</p>
+              {Array.isArray(d.content) ? (
+                <div className="space-y-2 text-sm text-[#5C5C5C] leading-relaxed">
+                  {d.content.map((item, j) => (
+                    <div key={j} className="bg-[#F9F6F0] rounded-lg p-3 border border-[#E8E4DA]">
+                      {item.code && (
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="font-mono font-bold text-xs px-2 py-0.5 rounded" style={{ backgroundColor: `${color}1A`, color }}>{item.code}</span>
+                          {item.name && <span className="font-semibold">{item.name}</span>}
+                        </div>
+                      )}
+                      {item.use && <div className="text-sm">{item.use}</div>}
+                      {item.type && <div className="text-xs mt-1 font-medium" style={{ color }}>{item.type}</div>}
+                      {!item.code && !item.name && !item.type && <span>{typeof item === 'string' ? item : JSON.stringify(item)}</span>}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-[#5C5C5C] leading-relaxed">{d.content}</p>
+              )}
             </div>
           ))}
 
