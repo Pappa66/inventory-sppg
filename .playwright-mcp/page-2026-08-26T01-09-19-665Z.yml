@@ -1,0 +1,28 @@
+- generic [active] [ref=f6e1]:
+  - generic [ref=f6e2]:
+    - complementary [ref=f6e3]:
+      - generic [ref=f6e10]:
+        - generic [ref=f6e11]: SPPG · MBG
+        - generic [ref=f6e12]: Inventory & Procurement
+      - navigation [ref=f6e13]:
+        - link "Dasbor" [ref=f6e14] [cursor=pointer]:
+          - /url: /
+        - generic [ref=f6e20]: Bantuan
+        - link "Panduan Penggunaan" [ref=f6e21] [cursor=pointer]:
+          - /url: /panduan
+      - generic [ref=f6e25]:
+        - generic [ref=f6e26]: Login sebagai
+        - button "Keluar" [ref=f6e27] [cursor=pointer]
+    - main [ref=f6e31]:
+      - heading "Dasbor" [level=1] [ref=f6e35]
+      - generic [ref=f6e40]:
+        - generic [ref=f6e41]:
+          - heading "Stok (FEFO)" [level=1] [ref=f6e42]
+          - paragraph [ref=f6e43]: Urut berdasarkan tanggal kadaluarsa terdekat. Filter berdasarkan zona penyimpanan.
+        - generic [ref=f6e45]:
+          - button "Semua" [ref=f6e46] [cursor=pointer]
+          - button "Kering" [ref=f6e47] [cursor=pointer]
+          - button "Chiller (0–4°C)" [ref=f6e48] [cursor=pointer]
+          - button "Freezer (-18°C)" [ref=f6e49] [cursor=pointer]
+  - region "Notifications alt+T"
+  - alert [ref=f6e124]

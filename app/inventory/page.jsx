@@ -66,7 +66,7 @@ export default function Page() {
     try {
       await api.post("/items", itemForm);
       toast.success("Bahan baru ditambahkan");
-      setOpenItem(false); setItemForm({ name: "", unit: "kg", category: "Sayur", par_level: 0, price_per_unit: 0, zone: "DRY" }); load();
+      setOpenItem(false); setItemForm({ name: "", unit: "kg", category: "SY", par_level: 0, price_per_unit: 0, zone: "DRY" }); load();
     } catch (er) { toast.error(formatErr(er)); }
   };
 

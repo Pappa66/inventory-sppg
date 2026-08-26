@@ -40,10 +40,18 @@ export default function StockRekapPage() {
       catMap[code] = { code, label: info.label, color: info.color, items: 0, total_qty: 0, actual_qty: 0, total_value: 0, lot_count: 0 };
     }
 
+    const labelToCode = {};
+    for (const [code, info] of Object.entries(ITEM_CATEGORIES)) {
+      labelToCode[info.label.toLowerCase()] = code;
+      labelToCode[code.toLowerCase()] = code;
+    }
+
     for (const lot of lots) {
       const item = itemMap[lot.item_id];
       if (!item) continue;
-      const cat = catMap[item.category];
+      const raw = (item.category || "").toLowerCase();
+      const code = labelToCode[raw] || item.category;
+      const cat = catMap[code] || catMap[raw];
       if (!cat) continue;
       cat.items += 1;
       cat.total_qty += lot.quantity || 0;
