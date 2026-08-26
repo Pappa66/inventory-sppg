@@ -8,6 +8,7 @@ import {
   AlertTriangle, ChevronDown, ChevronRight, User,
 } from "lucide-react";
 import { ROLE_LABELS, ROLE_COLORS } from "@/lib/format";
+import { api } from "@/lib/api";
 
 const DEMO_ACCOUNTS = [
   { role: "admin_apps", email: "admin@sppg.id", id: "a0000001-0000-0000-0000-000000000001", label: "Admin Aplikasi", desc: "Akses penuh ke seluruh sistem" },
@@ -35,7 +36,7 @@ const QUICK_ROLES = [
 ];
 
 export default function LoginPage() {
-  const { login, error } = useAuth();
+  const { login, error, setUser, setActiveRole } = useAuth();
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -67,6 +68,9 @@ export default function LoginPage() {
       const token = btoa(JSON.stringify(payload));
       localStorage.setItem("sppg_token", token);
       document.cookie = `sppg_token=${token}; path=/; max-age=43200; SameSite=Lax`;
+      api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+      setUser(payload);
+      setActiveRole(acc.role);
       router.push("/");
     } catch {
     } finally {
