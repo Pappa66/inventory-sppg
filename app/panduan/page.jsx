@@ -18,7 +18,7 @@ const GUIDES = {
     color: "#1E40AF",
     overview: "Admin Aplikasi memiliki akses penuh ke seluruh sistem. Mengelola konfigurasi global, pengguna, master data, hirarki barang, dan memantau operasional semua SPPG. Role ini setara superuser.",
     menus: [
-      { label: "Dasbor", desc: "Ringkasan data semua SPPG dalam satu tampilan." },
+      { label: "Dashboard", desc: "Ringkasan data semua SPPG dalam satu tampilan." },
       { label: "Pengguna", desc: "Buat, edit, aktifkan/nonaktifkan akun pengguna semua role." },
       { label: "Pengaturan SPPG", desc: "Atur data SPPG: nama, alamat, logo, kepala, akuntan, yayasan, rekening, periode anggaran." },
       { label: "Konfigurasi Global", desc: "Atur harga satuan porsi, persentase anggaran, pajak, insentif, kapasitas, jam operasional — berlaku untuk semua SPPG." },
@@ -201,7 +201,7 @@ const GUIDES = {
     color: "#2D2D2D",
     overview: "Admin SPPG mengelola operasional satu SPPG: pengaturan data, pengguna, master data, stok, anggaran, dan laporan. Mirip Admin Apps namun terbatas untuk satu SPPG.",
     menus: [
-      { label: "Dasbor", desc: "Ringkasan data SPPG yang dikelola." },
+      { label: "Dashboard", desc: "Ringkasan data SPPG yang dikelola." },
       { label: "Pengguna", desc: "Kelola akun pengguna di SPPG ini." },
       { label: "Pengaturan SPPG", desc: "Atur data SPPG: nama, alamat, logo, struktur organisasi, rekening, periode." },
       { label: "Master Bahan", desc: "Kelola daftar bahan baku." },
@@ -349,7 +349,7 @@ const GUIDES = {
     color: "#D97706",
     overview: "Akuntan bertanggung jawab penuh atas siklus pembukuan SPPG: verifikasi bukti pembelian dari asisten lapangan, input transaksi debet/kredit dengan kode akun yang benar, memantau Buku Kas Umum (BKU) dan 6 buku pembantu, serta menyusun laporan keuangan (LR, LPA, Catatan Harian, DafNom, SPTJ, BAPSD). Semua data yang Anda input akan otomatis mengalir ke BKU, buku pembantu, dan laporan — sehingga ketepatan di tahap awal sangat krusial.",
     menus: [
-      { label: "Dasbor", desc: "Ringkasan keuangan SPPG: total pemasukan, pengeluaran, saldo kas, dan grafik aliran dana." },
+      { label: "Dashboard", desc: "Ringkasan keuangan SPPG: total pemasukan, pengeluaran, saldo kas, dan grafik aliran dana." },
       { label: "Stok Detail / Rekap", desc: "Lihat detail dan rekapitulasi stok (read-only). Berguna untuk mencocokkan jumlah bahan yang dibeli dengan stok aktual." },
       { label: "Belanja & Struk", desc: "Verifikasi pembelian dari asisten lapangan: cocokkan struk foto, jumlah manual, dan transport. Setujui atau tolak." },
       { label: "Anggaran", desc: "Edit field Biaya Aktual pada anggaran yang sudah dibuat admin (Section 1–3). RAB tidak bisa diubah." },
@@ -605,7 +605,7 @@ const GUIDES = {
     color: "#4A7C59",
     overview: "Kepala SPPG mengawasi operasional dapur: memantau stok, mengelola resep, menyetujui menu mingguan, input anggaran, dan memantau laporan.",
     menus: [
-      { label: "Dasbor", desc: "Ringkasan operasional SPPG." },
+      { label: "Dashboard", desc: "Ringkasan operasional SPPG." },
       { label: "Stok & Opname", desc: "Pantau stok bahan, lakukan opname, catat pengambilan." },
       { label: "Stock Detail / Rekap", desc: "Lihat detail dan rekapitulasi stok. Export PDF." },
       { label: "Belanja & Struk", desc: "Pantau pembelian dari asisten lapangan." },
@@ -733,7 +733,7 @@ const GUIDES = {
     color: "#EA580C",
     overview: "Head Chef membuat resep masakan, menyusun menu mingguan, dan mengelola pengambilan bahan dari gudang untuk proses memasak.",
     menus: [
-      { label: "Dasbor", desc: "Ringkasan operasional dapur." },
+      { label: "Dashboard", desc: "Ringkasan operasional dapur." },
       { label: "Stok & Opname", desc: "Pantau ketersediaan bahan sebelum membuat menu." },
       { label: "Resep & Gizi", desc: "Buat dan edit resep masakan dengan profil gizi." },
       { label: "Menu & Cetak", desc: "Susun menu mingguan: alokasi resep per hari, set porsi, cetak kartu menu." },
@@ -849,7 +849,7 @@ const GUIDES = {
     color: "#0891B2",
     overview: "Asisten Lapangan adalah 'mata dan tangan' operasional SPPG. Anda bertanggung jawab untuk: (1) mencatat setiap pembelian bahan dengan struk fisik, (2) mengelola data tujuan pengiriman, (3) membuat rencana pengiriman harian dan menugaskan driver, (4) memantau pengiriman real-time, dan (5) melakukan opname stok. Setiap data yang Anda catat akan diverifikasi oleh akuntan dan digunakan oleh seluruh tim.",
     menus: [
-      { label: "Dasbor", desc: "Ringkasan aktivitas lapangan: stok menipis, pengiriman hari ini, pembelian pending." },
+      { label: "Dashboard", desc: "Ringkasan aktivitas lapangan: stok menipis, pengiriman hari ini, pembelian pending." },
       { label: "Stok & Opname", desc: "Lihat stok FEFO, lakukan opname fisik, catat pengambilan bahan untuk masak, tambah lot baru." },
       { label: "Belanja & Struk", desc: "Catat setiap pembelian bahan beserta foto struk. Status: Draft → Pending → Verified/Tolak." },
       { label: "Tujuan Antar", desc: "Kelola data tujuan pengiriman: sekolah, posyandu, panti asuhan. Hanya tujuan AKTIF yang bisa dipilih." },
@@ -1048,7 +1048,7 @@ const GUIDES = {
     color: "#6D28D9",
     overview: "Ahli Gizi adalah penjamin mutu gizi menu MBG. Anda memastikan SETIAP menu memenuhi standar Permenkes 28/2019 dan Juknis BGN SK 401.1/2025. Tugas utama: (1) review profil gizi setiap resep, (2) hitung pemenuhan AKG menggunakan Kalkulator Gizi, (3) review dan setujui/tolak menu mingguan dari Head Chef, (4) pastikan tidak ada alergen tersembunyi. Tanda tangan digital Anda adalah otorisasi terakhir sebelum menu disajikan ke penerima manfaat.",
     menus: [
-      { label: "Dasbor", desc: "Ringkasan data gizi SPPG: rata-rata pemenuhan AKG, menu yang menunggu persetujuan, resep bermasalah." },
+      { label: "Dashboard", desc: "Ringkasan data gizi SPPG: rata-rata pemenuhan AKG, menu yang menunggu persetujuan, resep bermasalah." },
       { label: "Resep & Gizi", desc: "Lihat semua resep beserta profil gizi per porsi. Edit data gizi jika perlu. Filter berdasarkan kategori." },
       { label: "Menu & Cetak", desc: "Pantau menu mingguan yang diajukan Head Chef. Lihat alokasi resep per hari per kategori." },
       { label: "Kalkulator Gizi", desc: "Hitung pemenuhan AKG per resep untuk setiap kelompok sasaran (Balita, SD, SMA, Bumil, dll)." },
@@ -1176,7 +1176,7 @@ const GUIDES = {
     color: "#0891B2",
     overview: "Driver mengantarkan makanan ke tujuan pengiriman. Update status pengiriman, ambil foto bukti, dan laporkan kendala.",
     menus: [
-      { label: "Dasbor", desc: "Ringkasan tugas pengiriman hari ini." },
+      { label: "Dashboard", desc: "Ringkasan tugas pengiriman hari ini." },
       { label: "Tracking Driver", desc: "Lihat daftar tujuan pengiriman dan update status." },
     ],
     sections: [
@@ -1227,7 +1227,7 @@ const GUIDES = {
     color: "#16A34A",
     overview: "Tenaga Persiapan menyiapkan bahan sebelum proses memasak: mengambil bahan dari gudang, mencuci, memotong, dan mencatat tugas harian.",
     menus: [
-      { label: "Dasbor", desc: "Ringkasan tugas harian." },
+      { label: "Dashboard", desc: "Ringkasan tugas harian." },
       { label: "Stok & Opname", desc: "Ambil bahan dari gudang sesuai kebutuhan menu hari ini." },
       { label: "Resep & Gizi", desc: "Lihat resep dan bahan yang diperlukan." },
       { label: "Menu & Cetak", desc: "Lihat menu yang akan dimasak hari ini." },
@@ -1295,7 +1295,7 @@ const GUIDES = {
     color: "#EA580C",
     overview: "Tenaga Masak bertanggung jawab atas proses memasak: mengikuti resep, menjaga porsi, menjaga kebersihan, dan mencatat aktivitas harian.",
     menus: [
-      { label: "Dasbor", desc: "Ringkasan tugas memasak hari ini." },
+      { label: "Dashboard", desc: "Ringkasan tugas memasak hari ini." },
       { label: "Resep & Gizi", desc: "Lihat resep dan langkah-langkah memasak." },
       { label: "Menu & Cetak", desc: "Lihat menu hari ini dan resep yang harus dimasak." },
       { label: "Tugas Harian", desc: "Catat aktivitas memasak: menu yang dimasak, porsi, foto bukti." },
@@ -1357,7 +1357,7 @@ const GUIDES = {
     color: "#7C3AED",
     overview: "Tenaga Pemorsian membagi makanan ke dalam ompreng sesuai porsi yang ditentukan. Mencatat jumlah porsi per kategori dan mengunggah foto bukti.",
     menus: [
-      { label: "Dasbor", desc: "Ringkasan tugas pemorsian hari ini." },
+      { label: "Dashboard", desc: "Ringkasan tugas pemorsian hari ini." },
       { label: "Tugas Harian", desc: "Catat aktivitas pemorsian: isi ompreng, foto bukti, jumlah porsi." },
     ],
     sections: [
@@ -1407,7 +1407,7 @@ const GUIDES = {
     color: "#059669",
     overview: "Petugas Kebersihan memastikan area dapur bersih dan higienis setelah operasional. Mencatat aktivitas kebersihan dan mengunggah foto bukti.",
     menus: [
-      { label: "Dasbor", desc: "Ringkasan tugas kebersihan hari ini." },
+      { label: "Dashboard", desc: "Ringkasan tugas kebersihan hari ini." },
       { label: "Tugas Harian", desc: "Catat aktivitas kebersihan: 4 area yang harus dibersihkan, foto bukti per area." },
     ],
     sections: [
@@ -1455,7 +1455,7 @@ const GUIDES = {
     color: "#0284C7",
     overview: "Pencuci Ompreng mencuci dan mensterilkan semua ompreng setelah pengiriman. Mencatat jumlah ompreng yang sudah dicuci dan mengunggah foto bukti.",
     menus: [
-      { label: "Dasbor", desc: "Ringkasan tugas pencucian hari ini." },
+      { label: "Dashboard", desc: "Ringkasan tugas pencucian hari ini." },
       { label: "Tugas Harian", desc: "Catat aktivitas pencucian: jumlah ompreng dicuci, foto bukti." },
     ],
     sections: [

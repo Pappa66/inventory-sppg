@@ -6,7 +6,7 @@ import Layout from "@/components/Layout";
 import { api } from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
 import { SkeletonCards } from "@/components/Skeleton";
-import { fmtIDR, ROLE_LABELS, ROLE_COLORS, mondayOf } from "@/lib/format";
+import { fmtIDR, ROLE_LABELS, ROLE_COLORS, mondayOf, DAYS } from "@/lib/format";
 import {
   Package, AlertTriangle, TrendingUp, Wallet, Database,
   ShoppingBasket, ChefHat, CalendarDays, BadgeCheck, ScrollText,
@@ -25,13 +25,24 @@ function todayStr() {
   return new Date().toISOString().slice(0, 10);
 }
 
-function dateToday() {
-  return new Date();
+function getTodayKey() {
+  const di = new Date().getDay();
+  if (di >= 1 && di <= 5) return DAYS[di - 1].key;
+  return null;
 }
 
-/** Return ISO date string for this Monday */
-function thisMonday() {
-  return mondayOf(dateToday());
+function getGreeting() {
+  const h = new Date().getHours();
+  if (h < 11) return "Selamat Pagi";
+  if (h < 15) return "Selamat Siang";
+  if (h < 18) return "Selamat Sore";
+  return "Selamat Malam";
+}
+
+function formatDateID() {
+  return new Date().toLocaleDateString("id-ID", {
+    weekday: "long", day: "numeric", month: "long", year: "numeric",
+  });
 }
 
 /* ------------------------------------------------------------------ */
@@ -49,34 +60,13 @@ function useDashboardData(activeRole) {
     setData({});
     setFetchErrors(0);
     const role = activeRole;
-    const weekStart = thisMonday();
+    const weekStart = mondayOf(new Date());
     const today = todayStr();
 
     const fetches = [];
 
-    /* ---- Admin Aplikasi ---- */
-    if (role === "admin_apps") {
-      fetches.push(
-        api.get("/reports/financial")
-          .then(({ data }) => setData(d => ({ ...d, fin: data })))
-          .catch(() => setFetchErrors(e => e + 1)),
-        api.get("/reports/low-stock")
-          .then(({ data }) => setData(d => ({ ...d, low: data || [] })))
-          .catch(() => setFetchErrors(e => e + 1)),
-        api.get("/users")
-          .then(({ data }) => setData(d => ({ ...d, users: data || [] })))
-          .catch(() => setFetchErrors(e => e + 1)),
-        api.get("/purchases")
-          .then(({ data }) => setData(d => ({ ...d, purchases: data || [] })))
-          .catch(() => setFetchErrors(e => e + 1)),
-        api.get(`/delivery-plans?plan_date=${today}`)
-          .then(({ data }) => setData(d => ({ ...d, deliveryPlans: data || [] })))
-          .catch(() => setFetchErrors(e => e + 1)),
-      );
-    }
-
-    /* ---- Admin SPPG ---- */
-    if (role === "admin_sppg") {
+    /* ---- Admin Aplikasi & SPPG (shared) ---- */
+    if (role === "admin_apps" || role === "admin_sppg") {
       fetches.push(
         api.get("/reports/financial")
           .then(({ data }) => setData(d => ({ ...d, fin: data })))
@@ -150,7 +140,7 @@ function useDashboardData(activeRole) {
       );
     }
 
-    /* ---- Aslap (Field Assistant) ---- */
+    /* ---- Aslap ---- */
     if (role === "field_assistant") {
       fetches.push(
         api.get("/reports/low-stock")
@@ -289,78 +279,62 @@ function useDashboardData(activeRole) {
 function buildCards(role, d) {
   const s = d.fin?.summary || {};
   const today = todayStr();
+  const todayKey = getTodayKey();
 
-  /** Helper: count purchases made today */
   const todayPurchases = (d.purchases || []).filter(
     p => (p.purchased_at || "").slice(0, 10) === today
   );
-  /** Helper: total amount of today's purchases */
   const todaySpend = todayPurchases.reduce(
-    (sum, p) => sum + (p.amount_idr || 0) + (p.transport_amount_idr || 0),
-    0
+    (sum, p) => sum + (p.amount_idr || 0) + (p.transport_amount_idr || 0), 0
   );
 
   switch (role) {
     /* ---------- ADMIN APLIKASI ---------- */
     case "admin_apps": {
-      const totalStock = (d.purchases || [])
-        .filter(p => p.category === "STOCK")
-        .reduce((sum, p) => sum + (p.amount_idr || 0), 0);
+      const totalStock = (d.purchases || []).filter(p => p.category === "STOCK").reduce((sum, p) => sum + (p.amount_idr || 0), 0);
       const activeUsers = (d.users || []).filter(u => u.is_active !== false);
-      const pendingDeliveries = (d.deliveryPlans || []).reduce(
-        (sum, plan) => sum + (plan.delivery_plan_items || []).length, 0
-      );
+      const pendingDeliveries = (d.deliveryPlans || []).reduce((sum, plan) => sum + (plan.delivery_plan_items || []).length, 0);
 
       return [
-        { label: "Total Stok", value: totalStock, icon: Package, color: "#1E40AF", currency: true },
-        { label: "Total Anggaran", value: s.grand_total || 0, icon: CircleDollarSign, color: "#1E40AF", currency: true },
-        { label: "Transaksi Hari Ini", value: todayPurchases.length, icon: ReceiptText, color: "#D97706", currency: false, suffix: " transaksi" },
-        { label: "Pengiriman Pending", value: pendingDeliveries, icon: Truck, color: "#C5533B", currency: false },
-        { label: "Low Stock", value: (d.low || []).length, icon: AlertTriangle, color: "#C5533B", currency: false },
-        { label: "User Aktif", value: activeUsers.length, icon: Users, color: "#1E40AF", currency: false, suffix: ` / ${d.users?.length || 0}` },
+        { label: "Total Anggaran", value: s.grand_total || 0, icon: CircleDollarSign, color: "#1E40AF", currency: true, primary: true },
+        { label: "Stok Dibeli", value: totalStock, icon: Package, color: "#2D2D2D", currency: true },
+        { label: "Transaksi Hari Ini", value: todayPurchases.length, icon: ReceiptText, color: "#D97706", suffix: " trx" },
+        { label: "Pengiriman Pending", value: pendingDeliveries, icon: Truck, color: "#C5533B" },
+        { label: "Stok Menipis", value: (d.low || []).length, icon: AlertTriangle, color: "#C5533B" },
+        { label: "User Aktif", value: activeUsers.length, icon: Users, color: "#1E40AF", suffix: `/${d.users?.length || 0}` },
       ];
     }
 
     /* ---------- ADMIN SPPG ---------- */
     case "admin_sppg": {
-      const totalStock = (d.purchases || [])
-        .filter(p => p.category === "STOCK")
-        .reduce((sum, p) => sum + (p.amount_idr || 0), 0);
+      const totalStock = (d.purchases || []).filter(p => p.category === "STOCK").reduce((sum, p) => sum + (p.amount_idr || 0), 0);
       const activeUsers = (d.users || []).filter(u => u.is_active !== false);
-      const pendingDeliveries = (d.deliveryPlans || []).reduce(
-        (sum, plan) => sum + (plan.delivery_plan_items || []).length, 0
-      );
+      const pendingDeliveries = (d.deliveryPlans || []).reduce((sum, plan) => sum + (plan.delivery_plan_items || []).length, 0);
 
       return [
-        { label: "Total Stok", value: totalStock, icon: Package, color: "#2D2D2D", currency: true },
-        { label: "Total Anggaran", value: s.grand_total || 0, icon: CircleDollarSign, color: "#2D2D2D", currency: true },
-        { label: "Transaksi Hari Ini", value: todayPurchases.length, icon: ReceiptText, color: "#D97706", currency: false, suffix: " transaksi" },
-        { label: "Pengiriman Pending", value: pendingDeliveries, icon: Truck, color: "#C5533B", currency: false },
-        { label: "Low Stock", value: (d.low || []).length, icon: AlertTriangle, color: "#C5533B", currency: false },
-        { label: "User Aktif", value: activeUsers.length, icon: Users, color: "#2D2D2D", currency: false, suffix: ` / ${d.users?.length || 0}` },
+        { label: "Total Anggaran", value: s.grand_total || 0, icon: CircleDollarSign, color: "#2D2D2D", currency: true, primary: true },
+        { label: "Stok Dibeli", value: totalStock, icon: Package, color: "#2D2D2D", currency: true },
+        { label: "Transaksi Hari Ini", value: todayPurchases.length, icon: ReceiptText, color: "#D97706", suffix: " trx" },
+        { label: "Pengiriman Pending", value: pendingDeliveries, icon: Truck, color: "#C5533B" },
+        { label: "Stok Menipis", value: (d.low || []).length, icon: AlertTriangle, color: "#C5533B" },
+        { label: "User Aktif", value: activeUsers.length, icon: Users, color: "#2D2D2D", suffix: `/${d.users?.length || 0}` },
       ];
     }
 
     /* ---------- AKUNTAN ---------- */
     case "accountant": {
-      const debit = (d.purchases || [])
-        .filter(p => p.category === "STOCK")
-        .reduce((sum, p) => sum + (p.amount_idr || 0), 0);
-      const kredit = (d.purchases || [])
-        .filter(p => p.category === "OPERATIONAL")
-        .reduce((sum, p) => sum + (p.amount_idr || 0), 0);
-      const totalTransport = (d.purchases || [])
-        .reduce((sum, p) => sum + (p.transport_amount_idr || 0), 0);
+      const debit = (d.purchases || []).filter(p => p.category === "STOCK").reduce((sum, p) => sum + (p.amount_idr || 0), 0);
+      const kredit = (d.purchases || []).filter(p => p.category === "OPERATIONAL").reduce((sum, p) => sum + (p.amount_idr || 0), 0);
+      const totalTransport = (d.purchases || []).reduce((sum, p) => sum + (p.transport_amount_idr || 0), 0);
       const unverified = (d.purchases || []).filter(p => !p.verified);
-      const todayUnverified = todayPurchases.filter(p => !p.verified);
 
       return [
-        { label: "Transaksi Hari Ini", value: todayPurchases.length, icon: ReceiptText, color: "#2C4251", currency: false, suffix: ` (${fmtIDR(todaySpend)})` },
-        { label: "Total Debit (Stock)", value: debit, icon: TrendingUp, color: "#4A7C59", currency: true },
-        { label: "Total Kredit (OPEX)", value: kredit, icon: Wallet, color: "#D97706", currency: true },
-        { label: "Sisa Anggaran", value: (s.grand_total || 0), icon: Scale, color: "#2C4251", currency: true },
-        { label: "Verifikasi Pending", value: unverified.length, icon: FileCheck, color: "#C5533B", currency: false, suffix: unverified.length > 0 ? ` (${todayUnverified.length} hari ini)` : "" },
-        { label: "BKU Saldo", value: debit - kredit - totalTransport, icon: Stamp, color: "#6D28D9", currency: true },
+        { label: "Anggaran", value: s.grand_total || 0, icon: Scale, color: "#2C4251", currency: true, primary: true },
+        { label: "Bahan Baku", value: debit, icon: TrendingUp, color: "#4A7C59", currency: true },
+        { label: "Operasional", value: kredit, icon: Wallet, color: "#D97706", currency: true },
+        { label: "Verifikasi Pending", value: unverified.length, icon: FileCheck, color: "#C5533B" },
+        { label: "Transaksi Hari Ini", value: todayPurchases.length, icon: ReceiptText, color: "#2C4251", suffix: fmtIDR(todaySpend) },
+        { label: "BKU Saldo Kas", value: debit - kredit - totalTransport, icon: Stamp, color: "#6D28D9", currency: true },
       ];
     }
 
@@ -369,19 +343,17 @@ function buildCards(role, d) {
       const totalLots = (d.lots || []).length;
       const menusThisWeek = d.menus || [];
       const activeMenus = menusThisWeek.filter(m => m.status !== "DRAFT").length;
-      const todayTaken = (d.stockTaken || []).filter(
-        t => (t.taken_at || "").slice(0, 10) === today
-      );
-      const recipeCount = (d.recipes || []).length;
-      const dailyReports = (d.dailyReports || []);
+      const todayTaken = (d.stockTaken || []).filter(t => (t.taken_at || "").slice(0, 10) === today);
+      const dailyReports = d.dailyReports || [];
       const completedReports = dailyReports.filter(t => t.status === "SELESAI").length;
+      const recipeCount = (d.recipes || []).length;
 
       return [
-        { label: "Laporan Masuk Hari Ini", value: completedReports, icon: ClipboardList, color: "#4A7C59", currency: false, suffix: ` / ${dailyReports.length}` },
-        { label: "Stok Hari Ini", value: totalLots, icon: Package, color: "#2C4251", currency: false, suffix: " lot" },
-        { label: "Menu Aktif", value: activeMenus, icon: CalendarCheck, color: "#D97706", currency: false },
-        { label: "Pengambilan Barang", value: todayTaken.length, icon: HandPlatter, color: "#C5533B", currency: false, suffix: " hari ini" },
-        { label: "Resep Tersedia", value: recipeCount, icon: ChefHat, color: "#0E7490", currency: false },
+        { label: "Laporan Staf", value: `${completedReports}/${dailyReports.length}`, icon: ClipboardList, color: "#4A7C59", primary: true },
+        { label: "Stok Tersedia", value: totalLots, icon: Package, color: "#2C4251", suffix: " lot" },
+        { label: "Menu Aktif", value: activeMenus, icon: CalendarCheck, color: "#D97706" },
+        { label: "Pengambilan", value: todayTaken.length, icon: HandPlatter, color: "#C5533B", suffix: " hari ini" },
+        { label: "Resep", value: recipeCount, icon: ChefHat, color: "#0E7490" },
       ];
     }
 
@@ -389,17 +361,14 @@ function buildCards(role, d) {
     case "head_chef": {
       const recipeCount = (d.recipes || []).length;
       const menusThisWeek = d.menus || [];
-      const totalMenuDays = menusThisWeek.length;
-      const todayTaken = (d.stockTaken || []).filter(
-        t => (t.taken_at || "").slice(0, 10) === today
-      );
+      const todayTaken = (d.stockTaken || []).filter(t => (t.taken_at || "").slice(0, 10) === today);
       const cookingLots = (d.lots || []).filter(l => !l.taken_by).length;
 
       return [
-        { label: "Resep Tersedia", value: recipeCount, icon: ChefHat, color: "#D97706", currency: false },
-        { label: "Menu Minggu Ini", value: totalMenuDays, icon: CalendarDays, color: "#4A7C59", currency: false, suffix: " hari" },
-        { label: "Pengambilan Barang", value: todayTaken.length, icon: HandPlatter, color: "#C5533B", currency: false, suffix: " hari ini" },
-        { label: "Stok Bahan Masak", value: cookingLots, icon: UtensilsCrossed, color: "#2C4251", currency: false, suffix: " lot tersedia" },
+        { label: "Resep", value: recipeCount, icon: ChefHat, color: "#D97706", primary: true },
+        { label: "Menu Minggu Ini", value: menusThisWeek.length, icon: CalendarDays, color: "#4A7C59", suffix: " hari" },
+        { label: "Pengambilan", value: todayTaken.length, icon: HandPlatter, color: "#C5533B", suffix: " hari ini" },
+        { label: "Stok Bahan", value: cookingLots, icon: UtensilsCrossed, color: "#2C4251", suffix: " lot" },
       ];
     }
 
@@ -407,31 +376,26 @@ function buildCards(role, d) {
     case "field_assistant": {
       const lowStock = (d.low || []).length;
       const deliveryPlans = d.deliveryPlans || [];
-      const pendingDeliveryCount = deliveryPlans.reduce(
-        (sum, plan) => sum + (plan.delivery_plan_items || []).length, 0
-      );
+      const pendingDeliveryCount = deliveryPlans.reduce((sum, plan) => sum + (plan.delivery_plan_items || []).length, 0);
       const unverifiedPurchases = (d.purchases || []).filter(p => !p.verified);
       const delStatus = d.deliveryStatus?.summary || {};
 
       return [
-        { label: "Stok Menipis", value: lowStock, icon: AlertTriangle, color: "#C5533B", currency: false, suffix: " item" },
-        { label: "Rencana Antar Hari Ini", value: pendingDeliveryCount, icon: Truck, color: "#D97706", currency: false, suffix: ` (${deliveryPlans.length} rencana)` },
-        { label: "Belanja Pending", value: unverifiedPurchases.length, icon: ClipboardList, color: "#C5533B", currency: false },
-        { label: "Pengiriman Terkirim", value: delStatus.delivered || 0, icon: CheckCircle2, color: "#4A7C59", currency: false, suffix: ` / ${delStatus.total_destinations || 0}` },
+        { label: "Pengiriman Terkirim", value: `${delStatus.delivered || 0}/${delStatus.total_destinations || 0}`, icon: CheckCircle2, color: "#4A7C59", primary: true },
+        { label: "Rencana Antar", value: pendingDeliveryCount, icon: Truck, color: "#D97706", suffix: `${deliveryPlans.length} rencana` },
+        { label: "Stok Menipis", value: lowStock, icon: AlertTriangle, color: "#C5533B", suffix: " item" },
+        { label: "Belanja Pending", value: unverifiedPurchases.length, icon: ClipboardList, color: "#C5533B" },
       ];
     }
 
     /* ---------- AHLI GIZI ---------- */
     case "nutritionist": {
-      const menusPending = (d.menusPending || []);
+      const menusPending = d.menusPending || [];
       const allMenus = d.menusAll || [];
       const approvedMenus = allMenus.filter(m => m.status === "APPROVED");
-      const recipesWithPhoto = (d.recipes || []).filter(r => r.photo_url);
-      const totalPortionsThisWeek = approvedMenus.reduce(
-        (sum, m) => sum + (m.portions || 0), 0
-      );
+      const totalPortionsThisWeek = approvedMenus.reduce((sum, m) => sum + (m.portions || 0), 0);
       const allItems = d.items || [];
-      const foodCategories = ["KH","PH","PN","SY","BU","BB"];
+      const foodCategories = ["KH", "PH", "PN", "SY", "BU", "BB"];
       const foodItems = allItems.filter(i => foodCategories.includes(i.category));
       const missingNutrition = foodItems.filter(i => {
         const n = i.nutrition_per_100g;
@@ -439,19 +403,17 @@ function buildCards(role, d) {
       });
 
       return [
-        { label: "Menu Pending Review", value: menusPending.length, icon: Clock, color: "#D97706", currency: false },
-        { label: "Menu Disetujui", value: approvedMenus.length, icon: CheckCircle2, color: "#4A7C59", currency: false },
-        { label: "Bahan Tanpa Data Gizi", value: missingNutrition.length, icon: AlertTriangle, color: missingNutrition.length > 0 ? "#C5533B" : "#4A7C59", currency: false, suffix: ` / ${foodItems.length} bahan` },
-        { label: "Porsi Minggu Ini", value: totalPortionsThisWeek, icon: HeartPulse, color: "#2C4251", currency: false, suffix: " porsi" },
+        { label: "Menu Pending", value: menusPending.length, icon: Clock, color: "#D97706", primary: true },
+        { label: "Menu Disetujui", value: approvedMenus.length, icon: CheckCircle2, color: "#4A7C59" },
+        { label: "Tanpa Data Gizi", value: missingNutrition.length, icon: AlertTriangle, color: missingNutrition.length > 0 ? "#C5533B" : "#4A7C59", suffix: `/${foodItems.length} bahan` },
+        { label: "Porsi Minggu Ini", value: totalPortionsThisWeek, icon: HeartPulse, color: "#2C4251", suffix: " porsi" },
       ];
     }
 
     /* ---------- DRIVER ---------- */
     case "driver": {
       const plans = d.deliveryPlans || [];
-      const totalDests = plans.reduce(
-        (sum, plan) => sum + (plan.delivery_plan_items || []).length, 0
-      );
+      const totalDests = plans.reduce((sum, plan) => sum + (plan.delivery_plan_items || []).length, 0);
       const delSummary = d.deliveryStatus?.summary || {};
       const photosSent = (d.deliveryStatus?.plans || []).reduce((count, plan) => {
         for (const assignment of plan.delivery_assignments || []) {
@@ -463,57 +425,53 @@ function buildCards(role, d) {
       }, 0);
 
       return [
-        { label: "Pengiriman Hari Ini", value: totalDests, icon: Truck, color: "#0891B2", currency: false, suffix: " tujuan" },
-        { label: "Status Per Tujuan", value: `${delSummary.delivered || 0}/${delSummary.total_destinations || 0}`, icon: MapPin, color: "#4A7C59", currency: false, suffix: ` terkirim` },
-        { label: "Foto Terkirim", value: photosSent, icon: Camera, color: "#D97706", currency: false, suffix: " foto" },
+        { label: "Terkirim", value: `${delSummary.delivered || 0}/${delSummary.total_destinations || 0}`, icon: CheckCircle2, color: "#4A7C59", primary: true },
+        { label: "Tujuan Hari Ini", value: totalDests, icon: Truck, color: "#0891B2", suffix: " lokasi" },
+        { label: "Foto Terkirim", value: photosSent, icon: Camera, color: "#D97706" },
       ];
     }
 
     /* ---------- PERSIAPAN ---------- */
     case "persiapan": {
       const totalLots = (d.lots || []).length;
-      const todayTaken = (d.stockTaken || []).filter(
-        t => (t.taken_at || "").slice(0, 10) === today
-      );
-      const menusToday = (d.menus || []).filter(m => { const dk = ["mon","tue","wed","thu","fri"]; const di = new Date().getDay(); return di >= 1 && di <= 5 && m.day === dk[di - 1]; });
+      const todayTaken = (d.stockTaken || []).filter(t => (t.taken_at || "").slice(0, 10) === today);
+      const menusToday = (d.menus || []).filter(m => m.day === todayKey);
       const totalPortions = menusToday.reduce((sum, m) => sum + (m.portions || 0), 0);
 
       return [
-        { label: "Bahan Tersedia", value: totalLots, icon: Package, color: "#16A34A", currency: false, suffix: " lot" },
-        { label: "Pengambilan Hari Ini", value: todayTaken.length, icon: HandPlatter, color: "#D97706", currency: false, suffix: " item diambil" },
-        { label: "Menu Hari Ini", value: menusToday.length, icon: CalendarDays, color: "#16A34A", currency: false },
-        { label: "Total Porsi", value: totalPortions, icon: UtensilsCrossed, color: "#2C4251", currency: false, suffix: " porsi" },
+        { label: "Total Porsi", value: totalPortions, icon: UtensilsCrossed, color: "#2C4251", primary: true, suffix: " porsi" },
+        { label: "Bahan Tersedia", value: totalLots, icon: Package, color: "#16A34A", suffix: " lot" },
+        { label: "Pengambilan", value: todayTaken.length, icon: HandPlatter, color: "#D97706", suffix: " item" },
+        { label: "Menu Hari Ini", value: menusToday.length, icon: CalendarDays, color: "#16A34A" },
       ];
     }
 
     /* ---------- TENAGA MASAK ---------- */
     case "tenaga_masak": {
       const recipeCount = (d.recipes || []).length;
-      const todayTaken = (d.stockTaken || []).filter(
-        t => (t.taken_at || "").slice(0, 10) === today
-      );
-      const menusToday = (d.menus || []).filter(m => { const dk = ["mon","tue","wed","thu","fri"]; const di = new Date().getDay(); return di >= 1 && di <= 5 && m.day === dk[di - 1]; });
+      const todayTaken = (d.stockTaken || []).filter(t => (t.taken_at || "").slice(0, 10) === today);
+      const menusToday = (d.menus || []).filter(m => m.day === todayKey);
       const totalPortions = menusToday.reduce((sum, m) => sum + (m.portions || 0), 0);
 
       return [
-        { label: "Resep Tersedia", value: recipeCount, icon: ChefHat, color: "#EA580C", currency: false },
-        { label: "Bahan Diambil", value: todayTaken.length, icon: HandPlatter, color: "#D97706", currency: false, suffix: " item" },
-        { label: "Menu Hari Ini", value: menusToday.length, icon: CalendarDays, color: "#EA580C", currency: false },
-        { label: "Target Porsi", value: totalPortions, icon: UtensilsCrossed, color: "#2C4251", currency: false, suffix: " porsi" },
+        { label: "Target Porsi", value: totalPortions, icon: UtensilsCrossed, color: "#2C4251", primary: true, suffix: " porsi" },
+        { label: "Resep", value: recipeCount, icon: ChefHat, color: "#EA580C" },
+        { label: "Bahan Diambil", value: todayTaken.length, icon: HandPlatter, color: "#D97706", suffix: " item" },
+        { label: "Menu Hari Ini", value: menusToday.length, icon: CalendarDays, color: "#EA580C" },
       ];
     }
 
     /* ---------- PEMORSIAN ---------- */
     case "pemorsian": {
-      const menusToday = (d.menus || []).filter(m => { const dk = ["mon","tue","wed","thu","fri"]; const di = new Date().getDay(); return di >= 1 && di <= 5 && m.day === dk[di - 1]; });
+      const menusToday = (d.menus || []).filter(m => m.day === todayKey);
       const totalPortions = menusToday.reduce((sum, m) => sum + (m.portions || 0), 0);
-      const pemorsianTasks = (d.stockTaken || []).filter(t => t.taken_reason === "PORTIONING" || t.taken_at?.slice(0,10) === today);
+      const pemorsianTasks = (d.stockTaken || []).filter(t => t.taken_reason === "PORTIONING" || t.taken_at?.slice(0, 10) === today);
       const portionedCount = pemorsianTasks.length;
 
       return [
-        { label: "Menu Hari Ini", value: menusToday.length, icon: CalendarDays, color: "#7C3AED", currency: false },
-        { label: "Target Porsi", value: totalPortions, icon: UtensilsCrossed, color: "#7C3AED", currency: false, suffix: " porsi" },
-        { label: "Status", value: portionedCount > 0 ? "Dikerjakan" : "Belum Mulai", icon: portionedCount > 0 ? Clock : AlertTriangle, color: portionedCount > 0 ? "#D97706" : "#C5533B", currency: false },
+        { label: "Target Porsi", value: totalPortions, icon: UtensilsCrossed, color: "#7C3AED", primary: true, suffix: " porsi" },
+        { label: "Menu Hari Ini", value: menusToday.length, icon: CalendarDays, color: "#7C3AED" },
+        { label: "Status", value: portionedCount > 0 ? "Dikerjakan" : "Mulai", icon: portionedCount > 0 ? Clock : AlertTriangle, color: portionedCount > 0 ? "#D97706" : "#C5533B" },
       ];
     }
 
@@ -522,10 +480,11 @@ function buildCards(role, d) {
       const tasks = d.todayTasks || [];
       const completed = tasks.filter(t => t.status === "SELESAI").length;
       const totalSlots = 4;
+
       return [
-        { label: "Target Area Hari Ini", value: `${completed} / ${totalSlots}`, icon: CheckCircle2, color: completed >= totalSlots ? "#4A7C59" : "#D97706", currency: false, suffix: " area" },
-        { label: "Foto Terupload", value: tasks.filter(t => t.photo_url).length, icon: Camera, color: "#059669", currency: false, suffix: " foto" },
-        { label: "Status", value: completed >= totalSlots ? "Selesai" : "Dikerjakan", icon: completed >= totalSlots ? CheckCircle2 : Clock, color: completed >= totalSlots ? "#4A7C59" : "#D97706", currency: false },
+        { label: "Area Selesai", value: `${completed}/${totalSlots}`, icon: CheckCircle2, color: completed >= totalSlots ? "#4A7C59" : "#D97706", primary: true, suffix: " area" },
+        { label: "Foto", value: tasks.filter(t => t.photo_url).length, icon: Camera, color: "#059669" },
+        { label: "Status", value: completed >= totalSlots ? "Selesai" : "Dikerjakan", icon: completed >= totalSlots ? CheckCircle2 : Clock, color: completed >= totalSlots ? "#4A7C59" : "#D97706" },
       ];
     }
 
@@ -538,10 +497,11 @@ function buildCards(role, d) {
       const totalDistributed = plans.reduce((sum, plan) => {
         return sum + (plan.delivery_plan_items || []).reduce((s, item) => s + (item.portions || 0), 0);
       }, 0);
+
       return [
-        { label: "Ompreng Didistribusi", value: totalDistributed, icon: UtensilsCrossed, color: "#0284C7", currency: false, suffix: " porsi" },
-        { label: "Area Dicuci", value: `${completed} / ${totalSlots}`, icon: CheckCircle2, color: completed >= totalSlots ? "#4A7C59" : "#D97706", currency: false, suffix: " area" },
-        { label: "Status", value: completed >= totalSlots ? "Selesai" : "Dikerjakan", icon: completed >= totalSlots ? CheckCircle2 : Clock, color: completed >= totalSlots ? "#4A7C59" : "#D97706", currency: false },
+        { label: "Ompreng Distribusi", value: totalDistributed, icon: UtensilsCrossed, color: "#0284C7", primary: true, suffix: " porsi" },
+        { label: "Area Dicuci", value: `${completed}/${totalSlots}`, icon: CheckCircle2, color: completed >= totalSlots ? "#4A7C59" : "#D97706", suffix: " area" },
+        { label: "Status", value: completed >= totalSlots ? "Selesai" : "Dikerjakan", icon: completed >= totalSlots ? CheckCircle2 : Clock, color: completed >= totalSlots ? "#4A7C59" : "#D97706" },
       ];
     }
 
@@ -585,17 +545,14 @@ function LowStockList({ items }) {
 /* ------------------------------------------------------------------ */
 
 function IngredientCalculator({ menus, recipes, items }) {
-  const today = (() => { const dk = ["mon","tue","wed","thu","fri"]; const di = new Date().getDay(); return di >= 1 && di <= 5 ? dk[di - 1] : null; })();
-  const menusToday = (menus || []).filter(m => m.day === today);
+  const todayKey = getTodayKey();
+  const menusToday = (menus || []).filter(m => m.day === todayKey);
   if (menusToday.length === 0 || !recipes || !items) return null;
 
   const ingredientMap = {};
   for (const menu of menusToday) {
     const portions = menu.portions || 0;
-    const menuRecipes = recipes.filter(r => {
-      const ids = menu.recipe_ids || [];
-      return ids.includes(r.id);
-    });
+    const menuRecipes = recipes.filter(r => (menu.recipe_ids || []).includes(r.id));
     for (const recipe of menuRecipes) {
       const servings = recipe.servings || 100;
       const multiplier = portions / servings;
@@ -636,8 +593,8 @@ function IngredientCalculator({ menus, recipes, items }) {
 /* ------------------------------------------------------------------ */
 
 function DailyReadiness({ menus, recipes, lots, dailyReports, purchases }) {
-  const today = (() => { const dk = ["mon","tue","wed","thu","fri"]; const di = new Date().getDay(); return di >= 1 && di <= 5 ? dk[di - 1] : null; })();
-  const menusToday = (menus || []).filter(m => m.day === today);
+  const todayKey = getTodayKey();
+  const menusToday = (menus || []).filter(m => m.day === todayKey);
   const totalPortions = menusToday.reduce((s, m) => s + (m.portions || 0), 0);
 
   const hasMenus = menusToday.length > 0;
@@ -693,7 +650,6 @@ function DeliveryStatusDetail({ deliveryStatus, deliveryPlans }) {
   if (plans.length === 0) return null;
 
   const summary = deliveryStatus?.summary || {};
-  const today = todayStr();
 
   return (
     <div className="card-soft overflow-hidden">
@@ -720,7 +676,6 @@ function DeliveryStatusDetail({ deliveryStatus, deliveryPlans }) {
           });
         })}
       </div>
-      {/* Summary bar */}
       {summary.total_destinations > 0 && (
         <div className="px-5 py-3 border-t border-[#EAE4D8] bg-[#F9F6F0] flex gap-4 text-xs">
           <span className="text-[#4A7C59] font-semibold">Terkirim: {summary.delivered || 0}</span>
@@ -856,25 +811,33 @@ function QuickLinks({ role }) {
 /* ------------------------------------------------------------------ */
 
 export default function DashboardPage() {
-  const { activeRole } = useAuth();
+  const { user, activeRole } = useAuth();
   const role = activeRole || "admin_sppg";
   const { data, loading, fetchErrors } = useDashboardData(activeRole);
 
   const cards = useMemo(() => buildCards(role, data), [role, data]);
   const roleColor = ROLE_COLORS[role] || "#2D2D2D";
 
+  const primaryCard = cards.find(c => c.primary);
+  const secondaryCards = cards.filter(c => !c.primary);
+
   return (
     <Layout>
       <div className="space-y-6">
-        {/* Header */}
-        <div>
-          <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold">Dasbor</h1>
-          <p className="text-[#5C5C5C] mt-1">
-            Ringkasan untuk{" "}
-            <span className="font-semibold" style={{ color: roleColor }}>
-              {ROLE_LABELS[role]}
-            </span>
-          </p>
+        {/* Header with greeting */}
+        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2">
+          <div>
+            <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold">
+              {getGreeting()}, {user?.name?.split(" ")[0] || "Admin"}
+            </h1>
+            <p className="text-[#5C5C5C] mt-1">
+              {formatDateID()}
+            </p>
+          </div>
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg" style={{ background: roleColor + "1A", color: roleColor }}>
+            <span className="w-2 h-2 rounded-full" style={{ background: roleColor }} />
+            <span className="text-xs font-semibold uppercase tracking-wider">{ROLE_LABELS[role]}</span>
+          </div>
         </div>
 
         {/* Fetch error warning banner */}
@@ -889,25 +852,38 @@ export default function DashboardPage() {
           <SkeletonCards count={cards.length || 6} />
         ) : (
           <>
-            {/* Stat Cards */}
-            {cards.length > 0 && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {cards.map(({ label, value, currency, icon: Icon, color, suffix }) => (
-                  <div key={label} className="card-soft p-5">
-                    <div className="flex items-center justify-between">
-                      <div className="text-[11px] uppercase tracking-widest text-[#5C5C5C]">
-                        {label}
-                      </div>
-                      <Icon size={18} style={{ color }} />
+            {/* Primary stat card */}
+            {primaryCard && (
+              <div className="rounded-xl border border-[#EAE4D8] shadow-sm p-6 sm:p-8"
+                style={{ background: `linear-gradient(135deg, ${primaryCard.color}08 0%, ${primaryCard.color}15 100%)` }}>
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-xl grid place-items-center" style={{ background: primaryCard.color + "1A" }}>
+                    <primaryCard.icon size={22} style={{ color: primaryCard.color }} />
+                  </div>
+                  <div>
+                    <div className="text-[11px] uppercase tracking-widest" style={{ color: primaryCard.color + "CC" }}>{primaryCard.label}</div>
+                    <div className="font-display font-bold text-2xl sm:text-3xl mt-0.5" style={{ color: primaryCard.color }}>
+                      {primaryCard.currency ? fmtIDR(primaryCard.value) : primaryCard.value}
+                      {primaryCard.suffix && <span className="text-sm font-medium ml-1 opacity-70">{primaryCard.suffix}</span>}
                     </div>
-                    <div
-                      className="font-display font-bold text-xl sm:text-2xl mt-2"
-                      style={{ color }}
-                    >
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Secondary stat cards */}
+            {secondaryCards.length > 0 && (
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+                {secondaryCards.map(({ label, value, currency, icon: Icon, color, suffix }) => (
+                  <div key={label} className="card-soft p-4 relative overflow-hidden">
+                    <div className="absolute top-0 left-0 w-1 h-full rounded-r" style={{ background: color }} />
+                    <div className="flex items-center justify-between pl-2">
+                      <div className="text-[10px] uppercase tracking-widest text-[#5C5C5C] leading-tight">{label}</div>
+                      <Icon size={14} style={{ color }} className="opacity-60" />
+                    </div>
+                    <div className="font-display font-bold text-lg mt-1 pl-2" style={{ color }}>
                       {currency ? fmtIDR(value) : value}
-                      {suffix ? (
-                        <span className="text-sm font-medium ml-1">{suffix}</span>
-                      ) : null}
+                      {suffix && <span className="text-[11px] font-medium ml-0.5 opacity-70">{suffix}</span>}
                     </div>
                   </div>
                 ))}
@@ -980,7 +956,7 @@ export default function DashboardPage() {
 
             {role === "nutritionist" && (() => {
               const allItems = data.items || [];
-              const foodCategories = ["KH","PH","PN","SY","BU","BB"];
+              const foodCategories = ["KH", "PH", "PN", "SY", "BU", "BB"];
               const foodItems = allItems.filter(i => foodCategories.includes(i.category));
               const missing = foodItems.filter(i => {
                 const n = i.nutrition_per_100g;

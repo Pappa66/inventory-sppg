@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 
 const ALL_NAV = [
-  { to: "/", label: "Dasbor", icon: LayoutDashboard, roles: "*" },
+  { to: "/", label: "Dashboard", icon: LayoutDashboard, roles: "*" },
   { to: "/users", label: "Pengguna", icon: Users, roles: ["admin_apps","admin_sppg"] },
   { to: "/settings", label: "Pengaturan SPPG", icon: SettingsIcon, roles: ["admin_apps","admin_sppg"] },
   { divider: true, label: "Konfigurasi Sistem", roles: ["admin_apps"] },
@@ -41,6 +41,7 @@ const ALL_NAV = [
   { to: "/bku", label: "BKU", icon: ScrollText, roles: ["admin_apps","admin_sppg","accountant"] },
   { to: "/sub-ledger", label: "Buku Pembantu", icon: ScrollText, roles: ["admin_apps","admin_sppg","accountant"] },
   { divider: true, label: "Laporan & Approval", roles: ["admin_apps","admin_sppg","nutritionist","accountant","kitchen_head","head_chef","field_assistant"] },
+  { to: "/dafnom", label: "DafNom Insentif", icon: Users, roles: ["admin_apps","admin_sppg","accountant","kitchen_head"] },
   { to: "/approval", label: "Persetujuan Menu", icon: BadgeCheck, roles: ["admin_apps","admin_sppg","kitchen_head","nutritionist"] },
   { to: "/reports", label: "Laporan", icon: FileText, roles: ["admin_apps","admin_sppg","kitchen_head","head_chef","accountant","nutritionist","field_assistant"] },
   { to: "/audit", label: "Audit Trail", icon: ScrollText, roles: ["admin_apps","admin_sppg","kitchen_head","head_chef","accountant"] },
@@ -204,7 +205,7 @@ export default function Layout({ children }) {
                 <Menu size={20} />
               </button>
               <h1 className="font-display font-bold text-lg sm:text-xl truncate" style={{ color: ROLE_COLORS[role] }}>
-                {items.find(n => !n.divider && pathname === n.to)?.label || "Dasbor"}
+                {items.find(n => !n.divider && pathname === n.to)?.label || "Dashboard"}
               </h1>
             </div>
             <RoleDropdown />

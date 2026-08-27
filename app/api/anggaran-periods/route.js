@@ -45,6 +45,7 @@ export async function POST(request) {
       bahan_busui: body.bahan_busui || 0,
       harga_satuan1: body.harga_satuan1 || 8000,
       harga_satuan2: body.harga_satuan2 || 10000,
+      total_porsi: body.total_porsi || 0,
       bahan_rab: body.bahan_rab || 0,
       bahan_actual: body.bahan_actual || 0,
       // Section 2

@@ -6,7 +6,7 @@ import { api } from "@/lib/api";
 import { fmtIDR, fmtDate, BENEFICIARY_TYPES, ACCOUNT_CODES } from "@/lib/format";
 import {
   FileText, ScrollText, BookOpen, Users, Stamp, FileCheck,
-  Calendar, Download, Printer, Plus, Pencil, Trash2, Save, X
+  Calendar, Download, Printer
 } from "lucide-react";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -67,11 +67,8 @@ export default function ReportsPage() {
   const [exportTo, setExportTo] = useState("");
   const perPage = 15;
 
-  // DafNom state
+  // DafNom state (read-only from API)
   const [dafnomEntries, setDafnomEntries] = useState([]);
-  const [dafnomFormOpen, setDafnomFormOpen] = useState(false);
-  const [dafnomEditIdx, setDafnomEditIdx] = useState(null);
-  const [dafnomForm, setDafnomForm] = useState({ jabatan: "", jumlah: 1, insentif: 2000, nama: "" });
 
   useEffect(() => {
     api.get("/dafnom").then(r => setDafnomEntries(r.data || DEFAULT_DAFNOM)).catch(() => setDafnomEntries(DEFAULT_DAFNOM));
@@ -140,42 +137,11 @@ export default function ReportsPage() {
     return sum + items.reduce((s, it) => s + (it.portions || 0), 0);
   }, 0);
 
+  // DafNom total
   const dafnomTotal = useMemo(() =>
-    dafnomEntries.reduce((s, d) => s + d.jumlah * d.insentif, 0),
+    dafnomEntries.reduce((s, d) => s + (d.jumlah || 0) * (d.insentif || 0), 0),
     [dafnomEntries]
   );
-
-  // ── DafNom CRUD ──
-  const openDafnomAdd = () => {
-    setDafnomEditIdx(null);
-    setDafnomForm({ jabatan: "", jumlah: 1, insentif: 2000, nama: "" });
-    setDafnomFormOpen(true);
-  };
-  const openDafnomEdit = (idx) => {
-    setDafnomEditIdx(idx);
-    setDafnomForm({ ...dafnomEntries[idx] });
-    setDafnomFormOpen(true);
-  };
-  const submitDafnom = async (e) => {
-    e.preventDefault();
-    let updated;
-    if (dafnomEditIdx !== null) {
-      updated = dafnomEntries.map((d, i) => i === dafnomEditIdx ? { ...dafnomForm, jumlah: Number(dafnomForm.jumlah) || 1, insentif: Number(dafnomForm.insentif) || 0 } : d);
-    } else {
-      updated = [...dafnomEntries, { ...dafnomForm, jumlah: Number(dafnomForm.jumlah) || 1, insentif: Number(dafnomForm.insentif) || 0 }];
-    }
-    setDafnomEntries(updated);
-    try { await api.put("/dafnom", { entries: updated }); } catch {}
-    setDafnomFormOpen(false);
-    toast.success(dafnomEditIdx !== null ? "Data diperbarui" : "Data ditambahkan");
-  };
-  const deleteDafnom = async (idx) => {
-    if (!confirm("Hapus entry ini?")) return;
-    const updated = dafnomEntries.filter((_, i) => i !== idx);
-    setDafnomEntries(updated);
-    try { await api.put("/dafnom", { entries: updated }); } catch {}
-    toast.success("Data dihapus");
-  };
 
   // ── Excel Export (multi-sheet: LR, LPA, Catatan, DafNom) ──
   const exportExcel = useCallback(() => {
@@ -791,12 +757,12 @@ export default function ReportsPage() {
             {/* DafNom Tab */}
             {activeTab === "dafnom" && (
               <div className="space-y-4">
+                <div className="bg-[#6D28D9]/10 text-[#6D28D9] rounded-lg px-4 py-3 text-sm">
+                  Data DafNom dikelola di halaman <a href="/dafnom" className="font-bold underline">DafNom Insentif</a>. Tab ini hanya untuk referensi dan export.
+                </div>
                 <div className="card-soft overflow-hidden">
-                  <div className="px-5 py-3 border-b border-[#EAE4D8] bg-[#F9F6F0] flex items-center justify-between">
-                    <span className="font-display font-bold">Daftar Nominatif Insentif Relawan</span>
-                    <button onClick={openDafnomAdd} className="btn-primary text-xs flex items-center gap-1">
-                      <Plus size={12}/> Tambah
-                    </button>
+                  <div className="px-5 py-3 border-b border-[#EAE4D8] bg-[#F9F6F0]">
+                    <span className="font-display font-bold">Daftar Nominatif Insentif Staff & Relawan</span>
                   </div>
                   <div className="overflow-x-auto">
                   <table className="w-full text-sm" style={{ minWidth: "600px" }}>
@@ -808,7 +774,6 @@ export default function ReportsPage() {
                         <th className="text-right py-3 px-4">Jumlah</th>
                         <th className="text-right py-3 px-4">Insentif/Hari</th>
                         <th className="text-right py-3 px-4">Total</th>
-                        <th className="text-right py-3 px-4">Aksi</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -819,27 +784,20 @@ export default function ReportsPage() {
                           <td className="py-3 px-4 text-[#5C5C5C]">{d.nama || "—"}</td>
                           <td className="py-3 px-4 text-right">{d.jumlah}</td>
                           <td className="py-3 px-4 text-right">{fmtIDR(d.insentif)}</td>
-                          <td className="py-3 px-4 text-right font-semibold">{fmtIDR(d.jumlah * d.insentif)}</td>
-                          <td className="py-3 px-4 text-right">
-                            <div className="flex justify-end gap-1">
-                              <button onClick={() => openDafnomEdit(i)} className="btn-ghost text-xs"><Pencil size={14}/></button>
-                              <button onClick={() => deleteDafnom(i)} className="btn-ghost text-xs text-[#C5533B]"><Trash2 size={14}/></button>
-                            </div>
-                          </td>
+                          <td className="py-3 px-4 text-right font-semibold">{fmtIDR((d.jumlah || 0) * (d.insentif || 0))}</td>
                         </tr>
                       ))}
                     </tbody>
                     <tfoot>
                       <tr className="bg-[#EAE4D8] font-bold">
-                        <td colSpan={5} className="py-3 px-4 text-right">Total Insentif/Hari:</td>
-                        <td className="py-3 px-4 text-right">{fmtIDR(dafnomTotal)}</td>
+                        <td colSpan={4} className="py-3 px-4 text-right">Total Insentif/Hari:</td>
+                        <td className="py-3 px-4 text-right">{dafnomTotal > 0 ? fmtIDR(dafnomTotal) : "—"}</td>
                         <td></td>
                       </tr>
                     </tfoot>
                   </table>
                   </div>
                 </div>
-                <button onClick={() => exportPDF("dafnom")} className="btn-outline flex items-center gap-2"><Download size={14}/> Export PDF</button>
               </div>
             )}
 
@@ -989,39 +947,6 @@ export default function ReportsPage() {
           </>
         )}
 
-        {/* DafNom Form Modal */}
-        {dafnomFormOpen && (
-          <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4" onClick={() => setDafnomFormOpen(false)}>
-            <form onClick={e => e.stopPropagation()} onSubmit={submitDafnom} className="card-soft p-4 sm:p-6 w-full max-w-md space-y-4">
-              <div className="flex items-center justify-between">
-                <h3 className="font-display text-lg font-bold">{dafnomEditIdx !== null ? "Edit Relawan" : "Tambah Relawan"}</h3>
-                <button type="button" onClick={() => setDafnomFormOpen(false)} className="btn-ghost"><X size={16}/></button>
-              </div>
-              <div>
-                <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Jabatan</label>
-                <input required className="w-full mt-1 px-3 py-2 rounded-md border border-[#EAE4D8] bg-[#F9F6F0] text-sm" value={dafnomForm.jabatan} onChange={e => setDafnomForm(p => ({ ...p, jabatan: e.target.value }))} placeholder="Contoh: Kepala SPPG" />
-              </div>
-              <div>
-                <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Nama</label>
-                <input className="w-full mt-1 px-3 py-2 rounded-md border border-[#EAE4D8] bg-[#F9F6F0] text-sm" value={dafnomForm.nama} onChange={e => setDafnomForm(p => ({ ...p, nama: e.target.value }))} placeholder="Nama lengkap (opsional)" />
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Jumlah Orang</label>
-                  <input required type="number" min="1" className="w-full mt-1 px-3 py-2 rounded-md border border-[#EAE4D8] bg-[#F9F6F0] text-sm" value={dafnomForm.jumlah} onChange={e => setDafnomForm(p => ({ ...p, jumlah: parseInt(e.target.value) || 1 }))} />
-                </div>
-                <div>
-                  <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Insentif/Hari (Rp)</label>
-                  <input required type="number" min="0" className="w-full mt-1 px-3 py-2 rounded-md border border-[#EAE4D8] bg-[#F9F6F0] text-sm" value={dafnomForm.insentif} onChange={e => setDafnomForm(p => ({ ...p, insentif: parseInt(e.target.value) || 0 }))} />
-                </div>
-              </div>
-              <div className="flex justify-end gap-2">
-                <button type="button" onClick={() => setDafnomFormOpen(false)} className="btn-ghost">Batal</button>
-                <button type="submit" className="btn-primary"><Save size={14}/> Simpan</button>
-              </div>
-            </form>
-          </div>
-        )}
       </div>
     </Layout>
   );
