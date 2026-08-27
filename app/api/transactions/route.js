@@ -1,6 +1,8 @@
 import { createClient } from "@/lib/supabase";
 import { getTokenUser, requireRoles, logAudit, apiError, apiSuccess } from "@/lib/db-helpers";
 
+const VALID_ACCOUNT_CODES = ["1000", "1100", "1200", "1300", "2100", "2200", "2300", "3100"];
+
 export async function GET(request) {
   try {
     const user = await getTokenUser(request);
@@ -29,6 +31,31 @@ export async function POST(request) {
     requireRoles("admin_apps","admin_sppg","accountant")(user);
     const body = await request.json();
     const supabase = await createClient();
+
+    if (!body.account_code || !VALID_ACCOUNT_CODES.includes(body.account_code)) {
+      return apiError(`Kode akun tidak valid. Yang diperbolehkan: ${VALID_ACCOUNT_CODES.join(", ")}`, 400);
+    }
+    if (body.debit && body.credit) {
+      return apiError("Transaksi tidak boleh memiliki debit DAN kredit sekaligus", 400);
+    }
+    if (!body.debit && !body.credit) {
+      return apiError("Transaksi harus memiliki minimal debit atau kredit", 400);
+    }
+
+    if (body.transaction_date && body.account_code && body.description) {
+      const { data: existing } = await supabase
+        .from("transaksis")
+        .select("id")
+        .eq("transaction_date", body.transaction_date)
+        .eq("account_code", body.account_code)
+        .eq("description", body.description)
+        .eq("debit", body.debit || 0)
+        .eq("credit", body.credit || 0)
+        .limit(1);
+      if (existing && existing.length > 0) {
+        return apiError("Transaksi duplikat terdeteksi — data yang sama sudah ada", 409);
+      }
+    }
 
     const transaksi = {
       period_id: body.period_id || null,

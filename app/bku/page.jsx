@@ -5,6 +5,8 @@ import Layout from "@/components/Layout";
 import { api } from "@/lib/api";
 import { fmtIDR } from "@/lib/format";
 import { ScrollText, Filter, Download } from "lucide-react";
+import * as XLSX from "xlsx";
+import { toast } from "sonner";
 import Pagination from "@/components/Pagination";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -85,6 +87,14 @@ export default function BKUPage() {
     }), { debit: 0, credit: 0 });
   }, [filtered]);
 
+  const cashSaldo = useMemo(() => {
+    const cashCodes = ["1000", "1100", "1200"];
+    return filtered.filter(t => cashCodes.includes(t.account_code)).reduce((acc, t) => ({
+      debit: acc.debit + (t.debit || 0),
+      credit: acc.credit + (t.credit || 0),
+    }), { debit: 0, credit: 0 });
+  }, [filtered]);
+
   const getAccountName = (code) => ACCOUNT_CODES.find(a => a.code === code)?.name || code;
 
   if (!["admin_apps", "admin_sppg", "accountant"].includes(activeRole)) {
@@ -136,11 +146,27 @@ export default function BKUPage() {
             <div className="font-display text-xl sm:text-2xl font-bold mt-1 text-[#C5533B]">{fmtIDR(grandTotal.credit)}</div>
           </div>
           <div className="card-soft p-4">
-            <div className="text-xs uppercase tracking-widest text-[#5C5C5C]">Saldo BKU</div>
-            <div className={`font-display text-xl sm:text-2xl font-bold mt-1 ${grandTotal.debit - grandTotal.credit >= 0 ? "text-[#4A7C59]" : "text-[#C5533B]"}`}>
-              {fmtIDR(grandTotal.debit - grandTotal.credit)}
+            <div className="text-xs uppercase tracking-widest text-[#5C5C5C]">Saldo Kas (1000+1100+1200)</div>
+            <div className={`font-display text-xl sm:text-2xl font-bold mt-1 ${cashSaldo.debit - cashSaldo.credit >= 0 ? "text-[#4A7C59]" : "text-[#C5533B]"}`}>
+              {fmtIDR(cashSaldo.debit - cashSaldo.credit)}
             </div>
           </div>
+        </div>
+
+        <div className="flex gap-2">
+          <button onClick={() => {
+            const rows = [["Tanggal","Kode Akun","Keterangan","Debet","Kredit","Buku Pembantu"]];
+            for (const t of filtered) rows.push([t.transaction_date, t.account_code, t.description, t.debit||0, t.credit||0, t.buku_pembantu||""]);
+            rows.push([]);
+            rows.push(["","","TOTAL", grandTotal.debit, grandTotal.credit, ""]);
+            rows.push(["","","SALDO KAS", cashSaldo.debit - cashSaldo.credit, "", ""]);
+            const ws = XLSX.utils.aoa_to_sheet(rows);
+            ws["!cols"] = [{wch:12},{wch:10},{wch:40},{wch:15},{wch:15},{wch:15}];
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "BKU");
+            XLSX.writeFile(wb, `BKU-${new Date().toISOString().slice(0,10)}.xlsx`);
+            toast.success("BKU berhasil diunduh");
+          }} className="btn-outline flex items-center gap-2 text-sm"><Download size={14}/> Export Excel</button>
         </div>
 
         {loading ? (

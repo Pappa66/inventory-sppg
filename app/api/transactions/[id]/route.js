@@ -1,6 +1,8 @@
 import { createClient } from "@/lib/supabase";
 import { getTokenUser, requireRoles, logAudit, apiError, apiSuccess } from "@/lib/db-helpers";
 
+const VALID_ACCOUNT_CODES = ["1000", "1100", "1200", "1300", "2100", "2200", "2300", "3100"];
+
 export async function PUT(request, { params }) {
   try {
     const user = await getTokenUser(request);
@@ -8,6 +10,10 @@ export async function PUT(request, { params }) {
     const { id } = await params;
     const body = await request.json();
     const supabase = await createClient();
+
+    if (body.account_code && !VALID_ACCOUNT_CODES.includes(body.account_code)) {
+      return apiError(`Kode akun tidak valid. Yang diperbolehkan: ${VALID_ACCOUNT_CODES.join(", ")}`, 400);
+    }
 
     const allowed = ["period_id","transaction_date","account_code","description","debit","credit","buku_pembantu","notes"];
     const updates = { updated_at: new Date().toISOString() };

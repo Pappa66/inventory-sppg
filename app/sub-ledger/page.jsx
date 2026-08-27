@@ -23,6 +23,8 @@ export default function SubLedgerPage() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("BANK");
   const [page, setPage] = useState(1);
+  const [filterDateStart, setFilterDateStart] = useState("");
+  const [filterDateEnd, setFilterDateEnd] = useState("");
   const perPage = 15;
 
   useEffect(() => {
@@ -33,8 +35,11 @@ export default function SubLedgerPage() {
   }, []);
 
   const filteredByBP = useMemo(() => {
-    return transaksi.filter(t => t.buku_pembantu === activeTab);
-  }, [transaksi, activeTab]);
+    let list = transaksi.filter(t => t.buku_pembantu === activeTab);
+    if (filterDateStart) list = list.filter(t => t.transaction_date >= filterDateStart);
+    if (filterDateEnd) list = list.filter(t => t.transaction_date <= filterDateEnd);
+    return list;
+  }, [transaksi, activeTab, filterDateStart, filterDateEnd]);
 
   const paginated = useMemo(() => {
     const start = (page - 1) * perPage;
@@ -78,6 +83,21 @@ export default function SubLedgerPage() {
         <div>
           <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold">Buku Pembantu</h1>
           <p className="text-[#5C5C5C] mt-1">6 buku pembantu: Bank, Petty Cash, Bahan Baku, Operasional, Fasilitas, Pajak</p>
+        </div>
+
+        {/* Date Filter */}
+        <div className="card-soft p-4 flex flex-wrap gap-3 items-end">
+          <div>
+            <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Dari Tanggal</label>
+            <input type="date" className="mt-1 px-3 py-2 rounded-md border border-[#EAE4D8] bg-white text-sm" value={filterDateStart} onChange={e => { setFilterDateStart(e.target.value); setPage(1); }} />
+          </div>
+          <div>
+            <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Sampai Tanggal</label>
+            <input type="date" className="mt-1 px-3 py-2 rounded-md border border-[#EAE4D8] bg-white text-sm" value={filterDateEnd} onChange={e => { setFilterDateEnd(e.target.value); setPage(1); }} />
+          </div>
+          {(filterDateStart || filterDateEnd) && (
+            <button onClick={() => { setFilterDateStart(""); setFilterDateEnd(""); setPage(1); }} className="btn-ghost text-xs">Reset</button>
+          )}
         </div>
 
         {/* Summary Cards */}

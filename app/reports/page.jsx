@@ -33,17 +33,6 @@ const DEFAULT_DAFNOM = [
   { jabatan: "Kader Gizi", jumlah: 5, insentif: 2000, nama: "" },
 ];
 
-function loadDafnom() {
-  try {
-    const raw = localStorage.getItem("dafnom_entries");
-    if (raw) return JSON.parse(raw);
-  } catch {}
-  return DEFAULT_DAFNOM;
-}
-function saveDafnom(entries) {
-  localStorage.setItem("dafnom_entries", JSON.stringify(entries));
-}
-
 function pv(doc, label, value, x, y) {
   doc.setFont("helvetica", "normal");
   doc.text(`${label}  :`, x, y);
@@ -85,7 +74,7 @@ export default function ReportsPage() {
   const [dafnomForm, setDafnomForm] = useState({ jabatan: "", jumlah: 1, insentif: 2000, nama: "" });
 
   useEffect(() => {
-    setDafnomEntries(loadDafnom());
+    api.get("/dafnom").then(r => setDafnomEntries(r.data || DEFAULT_DAFNOM)).catch(() => setDafnomEntries(DEFAULT_DAFNOM));
   }, []);
 
   useEffect(() => {
@@ -115,8 +104,9 @@ export default function ReportsPage() {
   }, [transaksi, exportFrom, exportTo]);
 
   const paginatedTransaksi = useMemo(() => {
+    const filtered = transaksi.filter(t => ["1300", "2100", "2200", "2300", "3100"].includes(t.account_code));
     const start = (page - 1) * perPage;
-    return transaksi.slice(start, start + perPage);
+    return filtered.slice(start, start + perPage);
   }, [transaksi, page, perPage]);
 
   const lpaData = useMemo(() => {
@@ -140,7 +130,7 @@ export default function ReportsPage() {
       const date = t.transaction_date;
       if (!dailyMap[date]) dailyMap[date] = { items: [], total: 0 };
       dailyMap[date].items.push(t);
-      dailyMap[date].total += (t.credit || 0) - (t.debit || 0);
+      dailyMap[date].total += Math.abs((t.credit || 0) - (t.debit || 0));
     }
     return dailyMap;
   }, [transaksi, exportFrom, exportTo]);
@@ -166,7 +156,7 @@ export default function ReportsPage() {
     setDafnomForm({ ...dafnomEntries[idx] });
     setDafnomFormOpen(true);
   };
-  const submitDafnom = (e) => {
+  const submitDafnom = async (e) => {
     e.preventDefault();
     let updated;
     if (dafnomEditIdx !== null) {
@@ -175,15 +165,15 @@ export default function ReportsPage() {
       updated = [...dafnomEntries, { ...dafnomForm, jumlah: Number(dafnomForm.jumlah) || 1, insentif: Number(dafnomForm.insentif) || 0 }];
     }
     setDafnomEntries(updated);
-    saveDafnom(updated);
+    try { await api.put("/dafnom", { entries: updated }); } catch {}
     setDafnomFormOpen(false);
     toast.success(dafnomEditIdx !== null ? "Data diperbarui" : "Data ditambahkan");
   };
-  const deleteDafnom = (idx) => {
+  const deleteDafnom = async (idx) => {
     if (!confirm("Hapus entry ini?")) return;
     const updated = dafnomEntries.filter((_, i) => i !== idx);
     setDafnomEntries(updated);
-    saveDafnom(updated);
+    try { await api.put("/dafnom", { entries: updated }); } catch {}
     toast.success("Data dihapus");
   };
 
@@ -737,7 +727,7 @@ export default function ReportsPage() {
                     </tbody>
                   </table>
                 </div>
-                <Pagination page={page} totalPages={Math.ceil(transaksi.length / perPage)} onPageChange={setPage} />
+                <Pagination page={page} totalPages={Math.ceil(transaksi.filter(t => ["1300", "2100", "2200", "2300", "3100"].includes(t.account_code)).length / perPage)} onPageChange={setPage} />
                 <button onClick={() => exportPDF("lr")} className="btn-outline flex items-center gap-2"><Download size={14}/> Export PDF</button>
               </div>
             )}
