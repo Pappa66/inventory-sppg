@@ -65,9 +65,10 @@ export default function Page() {
                 protein_g: acc.protein_g + ((r.protein_g||0) / servings),
                 carbs_g: acc.carbs_g + ((r.carbs_g||0) / servings),
                 fats_g: acc.fats_g + ((r.fats_g||0) / servings),
+                fiber_g: acc.fiber_g + ((r.fiber_g||0) / servings),
                 sodium_mg: acc.sodium_mg + ((r.sodium_mg||0) / servings),
               };
-            }, { calories_kcal:0, protein_g:0, carbs_g:0, fats_g:0, sodium_mg:0 });
+            }, { calories_kcal:0, protein_g:0, carbs_g:0, fats_g:0, fiber_g:0, sodium_mg:0 });
             const allergens = Array.from(new Set((m.recipes||[]).flatMap(r => r.allergens||[])));
             const akgKey = m.menu_category === "BALITA" ? "BALITA" : m.menu_category === "BUMIL_BUSUI" ? "BUMIL" : m.menu_category === "PORTION_SMALL" ? "SD_1_3" : "SD_4_6";
             const akg = AKG_STANDARDS[akgKey] || AKG_STANDARDS.SD_4_6;
@@ -78,6 +79,7 @@ export default function Page() {
               { label: "Prot", val: totals.protein_g, std: akg.protein, unit: "g" },
               { label: "Karbo", val: totals.carbs_g, std: akg.karbo, unit: "g" },
               { label: "Lemak", val: totals.fats_g, std: akg.lemak, unit: "g" },
+              { label: "Serat", val: totals.fiber_g, std: akg.serat, unit: "g" },
               { label: "Na", val: totals.sodium_mg, std: akg.sodium, unit: "mg" },
             ];
             const allGood = nutrients.every(n => akgPct(n.val, n.std) >= 70);
@@ -95,7 +97,7 @@ export default function Page() {
                   {(m.recipes||[]).map(r => <li key={r.id} className="flex justify-between"><span>{r.name}</span><span className="audit-ts text-[#5C5C5C]">{r.calories_kcal||0} kkal</span></li>)}
                   {(m.recipes||[]).length === 0 && <li className="text-[#C5533B] text-xs">⚠ Belum ada resep terpilih</li>}
                 </ul>
-                <div className="grid grid-cols-3 sm:grid-cols-5 gap-1 mt-3 text-center">
+                <div className="grid grid-cols-3 sm:grid-cols-6 gap-1 mt-3 text-center">
                   {nutrientDisplay.map((n, i) => (
                     <div key={i} className="rounded-md p-1.5" style={{background:`${n.c}10`}}>
                       <div className="font-bold text-sm" style={{color:n.c}}>{Number(n.val).toFixed(0)}</div>

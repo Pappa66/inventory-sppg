@@ -23,6 +23,8 @@ export default function Page() {
   const [catFilter, setCatFilter] = useState("ALL");
   const [printMonth, setPrintMonth] = useState("");
 
+  const canEditMenu = ["admin_apps", "admin_sppg", "kitchen_head", "head_chef"].includes(activeRole);
+
   const load = (w = weekStart) => { setLoading(true); Promise.all([api.get("/recipes"), api.get(`/menus?week_start=${w}`)])
     .then(([a,b]) => { setRecipes(a.data); setMenus(b.data);
       if (b.data.length > 0) {
@@ -201,13 +203,13 @@ export default function Page() {
                     <div className="mt-2 text-[10px] audit-ts text-[#4A7C59] flex items-start gap-1"><CheckCircle2 size={12} className="mt-0.5 flex-shrink-0"/><span>Disetujui: {m.signature}</span></div>
                   ) : null}
                   <label className="block text-[10px] uppercase tracking-widest text-[#5C5C5C] mt-3">Porsi</label>
-                  <input type="number" className="w-full mt-1 px-3 py-1.5 text-sm rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={m.portions || ""} onChange={(e)=>setPortions(d.key, parseInt(e.target.value)||0)}/>
+                  <input type="number" className="w-full mt-1 px-3 py-1.5 text-sm rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={m.portions || ""} onChange={(e)=>setPortions(d.key, parseInt(e.target.value)||0)} disabled={!canEditMenu}/>
                   <div className="mt-3 space-y-1 max-h-60 overflow-y-auto">
                     {recipes.filter(r => catFilter==="ALL" || r.menu_category===catFilter).map(r => {
                       const catInfo = r.menu_category ? MENU_CATEGORIES[r.menu_category] : null;
                       const active = m.recipe_ids.includes(r.id);
                       return (
-                        <button key={r.id} data-testid={`menu-toggle-${d.key}-${r.id}`} onClick={()=>toggleRecipe(d.key, r.id)} className={`w-full text-left text-sm px-2.5 py-1.5 rounded-md transition-colors flex items-center justify-between ${active?"bg-[#4A7C59] text-white":"hover:bg-[#EAE4D8]"}`}>
+                        <button key={r.id} data-testid={`menu-toggle-${d.key}-${r.id}`} onClick={()=>canEditMenu && toggleRecipe(d.key, r.id)} className={`w-full text-left text-sm px-2.5 py-1.5 rounded-md transition-colors flex items-center justify-between ${active?"bg-[#4A7C59] text-white":"hover:bg-[#EAE4D8]"} ${!canEditMenu ? "opacity-70 cursor-default" : ""}`} disabled={!canEditMenu}>
                           <span>{r.name}</span>
                           {catInfo && !active && <span className="text-[9px] px-1.5 py-0.5 rounded" style={{background:`${catInfo.color}20`, color:catInfo.color}}>{catInfo.label}</span>}
                         </button>

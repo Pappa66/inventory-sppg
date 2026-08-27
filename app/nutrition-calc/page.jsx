@@ -4,7 +4,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import Layout from "@/components/Layout";
 import { api } from "@/lib/api";
 import { Calculator, CheckCircle2, AlertTriangle, ChefHat, Scale, HeartPulse, Leaf } from "lucide-react";
-import { AKG_STANDARDS } from "@/lib/format";
+import { AKG_STANDARDS, nutritionFactor } from "@/lib/format";
 
 function NutrientBar({ label, value, unit, standard, color }) {
   const pct = standard > 0 ? Math.min((value / standard) * 100, 120) : 0;
@@ -69,7 +69,7 @@ export default function NutritionCalcPage() {
       const item = items.find(x => x.id === ing.item_id);
       if (!item) continue;
       const n = item.nutrition_per_100g || {};
-      const factor = (ing.quantity || 0) / 100;
+      const factor = nutritionFactor(ing.quantity || 0, ing.unit || item.unit);
       rows.push({
         name: item.name,
         quantity: ing.quantity,
@@ -94,6 +94,8 @@ export default function NutritionCalcPage() {
       { pct: (perPortion.protein / akg.protein) * 100 },
       { pct: (perPortion.carbs / akg.karbo) * 100 },
       { pct: (perPortion.fats / akg.lemak) * 100 },
+      { pct: (perPortion.fiber / akg.serat) * 100 },
+      { pct: (perPortion.sodium / akg.sodium) * 100 },
     ];
     const avgPct = checks.reduce((s, c) => s + c.pct, 0) / checks.length;
     const allGood = checks.every((c) => c.pct >= 70);

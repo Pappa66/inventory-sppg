@@ -64,7 +64,8 @@ export default function Page() {
       const item = items.find(x => x.id === ing.item_id);
       if (!item?.nutrition_per_100g) continue;
       const n = item.nutrition_per_100g;
-      const factor = nutritionFactor(ing.quantity, item.unit);
+      const unit = ing.unit || item.unit;
+      const factor = nutritionFactor(ing.quantity, unit);
       totals.calories_kcal += (n.calories || 0) * factor;
       totals.protein_g += (n.protein || 0) * factor;
       totals.carbs_g += (n.carbs || 0) * factor;
@@ -162,13 +163,17 @@ export default function Page() {
                     )}
                   </div>
                   <div className="grid grid-cols-6 gap-1 mt-3 text-center">
-                    {NUTRI_KEYS.map(([k, l, c], i) => (
-                      <div key={i} className="rounded-md p-1.5" style={{ background: `${c}10` }}>
-                        <div className="font-bold text-sm" style={{ color: c }}>{Number(r[k] || 0).toFixed(0)}</div>
-                        <div className="text-[9px] uppercase tracking-wide text-[#5C5C5C]">{l}</div>
-                      </div>
-                    ))}
+                    {NUTRI_KEYS.map(([k, l, c], i) => {
+                      const perPortion = r.servings > 0 ? (Number(r[k] || 0) / r.servings) : 0;
+                      return (
+                        <div key={i} className="rounded-md p-1.5" style={{ background: `${c}10` }}>
+                          <div className="font-bold text-sm" style={{ color: c }}>{perPortion.toFixed(0)}</div>
+                          <div className="text-[9px] uppercase tracking-wide text-[#5C5C5C]">{l}</div>
+                        </div>
+                      );
+                    })}
                   </div>
+                  <div className="text-[9px] text-[#5C5C5C] text-center mt-0.5">Per porsi ({r.servings} porsi total)</div>
                   {(r.allergens || []).length > 0 && (
                     <div className="flex flex-wrap gap-1 mt-2">
                       {r.allergens.map(a => <span key={a} className="tag bg-[#C5533B]/10 text-[#C5533B]">⚠ {a}</span>)}
@@ -265,8 +270,8 @@ export default function Page() {
                           </div>
                           {item?.nutrition_per_100g && ing.quantity > 0 && (
                             <div className="flex flex-wrap gap-1 mt-1 ml-2">
-                              {NUTRI_KEYS.map(([k, l, c]) => {
-                                const val = ((item.nutrition_per_100g[k] || 0) * nutritionFactor(ing.quantity, item.unit));
+                              {                               NUTRI_KEYS.map(([k, l, c]) => {
+                                const val = ((item.nutrition_per_100g[k] || 0) * nutritionFactor(ing.quantity, ing.unit || item.unit));
                                 return val > 0 ? (
                                   <span key={k} className="text-[9px] px-1.5 py-0.5 rounded" style={{ background: `${c}10`, color: c }}>
                                     {l.split(" ")[0]}: {val.toFixed(1)}

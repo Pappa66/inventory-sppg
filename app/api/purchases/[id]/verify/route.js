@@ -40,11 +40,16 @@ export async function POST(request, { params }) {
       const transportAmount = Number(old.transport_amount_idr) || 0;
 
       if (purchaseItems.length > 0) {
+        const itemIds = purchaseItems.map(it => it.item_id).filter(Boolean);
+        const { data: itemRows } = await supabase.from("items").select("id, zone").in("id", itemIds);
+        const itemZoneMap = {};
+        (itemRows || []).forEach(it => { itemZoneMap[it.id] = it.zone || "DRY"; });
+
         const lotRows = purchaseItems.map((it) => ({
           item_id: it.item_id,
           quantity: Number(it.quantity) || 0,
           actual_quantity: Number(it.quantity) || 0,
-          zone: "DRY",
+          zone: itemZoneMap[it.item_id] || "DRY",
           note: `Pembelian ${old.description || id}`,
           received_at: old.purchased_at || new Date().toISOString(),
         }));
@@ -67,10 +72,11 @@ export async function POST(request, { params }) {
 
       if (totalAmount > 0) {
         const txDate = old.purchased_at ? new Date(old.purchased_at).toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10);
-        const accountCode = old.category === "Operasional" ? "2200" : "2100";
+        const isOperational = old.category === "OPERATIONAL" || old.category === "Operasional";
+        const accountCode = isOperational ? "2200" : "2100";
         const desc = `${old.description || "Pembelian"} (${old.supplier || ""})`;
 
-        const { error: txErr } = await supabase.from("transaksis").insert({
+        const txEntries = [{
           transaction_date: txDate,
           account_code: accountCode,
           description: desc,
@@ -80,10 +86,20 @@ export async function POST(request, { params }) {
           source_id: id,
           buku_pembantu: old.supplier || null,
           notes: `Auto dari verifikasi pembelian`,
-        });
+        }, {
+          transaction_date: txDate,
+          account_code: "1100",
+          description: desc,
+          debit: 0,
+          credit: totalAmount,
+          source_table: "purchases",
+          source_id: id,
+          buku_pembantu: old.supplier || null,
+          notes: `Auto dari verifikasi pembelian (kas keluar)`,
+        }];
 
         if (transportAmount > 0) {
-          await supabase.from("transaksis").insert({
+          txEntries.push({
             transaction_date: txDate,
             account_code: "2200",
             description: `Transport: ${old.description || "Pembelian"}`,
@@ -93,8 +109,20 @@ export async function POST(request, { params }) {
             source_id: id,
             buku_pembantu: old.supplier || null,
             notes: `Auto transport dari verifikasi pembelian`,
+          }, {
+            transaction_date: txDate,
+            account_code: "1100",
+            description: `Transport: ${old.description || "Pembelian"}`,
+            debit: 0,
+            credit: transportAmount,
+            source_table: "purchases",
+            source_id: id,
+            buku_pembantu: old.supplier || null,
+            notes: `Auto transport dari verifikasi pembelian (kas keluar)`,
           });
         }
+
+        const { error: txErr } = await supabase.from("transaksis").insert(txEntries);
 
         if (txErr) {
           await logAudit(supabase, {
@@ -106,7 +134,7 @@ export async function POST(request, { params }) {
           await logAudit(supabase, {
             actor: user, action: "AUTO_TX_CREATED",
             entity: "purchases", entity_id: id,
-            note: `Transaksi ${accountCode} D ${totalAmount} dibuat dari verifikasi pembelian`,
+            note: `${txEntries.length} transaksi dibuat dari verifikasi pembelian (D ${totalAmount} + K ${totalAmount})`,
           });
         }
       }

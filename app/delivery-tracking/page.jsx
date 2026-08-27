@@ -261,13 +261,14 @@ export default function Page() {
   const [expandedDest, setExpandedDest] = useState(null);
   const [logsByPlan, setLogsByPlan] = useState({});
   const [startingAll, setStartingAll] = useState(false);
+  const [trackDate, setTrackDate] = useState(dateStr());
 
   const canSeeAll = activeRole === "admin_apps" || activeRole === "admin_sppg" || activeRole === "field_assistant";
 
   const load = async () => {
     setLoading(true);
     try {
-      const { data: planData } = await api.get("/delivery-plans", { params: { plan_date: dateStr() } });
+      const { data: planData } = await api.get("/delivery-plans", { params: { plan_date: trackDate } });
       const planList = planData || [];
       setPlans(planList);
 
@@ -291,7 +292,7 @@ export default function Page() {
     }
   };
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => { load(); }, [trackDate]);
 
   const startAllDeliveries = async (plan) => {
     setStartingAll(true);
@@ -385,6 +386,10 @@ export default function Page() {
                 ? "Pantau dan update status pengantaran semua driver."
                 : "Update status pengantaran Anda hari ini."}
             </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <label className="text-xs text-[#5C5C5C]">Tanggal:</label>
+            <input type="date" value={trackDate} onChange={e => setTrackDate(e.target.value)} className="px-3 py-1.5 rounded-md border border-[#EAE4D8] bg-white text-sm" />
           </div>
           <div className="flex items-center gap-2 text-sm text-[#5C5C5C]">
             <Truck size={16} className="text-[#0891B2]" />
