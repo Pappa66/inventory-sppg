@@ -475,7 +475,7 @@ function buildCards(role, d) {
       const todayTaken = (d.stockTaken || []).filter(
         t => (t.taken_at || "").slice(0, 10) === today
       );
-      const menusToday = (d.menus || []).filter(m => m.day === ["mon","tue","wed","thu","fri"][new Date().getDay() - 1]);
+      const menusToday = (d.menus || []).filter(m => { const dk = ["mon","tue","wed","thu","fri"]; const di = new Date().getDay(); return di >= 1 && di <= 5 && m.day === dk[di - 1]; });
       const totalPortions = menusToday.reduce((sum, m) => sum + (m.portions || 0), 0);
 
       return [
@@ -492,7 +492,7 @@ function buildCards(role, d) {
       const todayTaken = (d.stockTaken || []).filter(
         t => (t.taken_at || "").slice(0, 10) === today
       );
-      const menusToday = (d.menus || []).filter(m => m.day === ["mon","tue","wed","thu","fri"][new Date().getDay() - 1]);
+      const menusToday = (d.menus || []).filter(m => { const dk = ["mon","tue","wed","thu","fri"]; const di = new Date().getDay(); return di >= 1 && di <= 5 && m.day === dk[di - 1]; });
       const totalPortions = menusToday.reduce((sum, m) => sum + (m.portions || 0), 0);
 
       return [
@@ -505,7 +505,7 @@ function buildCards(role, d) {
 
     /* ---------- PEMORSIAN ---------- */
     case "pemorsian": {
-      const menusToday = (d.menus || []).filter(m => m.day === ["mon","tue","wed","thu","fri"][new Date().getDay() - 1]);
+      const menusToday = (d.menus || []).filter(m => { const dk = ["mon","tue","wed","thu","fri"]; const di = new Date().getDay(); return di >= 1 && di <= 5 && m.day === dk[di - 1]; });
       const totalPortions = menusToday.reduce((sum, m) => sum + (m.portions || 0), 0);
       const pemorsianTasks = (d.stockTaken || []).filter(t => t.taken_reason === "PORTIONING" || t.taken_at?.slice(0,10) === today);
       const portionedCount = pemorsianTasks.length;
@@ -585,7 +585,7 @@ function LowStockList({ items }) {
 /* ------------------------------------------------------------------ */
 
 function IngredientCalculator({ menus, recipes, items }) {
-  const today = ["mon","tue","wed","thu","fri"][new Date().getDay() - 1];
+  const today = (() => { const dk = ["mon","tue","wed","thu","fri"]; const di = new Date().getDay(); return di >= 1 && di <= 5 ? dk[di - 1] : null; })();
   const menusToday = (menus || []).filter(m => m.day === today);
   if (menusToday.length === 0 || !recipes || !items) return null;
 
@@ -636,7 +636,7 @@ function IngredientCalculator({ menus, recipes, items }) {
 /* ------------------------------------------------------------------ */
 
 function DailyReadiness({ menus, recipes, lots, dailyReports, purchases }) {
-  const today = ["mon","tue","wed","thu","fri"][new Date().getDay() - 1];
+  const today = (() => { const dk = ["mon","tue","wed","thu","fri"]; const di = new Date().getDay(); return di >= 1 && di <= 5 ? dk[di - 1] : null; })();
   const menusToday = (menus || []).filter(m => m.day === today);
   const totalPortions = menusToday.reduce((s, m) => s + (m.portions || 0), 0);
 

@@ -4,7 +4,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import Layout from "@/components/Layout";
 import { api, formatErr } from "@/lib/api";
-import { COMMON_ALLERGENS, MENU_CATEGORIES } from "@/lib/format";
+import { COMMON_ALLERGENS, MENU_CATEGORIES, nutritionFactor } from "@/lib/format";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { Plus, Flame, Camera, Calculator, Pencil, AlertTriangle } from "lucide-react";
@@ -12,7 +12,7 @@ import { SkeletonCards } from "@/components/Skeleton";
 import Pagination from "@/components/Pagination";
 
 const EMPTY = {
-  name: "", servings: 100, menu_category: null, ingredients: [], instructions: "",
+  name: "", servings: 10, menu_category: null, ingredients: [], instructions: "",
   calories_kcal: 0, protein_g: 0, carbs_g: 0, fats_g: 0, fiber_g: 0, sodium_mg: 0,
   nutrition_auto: true, allergens: [], photo_url: "",
 };
@@ -64,7 +64,7 @@ export default function Page() {
       const item = items.find(x => x.id === ing.item_id);
       if (!item?.nutrition_per_100g) continue;
       const n = item.nutrition_per_100g;
-      const factor = ing.quantity / 100;
+      const factor = nutritionFactor(ing.quantity, item.unit);
       totals.calories_kcal += (n.calories || 0) * factor;
       totals.protein_g += (n.protein || 0) * factor;
       totals.carbs_g += (n.carbs || 0) * factor;
@@ -188,7 +188,10 @@ export default function Page() {
                 </div>
               );
             })}
-            {recipes.length === 0 && <div className="col-span-full text-center text-[#5C5C5C] py-10">Belum ada resep. Buat resep pertama.</div>}
+            {recipes.length === 0 && <div className="col-span-full text-center text-[#5C5C5C] py-10">
+              <p className="mb-3">Belum ada resep.</p>
+              {CAN_EDIT.includes(activeRole) && <button onClick={() => { setEditing(null); setForm(EMPTY); setOpen(true); }} className="btn-primary text-xs">+ Buat Resep</button>}
+            </div>}
           </div>
         )}
         <Pagination page={page} totalPages={Math.ceil(recipes.length / perPage)} onPageChange={setPage} />
@@ -263,7 +266,7 @@ export default function Page() {
                           {item?.nutrition_per_100g && ing.quantity > 0 && (
                             <div className="flex flex-wrap gap-1 mt-1 ml-2">
                               {NUTRI_KEYS.map(([k, l, c]) => {
-                                const val = ((item.nutrition_per_100g[k] || 0) * ing.quantity / 100);
+                                const val = ((item.nutrition_per_100g[k] || 0) * nutritionFactor(ing.quantity, item.unit));
                                 return val > 0 ? (
                                   <span key={k} className="text-[9px] px-1.5 py-0.5 rounded" style={{ background: `${c}10`, color: c }}>
                                     {l.split(" ")[0]}: {val.toFixed(1)}

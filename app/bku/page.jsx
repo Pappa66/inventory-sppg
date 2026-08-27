@@ -67,16 +67,16 @@ export default function BKUPage() {
 
   const accountTotals = useMemo(() => {
     const totals = {};
-    for (const [code, items] of Object.entries(paginatedGrouped)) {
-      totals[code] = items.reduce((acc, t) => {
-        const debit = acc.debit + (t.debit || 0);
-        const credit = acc.credit + (t.credit || 0);
-        const isCost = code.startsWith("2");
-        return { debit, credit, saldo: isCost ? credit - debit : debit - credit };
-      }, { debit: 0, credit: 0, saldo: 0 });
+    for (const t of sortedAll) {
+      const code = t.account_code;
+      if (!totals[code]) totals[code] = { debit: 0, credit: 0, saldo: 0 };
+      totals[code].debit += (t.debit || 0);
+      totals[code].credit += (t.credit || 0);
+      const isCost = code.startsWith("2");
+      totals[code].saldo = isCost ? totals[code].credit - totals[code].debit : totals[code].debit - totals[code].credit;
     }
     return totals;
-  }, [paginatedGrouped]);
+  }, [sortedAll]);
 
   const grandTotal = useMemo(() => {
     return filtered.reduce((acc, t) => ({
@@ -160,7 +160,7 @@ export default function BKUPage() {
                     <div className="flex flex-wrap gap-2 text-sm">
                       <span>D: <span className="font-bold text-[#4A7C59]">{fmtIDR(tot.debit)}</span></span>
                       <span>K: <span className="font-bold text-[#C5533B]">{fmtIDR(tot.credit)}</span></span>
-                      <span>Saldo: <span className={`font-bold ${tot.debit - tot.credit >= 0 ? "text-[#4A7C59]" : "text-[#C5533B]"}`}>{fmtIDR(tot.debit - tot.credit)}</span></span>
+                      <span>Saldo: <span className={`font-bold ${tot.saldo >= 0 ? "text-[#4A7C59]" : "text-[#C5533B]"}`}>{fmtIDR(tot.saldo)}</span></span>
                     </div>
                   </div>
                   {/* Mobile card view */}

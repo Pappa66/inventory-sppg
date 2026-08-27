@@ -39,20 +39,17 @@ export async function POST(request) {
     const supabase = await createClient();
     const body = await request.json();
 
-    const { task_date, role, task_type, category, portions, photo_url, description, status } = body;
-
-    if (!task_date || !task_type) {
-      return apiError("task_date dan task_type wajib diisi");
-    }
+    const isBatch = Array.isArray(body);
+    const tasks = isBatch ? body : [body];
 
     const allowedRoles = ["pemorsian", "persiapan", "masak", "tenaga_masak", "kebersihan", "pencuci"];
-    if (!allowedRoles.includes(task_type)) {
-      return apiError("task_type tidak valid");
-    }
+    const rows = [];
 
-    const { data, error } = await supabase
-      .from("daily_tasks")
-      .insert({
+    for (const task of tasks) {
+      const { task_date, task_type, category, portions, photo_url, description, status } = task;
+      if (!task_date || !task_type) return apiError("task_date dan task_type wajib diisi");
+      if (!allowedRoles.includes(task_type)) return apiError("task_type tidak valid");
+      rows.push({
         task_date,
         user_id: user.id || user.user_id,
         role: user.role,
@@ -62,13 +59,17 @@ export async function POST(request) {
         photo_url: photo_url || null,
         description: description || null,
         status: status || "SELESAI",
-      })
-      .select()
-      .single();
+      });
+    }
+
+    const { data, error } = await supabase
+      .from("daily_tasks")
+      .insert(rows)
+      .select();
 
     if (error) return apiError(error.message);
 
-    return apiSuccess(data, 201);
+    return apiSuccess(isBatch ? data : data[0], 201);
   } catch (e) {
     return apiError("Internal server error", 500);
   }

@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import Layout from "@/components/Layout";
 import { api, formatErr } from "@/lib/api";
-import { DAYS, MENU_STATUS, fmtDateTime } from "@/lib/format";
+import { DAYS, MENU_STATUS, fmtDateTime, AKG_STANDARDS } from "@/lib/format";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { CheckCircle2, XCircle, Flame, Send } from "lucide-react";
@@ -58,18 +58,30 @@ export default function Page() {
           {pending.map(m => {
             const st = MENU_STATUS[m.status||"DRAFT"];
             const dayLabel = DAYS.find(d=>d.key===m.day)?.label || m.day;
-            const p = m.portions || 1;
             const totals = (m.recipes||[]).reduce((acc, r) => {
               const servings = r.servings || 1;
               return {
-                calories_kcal: acc.calories_kcal + ((r.calories_kcal||0) / servings) * p,
-                protein_g: acc.protein_g + ((r.protein_g||0) / servings) * p,
-                carbs_g: acc.carbs_g + ((r.carbs_g||0) / servings) * p,
-                fats_g: acc.fats_g + ((r.fats_g||0) / servings) * p,
-                sodium_mg: acc.sodium_mg + ((r.sodium_mg||0) / servings) * p,
+                calories_kcal: acc.calories_kcal + ((r.calories_kcal||0) / servings),
+                protein_g: acc.protein_g + ((r.protein_g||0) / servings),
+                carbs_g: acc.carbs_g + ((r.carbs_g||0) / servings),
+                fats_g: acc.fats_g + ((r.fats_g||0) / servings),
+                sodium_mg: acc.sodium_mg + ((r.sodium_mg||0) / servings),
               };
             }, { calories_kcal:0, protein_g:0, carbs_g:0, fats_g:0, sodium_mg:0 });
             const allergens = Array.from(new Set((m.recipes||[]).flatMap(r => r.allergens||[])));
+            const akgKey = m.menu_category === "BALITA" ? "BALITA" : m.menu_category === "BUMIL_BUSUI" ? "BUMIL" : m.menu_category === "PORTION_SMALL" ? "SD_1_3" : "SD_4_6";
+            const akg = AKG_STANDARDS[akgKey] || AKG_STANDARDS.SD_4_6;
+            const akgPct = (val, std) => std > 0 ? Math.round((val / std) * 100) : 0;
+            const akgColor = (pct) => pct >= 90 ? "#4A7C59" : pct >= 70 ? "#D97706" : "#C5533B";
+            const nutrients = [
+              { label: "Kkal", val: totals.calories_kcal, std: akg.kkal, unit: "" },
+              { label: "Prot", val: totals.protein_g, std: akg.protein, unit: "g" },
+              { label: "Karbo", val: totals.carbs_g, std: akg.karbo, unit: "g" },
+              { label: "Lemak", val: totals.fats_g, std: akg.lemak, unit: "g" },
+              { label: "Na", val: totals.sodium_mg, std: akg.sodium, unit: "mg" },
+            ];
+            const allGood = nutrients.every(n => akgPct(n.val, n.std) >= 70);
+            const nutrientDisplay = nutrients.map(n => ({ ...n, pct: akgPct(n.val, n.std), c: akgColor(akgPct(n.val, n.std)) }));
             return (
               <div key={m.id} className="card-soft p-4" data-testid={`approval-card-${m.id}`}>
                 <div className="flex items-center justify-between">
@@ -84,12 +96,16 @@ export default function Page() {
                   {(m.recipes||[]).length === 0 && <li className="text-[#C5533B] text-xs">⚠ Belum ada resep terpilih</li>}
                 </ul>
                 <div className="grid grid-cols-3 sm:grid-cols-5 gap-1 mt-3 text-center">
-                  {[["Kkal", totals.calories_kcal, "#D97706"],["Prot", totals.protein_g, "#4A7C59"],["Karbo", totals.carbs_g, "#2C4251"],["Lemak", totals.fats_g, "#C5533B"],["Na", totals.sodium_mg, "#5C5C5C"]].map(([l,v,c],i)=>(
-                    <div key={i} className="rounded-md p-1.5" style={{background:`${c}10`}}>
-                      <div className="audit-ts font-bold text-sm" style={{color:c}}>{Number(v).toFixed(0)}</div>
-                      <div className="text-[9px] uppercase tracking-wide text-[#5C5C5C]">{l}</div>
+                  {nutrientDisplay.map((n, i) => (
+                    <div key={i} className="rounded-md p-1.5" style={{background:`${n.c}10`}}>
+                      <div className="font-bold text-sm" style={{color:n.c}}>{Number(n.val).toFixed(0)}</div>
+                      <div className="text-[9px] uppercase tracking-wide text-[#5C5C5C]">{n.label}</div>
+                      <div className="text-[8px] mt-0.5" style={{color:n.c}}>{n.pct}% AKG</div>
                     </div>
                   ))}
+                </div>
+                <div className={`mt-2 text-[10px] font-semibold px-2 py-1 rounded-md text-center ${allGood ? "bg-[#4A7C59]/10 text-[#4A7C59]" : "bg-[#D97706]/10 text-[#D97706]"}`}>
+                  {allGood ? "Memenuhi standar AKG" : "Perlu perbaikan nutrisi"}
                 </div>
                 {allergens.length > 0 && (
                   <div className="flex flex-wrap gap-1 mt-2">

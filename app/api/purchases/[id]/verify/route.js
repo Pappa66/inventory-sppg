@@ -34,6 +34,84 @@ export async function POST(request, { params }) {
       after: { verified: body.verified, note: body.note },
     });
 
+    if (body.verified) {
+      const purchaseItems = old.items || [];
+      const totalAmount = Number(old.amount_idr) || 0;
+      const transportAmount = Number(old.transport_amount_idr) || 0;
+
+      if (purchaseItems.length > 0) {
+        const lotRows = purchaseItems.map((it) => ({
+          item_id: it.item_id,
+          quantity: Number(it.quantity) || 0,
+          actual_quantity: Number(it.quantity) || 0,
+          zone: "DRY",
+          note: `Pembelian ${old.description || id}`,
+          received_at: old.purchased_at || new Date().toISOString(),
+        }));
+
+        const { error: lotErr } = await supabase.from("stock_lots").insert(lotRows);
+        if (lotErr) {
+          await logAudit(supabase, {
+            actor: user, action: "AUTO_STOCK_LOT_FAILED",
+            entity: "purchases", entity_id: id,
+            note: lotErr.message,
+          });
+        } else {
+          await logAudit(supabase, {
+            actor: user, action: "AUTO_STOCK_LOT_CREATED",
+            entity: "purchases", entity_id: id,
+            note: `Dibuat ${lotRows.length} lot stok dari pembelian`,
+          });
+        }
+      }
+
+      if (totalAmount > 0) {
+        const txDate = old.purchased_at ? new Date(old.purchased_at).toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10);
+        const accountCode = old.category === "Operasional" ? "2200" : "2100";
+        const desc = `${old.description || "Pembelian"} (${old.supplier || ""})`;
+
+        const { error: txErr } = await supabase.from("transaksis").insert({
+          transaction_date: txDate,
+          account_code: accountCode,
+          description: desc,
+          debit: totalAmount,
+          credit: 0,
+          source_table: "purchases",
+          source_id: id,
+          buku_pembantu: old.supplier || null,
+          notes: `Auto dari verifikasi pembelian`,
+        });
+
+        if (transportAmount > 0) {
+          await supabase.from("transaksis").insert({
+            transaction_date: txDate,
+            account_code: "2200",
+            description: `Transport: ${old.description || "Pembelian"}`,
+            debit: transportAmount,
+            credit: 0,
+            source_table: "purchases",
+            source_id: id,
+            buku_pembantu: old.supplier || null,
+            notes: `Auto transport dari verifikasi pembelian`,
+          });
+        }
+
+        if (txErr) {
+          await logAudit(supabase, {
+            actor: user, action: "AUTO_TX_FAILED",
+            entity: "purchases", entity_id: id,
+            note: txErr.message,
+          });
+        } else {
+          await logAudit(supabase, {
+            actor: user, action: "AUTO_TX_CREATED",
+            entity: "purchases", entity_id: id,
+            note: `Transaksi ${accountCode} D ${totalAmount} dibuat dari verifikasi pembelian`,
+          });
+        }
+      }
+    }
+
     return apiSuccess({ ok: true });
   } catch (e) {
     return apiError("Internal server error", 500);

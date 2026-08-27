@@ -260,6 +260,7 @@ export default function Page() {
   const [expandedPlan, setExpandedPlan] = useState(null);
   const [expandedDest, setExpandedDest] = useState(null);
   const [logsByPlan, setLogsByPlan] = useState({});
+  const [startingAll, setStartingAll] = useState(false);
 
   const canSeeAll = activeRole === "admin_apps" || activeRole === "admin_sppg" || activeRole === "field_assistant";
 
@@ -292,10 +293,66 @@ export default function Page() {
 
   useEffect(() => { load(); }, []);
 
+  const startAllDeliveries = async (plan) => {
+    setStartingAll(true);
+    try {
+      const assignment = plan.delivery_assignments?.[0];
+      if (!assignment) { toast.error("Tidak ada assignment"); return; }
+      const dests = plan.delivery_plan_items || [];
+      const logs = logsByPlan[plan.id] || [];
+      const notStarted = dests.filter(d => {
+        const destLogs = logs.filter(l => l.destination_id === d.destination_id);
+        return destLogs.length === 0 || destLogs[destLogs.length - 1].status === "NOT_DELIVERED";
+      });
+      if (notStarted.length === 0) { toast.info("Semua tujuan sudah dimulai"); return; }
+      const now = new Date();
+      const time = `${String(now.getHours()).padStart(2,"0")}:${String(now.getMinutes()).padStart(2,"0")}`;
+      await Promise.all(notStarted.map(d =>
+        api.post("/delivery-logs", {
+          assignment_id: assignment.id,
+          destination_id: d.destination_id,
+          status: "IN_TRANSIT",
+          notes: `Jam ${time} — Mulai pengantaran`,
+          photo_url: null,
+        })
+      ));
+      toast.success(`${notStarted.length} tujuan ditandai "Sedang Diantar"`);
+      load();
+    } catch (er) {
+      toast.error(formatErr(er));
+    } finally {
+      setStartingAll(false);
+    }
+  };
+
+  const quickTransit = async (plan, dest) => {
+    try {
+      const assignment = plan.delivery_assignments?.[0];
+      if (!assignment) return;
+      const now = new Date();
+      const time = `${String(now.getHours()).padStart(2,"0")}:${String(now.getMinutes()).padStart(2,"0")}`;
+      await api.post("/delivery-logs", {
+        assignment_id: assignment.id,
+        destination_id: dest.destination_id,
+        status: "IN_TRANSIT",
+        notes: `Jam ${time}`,
+        photo_url: null,
+      });
+      toast.success("Ditandai sedang diantar");
+      load();
+    } catch (er) { toast.error(formatErr(er)); }
+  };
+
   const myPlans = useMemo(() => {
     if (canSeeAll) return plans;
     return plans.filter((p) => p.driver_id === user?.id);
   }, [plans, canSeeAll, user]);
+
+  useEffect(() => {
+    if (myPlans.length === 1 && !expandedPlan) {
+      setExpandedPlan(myPlans[0].id);
+    }
+  }, [myPlans]);
 
   const destName = (dest) => {
     if (!dest) return "—";
@@ -381,6 +438,15 @@ export default function Page() {
                       </div>
                       <div className="flex items-center gap-3">
                         <CourierTracker status={overallStatus} logs={[]} />
+                        {overallStatus === "NOT_DELIVERED" && (
+                          <button
+                            onClick={(e) => { e.stopPropagation(); startAllDeliveries(plan); }}
+                            disabled={startingAll}
+                            className="btn-primary text-xs px-3 py-1.5 disabled:opacity-50"
+                          >
+                            {startingAll ? "Memulai..." : "Mulai Pengantaran"}
+                          </button>
+                        )}
                         <button className="btn-ghost p-2">
                           {isExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
                         </button>
@@ -405,6 +471,7 @@ export default function Page() {
                         const destKey = `${plan.id}-${idx}`;
                         const isDestExpanded = expandedDest === destKey;
                         const dName = dest.destinations?.name || dest.destination?.name || dest.destination_name || destName(dest.destination_id);
+                        const dAddress = dest.destinations?.address || dest.destination?.address || "";
                         const destLogs = planLogs.filter(l => l.destination_id === dest.destination_id);
                         const destStatus = destLogs.length > 0 ? destLogs[destLogs.length - 1].status : "NOT_DELIVERED";
                         const lastLog = destLogs.length > 0 ? destLogs[destLogs.length - 1] : null;
@@ -422,6 +489,7 @@ export default function Page() {
                                     <MapPin size={13} className="text-[#4A7C59] shrink-0" />
                                     <span className="truncate">{dName || `Tujuan ${idx + 1}`}</span>
                                   </div>
+                                  {dAddress && <div className="text-[11px] text-[#5C5C5C] mt-0.5 ml-5 truncate">{dAddress}</div>}
                                   <div className="flex flex-wrap gap-1.5 mt-1.5">
                                     {Object.entries(MENU_CATEGORIES).map(([key, cat]) => {
                                       const portions = dest.portions?.[key] || dest[`${key.toLowerCase()}_portions`] || 0;
@@ -445,14 +513,20 @@ export default function Page() {
 
                               <div className="flex flex-row sm:flex-col items-center gap-2 shrink-0 sm:self-center">
                                 <CourierTracker status={destStatus} logs={destLogs} />
-                                {destStatus !== "DELIVERED" && (
+                                {destStatus === "NOT_DELIVERED" && (
+                                  <button
+                                    onClick={() => quickTransit(plan, dest)}
+                                    className="btn-primary text-xs whitespace-nowrap px-3 py-2 min-h-[40px]"
+                                  >
+                                    Mulai
+                                  </button>
+                                )}
+                                {destStatus === "IN_TRANSIT" && (
                                   <button
                                     onClick={() => setExpandedDest(isDestExpanded ? null : destKey)}
-                                    className={`btn-ghost text-xs whitespace-nowrap px-3 py-1.5 ${
-                                      destStatus === "NOT_DELIVERED" ? "text-[#D97706]" : "text-[#4A7C59]"
-                                    }`}
+                                    className="btn-primary text-xs whitespace-nowrap px-3 py-2 min-h-[40px] bg-[#4A7C59]"
                                   >
-                                    {destStatus === "NOT_DELIVERED" ? "Kirim" : "Selesaikan"}
+                                    Selesai
                                   </button>
                                 )}
                               </div>

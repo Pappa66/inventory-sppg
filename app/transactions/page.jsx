@@ -190,7 +190,10 @@ export default function TransactionsPage() {
           {/* Mobile Card View */}
           <div className="md:hidden space-y-3">
             {paginated.length === 0 && (
-              <div className="card-soft p-12 text-center text-[#5C5C5C]">Belum ada transaksi.</div>
+              <div className="card-soft p-12 text-center text-[#5C5C5C]">
+                <p className="mb-3">Belum ada transaksi.</p>
+                {canEdit && <button onClick={() => setOpenForm(true)} className="btn-primary text-xs">+ Input Transaksi</button>}
+              </div>
             )}
             {paginated.map(t => (
               <div key={t.id} className="card-soft p-4 space-y-3">
@@ -257,7 +260,10 @@ export default function TransactionsPage() {
                       )}
                     </tr>
                   ))}
-                  {paginated.length === 0 && <tr><td colSpan={canEdit ? 7 : 6} className="py-10 text-center text-[#5C5C5C]">Belum ada transaksi.</td></tr>}
+                   {paginated.length === 0 && <tr><td colSpan={canEdit ? 7 : 6} className="py-10 text-center text-[#5C5C5C]">
+                     <p className="mb-3">Belum ada transaksi.</p>
+                     {canEdit && <button onClick={() => setOpenForm(true)} className="btn-primary text-xs">+ Input Transaksi</button>}
+                   </td></tr>}
                 </tbody>
               </table>
             </div>

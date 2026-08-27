@@ -20,6 +20,7 @@ export default function Page() {
   const { activeRole } = useAuth();
   const [purchases, setPurchases] = useState([]);
   const [items, setItems] = useState([]);
+  const [stockLots, setStockLots] = useState([]);
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState(EMPTY);
   const [verifyOf, setVerifyOf] = useState(null);
@@ -29,7 +30,7 @@ export default function Page() {
   const [page, setPage] = useState(1);
   const perPage = 15;
 
-  const load = () => { setLoading(true); Promise.all([api.get("/purchases"), api.get("/items")]).then(([a,b]) => { setPurchases(a.data); setItems(b.data); setPage(1); }).finally(() => setLoading(false)); };
+  const load = () => { setLoading(true); Promise.all([api.get("/purchases"), api.get("/items"), api.get("/stock-lots")]).then(([a,b,c]) => { setPurchases(a.data); setItems(b.data); setStockLots(c.data || []); setPage(1); }).finally(() => setLoading(false)); };
   useEffect(() => { load(); }, []);
 
   const pickPhoto = (e) => {
@@ -45,6 +46,16 @@ export default function Page() {
     const list = [...p.items]; list[i] = { ...list[i], [k]: v }; return { ...p, items: list };
   });
   const removeItemRow = (i) => setForm((p) => ({ ...p, items: p.items.filter((_,idx)=>idx!==i) }));
+
+  const stockByItem = useMemo(() => {
+    const map = {};
+    for (const lot of stockLots) {
+      if (!lot.item_id) continue;
+      if (!map[lot.item_id]) map[lot.item_id] = 0;
+      map[lot.item_id] += Number(lot.actual_quantity) || 0;
+    }
+    return map;
+  }, [stockLots]);
 
   const submit = async (e) => {
     e.preventDefault();
@@ -127,7 +138,10 @@ export default function Page() {
                 </div>
               );
             })}
-            {purchases.length === 0 && <div className="col-span-full text-center text-[#5C5C5C] py-10">Belum ada catatan belanja.</div>}
+            {purchases.length === 0 && <div className="col-span-full text-center text-[#5C5C5C] py-10">
+              <p className="mb-3">Belum ada catatan belanja.</p>
+              <button onClick={() => setOpen(true)} className="btn-primary text-xs">+ Catat Belanja</button>
+            </div>}
           </div>
         )}
         <Pagination page={page} totalPages={Math.ceil(purchases.length / perPage)} onPageChange={setPage} />
@@ -178,7 +192,11 @@ export default function Page() {
                         <div key={i} className="grid grid-cols-6 sm:grid-cols-12 gap-2">
                           <select className="col-span-6 px-2 py-2 rounded-md border border-[#EAE4D8] bg-[#F9F6F0] text-sm" value={row.item_id} onChange={(e)=>updItemRow(i,"item_id",e.target.value)}>
                             <option value="">— bahan —</option>
-                            {items.map(it => <option key={it.id} value={it.id}>{it.name} ({it.unit})</option>)}
+                            {items.map(it => {
+                              const stok = stockByItem[it.id] || 0;
+                              const low = stok < (it.par_level || 0);
+                              return <option key={it.id} value={it.id}>{it.name} ({it.unit}){stok > 0 ? ` — Stok: ${stok}` : ""}{low ? " ⚠" : ""}</option>;
+                            })}
                           </select>
                           <input placeholder="qty" type="number" step="0.01" className="col-span-2 px-2 py-2 rounded-md border border-[#EAE4D8] bg-[#F9F6F0] text-sm" value={row.quantity || ""} onChange={(e)=>updItemRow(i,"quantity",parseFloat(e.target.value)||0)}/>
                           <input placeholder="harga" type="number" className="col-span-3 px-2 py-2 rounded-md border border-[#EAE4D8] bg-[#F9F6F0] text-sm" value={row.unit_price || ""} onChange={(e)=>updItemRow(i,"unit_price",parseFloat(e.target.value)||0)}/>

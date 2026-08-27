@@ -143,7 +143,10 @@ export default function Page() {
                 </div>
               ))}
               {paginatedItems.length === 0 && (
-                <div className="text-center text-[#5C5C5C] py-10">Belum ada bahan.</div>
+                <div className="text-center text-[#5C5C5C] py-10">
+                  <p className="mb-3">Belum ada bahan.</p>
+                  {CAN_EDIT.includes(activeRole) && <button onClick={() => { setEditing(null); setForm(EMPTY); setOpen(true); }} className="btn-primary text-xs">+ Tambah Bahan</button>}
+                </div>
               )}
             </div>
             <Pagination page={page} totalPages={Math.ceil(items.length / perPage)} onPageChange={setPage} />

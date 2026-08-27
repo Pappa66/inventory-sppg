@@ -36,6 +36,7 @@ export default function Page() {
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState(EMPTY_PLAN);
   const [portions, setPortions] = useState({});
+  const [quickFill, setQuickFill] = useState({ BALITA: 0, PORTION_SMALL: 0, PORTION_LARGE: 0, BUMIL_BUSUI: 0 });
   const [expandedPlan, setExpandedPlan] = useState(null);
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
@@ -95,6 +96,15 @@ export default function Page() {
         : [...prev.destination_ids, destId];
       return { ...prev, destination_ids: ids };
     });
+  };
+
+  const applyQuickFill = () => {
+    const newPortions = { ...portions };
+    for (const destId of form.destination_ids) {
+      newPortions[destId] = { ...quickFill };
+    }
+    setPortions(newPortions);
+    toast.success("Porsi diterapkan ke semua tujuan");
   };
 
   const setPortion = (destId, category, value) => {
@@ -295,7 +305,8 @@ export default function Page() {
                   {paginated.length === 0 && (
                     <tr>
                       <td colSpan={canWrite ? 5 : 4} className="py-10 text-center text-[#5C5C5C]">
-                        Belum ada rencana antar untuk tanggal ini.
+                        <p className="mb-3">Belum ada rencana antar untuk tanggal ini.</p>
+                        {canWrite && <button onClick={() => setOpen(true)} className="btn-primary text-xs">+ Buat Rencana Antar</button>}
                       </td>
                     </tr>
                   )}
@@ -356,7 +367,10 @@ export default function Page() {
                 );
               })}
               {paginated.length === 0 && (
-                <div className="text-center text-[#5C5C5C] py-10">Belum ada rencana antar untuk tanggal ini.</div>
+                <div className="text-center text-[#5C5C5C] py-10">
+                  <p className="mb-3">Belum ada rencana antar untuk tanggal ini.</p>
+                  {canWrite && <button onClick={() => setOpen(true)} className="btn-primary text-xs">+ Buat Rencana Antar</button>}
+                </div>
               )}
             </div>
 
@@ -411,6 +425,22 @@ export default function Page() {
                 </div>
                 <div>
                   <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Pilih Tujuan & Set Porsi</label>
+                  {form.destination_ids.length > 0 && (
+                    <div className="mt-2 p-3 bg-[#2C4251]/5 border border-[#2C4251]/20 rounded-md">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-xs font-semibold text-[#2C4251]">Quick Fill: Terapkan ke semua tujuan</span>
+                        <button type="button" onClick={applyQuickFill} className="text-xs text-[#4A7C59] font-semibold hover:underline">Terapkan</button>
+                      </div>
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                        {Object.entries(MENU_CATEGORIES).map(([key, cat]) => (
+                          <div key={key}>
+                            <label className="text-[10px] uppercase tracking-widest" style={{ color: cat.color }}>{cat.label}</label>
+                            <input type="number" min="0" inputMode="numeric" className="w-full mt-0.5 px-2 py-1.5 rounded border border-[#EAE4D8] bg-white text-sm" value={quickFill[key] || ""} placeholder="0" onChange={(e) => setQuickFill(p => ({ ...p, [key]: parseInt(e.target.value) || 0 }))} />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                   <div className="mt-2 space-y-3">
                     {destinations.length === 0 && (
                       <p className="text-sm text-[#5C5C5C]">Tidak ada tujuan aktif. Buat tujuan terlebih dahulu.</p>

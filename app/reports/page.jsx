@@ -1,22 +1,49 @@
 "use client";
 
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo, useCallback } from "react";
 import Layout from "@/components/Layout";
 import { api } from "@/lib/api";
-import { fmtIDR, fmtDate, BENEFICIARY_TYPES } from "@/lib/format";
+import { fmtIDR, fmtDate, BENEFICIARY_TYPES, ACCOUNT_CODES } from "@/lib/format";
 import {
   FileText, ScrollText, BookOpen, Users, Stamp, FileCheck,
-  Calendar, Download, Printer
+  Calendar, Download, Printer, Plus, Pencil, Trash2, Save, X
 } from "lucide-react";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import * as XLSX from "xlsx";
+import { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell, WidthType, AlignmentType, HeadingLevel, BorderStyle, ShadingType } from "docx";
+import { saveAs } from "file-saver";
 import Pagination from "@/components/Pagination";
 import { getLogo } from "@/lib/logo";
 import { getSettings, renderLetterhead, renderLetterTitle, renderSignatureBlock, todayIndo } from "@/lib/letterhead";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 
-// Helper for label:value rows in PDF
+const DEFAULT_DAFNOM = [
+  { jabatan: "Kepala SPPG", jumlah: 1, insentif: 2000, nama: "" },
+  { jabatan: "Pengawas Gizi", jumlah: 1, insentif: 2000, nama: "" },
+  { jabatan: "Pengawas Keuangan", jumlah: 1, insentif: 2000, nama: "" },
+  { jabatan: "Asisten Lapangan", jumlah: 1, insentif: 2000, nama: "" },
+  { jabatan: "Tenaga Persiapan", jumlah: 2, insentif: 2000, nama: "" },
+  { jabatan: "Tenaga Masak", jumlah: 4, insentif: 2000, nama: "" },
+  { jabatan: "Tenaga Pemorsian", jumlah: 2, insentif: 2000, nama: "" },
+  { jabatan: "Petugas Kebersihan", jumlah: 2, insentif: 2000, nama: "" },
+  { jabatan: "Pencuci Ompreng", jumlah: 2, insentif: 2000, nama: "" },
+  { jabatan: "Driver", jumlah: 2, insentif: 2000, nama: "" },
+  { jabatan: "Kader Gizi", jumlah: 5, insentif: 2000, nama: "" },
+];
+
+function loadDafnom() {
+  try {
+    const raw = localStorage.getItem("dafnom_entries");
+    if (raw) return JSON.parse(raw);
+  } catch {}
+  return DEFAULT_DAFNOM;
+}
+function saveDafnom(entries) {
+  localStorage.setItem("dafnom_entries", JSON.stringify(entries));
+}
+
 function pv(doc, label, value, x, y) {
   doc.setFont("helvetica", "normal");
   doc.text(`${label}  :`, x, y);
@@ -51,6 +78,16 @@ export default function ReportsPage() {
   const [exportTo, setExportTo] = useState("");
   const perPage = 15;
 
+  // DafNom state
+  const [dafnomEntries, setDafnomEntries] = useState([]);
+  const [dafnomFormOpen, setDafnomFormOpen] = useState(false);
+  const [dafnomEditIdx, setDafnomEditIdx] = useState(null);
+  const [dafnomForm, setDafnomForm] = useState({ jabatan: "", jumlah: 1, insentif: 2000, nama: "" });
+
+  useEffect(() => {
+    setDafnomEntries(loadDafnom());
+  }, []);
+
   useEffect(() => {
     setLoading(true);
     Promise.all([
@@ -66,21 +103,22 @@ export default function ReportsPage() {
     ]).finally(() => setLoading(false));
   }, []);
 
-  // LR Data: group transactions by account type
   const lrData = useMemo(() => {
-    const pemasukan = transaksi.filter(t => ["1300"].includes(t.account_code));
-    const pengeluaran = transaksi.filter(t => ["2100", "2200", "2300", "3100"].includes(t.account_code));
-    const totalPemasukan = pemasukan.reduce((s, t) => s + (t.debit || 0) - (t.credit || 0), 0);
+    let filtered = transaksi;
+    if (exportFrom) filtered = filtered.filter(t => t.transaction_date >= exportFrom);
+    if (exportTo) filtered = filtered.filter(t => t.transaction_date <= exportTo);
+    const pemasukan = filtered.filter(t => ["1300"].includes(t.account_code));
+    const pengeluaran = filtered.filter(t => ["2100", "2200", "2300", "3100"].includes(t.account_code));
+    const totalPemasukan = pemasukan.reduce((s, t) => s + (t.credit || 0) - (t.debit || 0), 0);
     const totalPengeluaran = pengeluaran.reduce((s, t) => s + (t.credit || 0) - (t.debit || 0), 0);
     return { pemasukan, pengeluaran, totalPemasukan, totalPengeluaran, saldo: totalPemasukan - totalPengeluaran };
-  }, [transaksi]);
+  }, [transaksi, exportFrom, exportTo]);
 
   const paginatedTransaksi = useMemo(() => {
     const start = (page - 1) * perPage;
     return transaksi.slice(start, start + perPage);
   }, [transaksi, page, perPage]);
 
-  // LPA Data: same as LR but filtered by period
   const lpaData = useMemo(() => {
     if (!selectedPeriod) return lrData;
     const period = periods.find(p => p.id === selectedPeriod);
@@ -88,66 +126,350 @@ export default function ReportsPage() {
     const periodTx = transaksi.filter(t => t.transaction_date >= period.start_date && t.transaction_date <= period.end_date);
     const pemasukan = periodTx.filter(t => ["1300"].includes(t.account_code));
     const pengeluaran = periodTx.filter(t => ["2100", "2200", "2300", "3100"].includes(t.account_code));
-    const totalPemasukan = pemasukan.reduce((s, t) => s + (t.debit || 0) - (t.credit || 0), 0);
+    const totalPemasukan = pemasukan.reduce((s, t) => s + (t.credit || 0) - (t.debit || 0), 0);
     const totalPengeluaran = pengeluaran.reduce((s, t) => s + (t.credit || 0) - (t.debit || 0), 0);
     return { pemasukan, pengeluaran, totalPemasukan, totalPengeluaran, saldo: totalPemasukan - totalPengeluaran };
   }, [transaksi, selectedPeriod, periods, lrData]);
 
-  // Catatan: daily expenses
   const catatanData = useMemo(() => {
     const dailyMap = {};
-    for (const t of transaksi.filter(t => ["2100", "2200", "2300"].includes(t.account_code))) {
+    let filtered = transaksi.filter(t => ["2100", "2200", "2300"].includes(t.account_code));
+    if (exportFrom) filtered = filtered.filter(t => t.transaction_date >= exportFrom);
+    if (exportTo) filtered = filtered.filter(t => t.transaction_date <= exportTo);
+    for (const t of filtered) {
       const date = t.transaction_date;
       if (!dailyMap[date]) dailyMap[date] = { items: [], total: 0 };
       dailyMap[date].items.push(t);
       dailyMap[date].total += (t.credit || 0) - (t.debit || 0);
     }
     return dailyMap;
-  }, [transaksi]);
+  }, [transaksi, exportFrom, exportTo]);
 
-  // DafNom: volunteer incentives — calculated from global config
-  const incentivePerPortion = Number(globalConfig.incentive_per_portion) || 2000;
   const totalPorsi = deliveryPlans.reduce((sum, dp) => {
     const items = dp.delivery_plan_items || dp.items || [];
     return sum + items.reduce((s, it) => s + (it.portions || 0), 0);
   }, 0);
-  const dafnomData = [
-    { jabatan: "Kepala SPPG", jumlah: 1, insentif: incentivePerPortion },
-    { jabatan: "Pengawas Gizi", jumlah: 1, insentif: incentivePerPortion },
-    { jabatan: "Pengawas Keuangan", jumlah: 1, insentif: incentivePerPortion },
-    { jabatan: "Asisten Lapangan", jumlah: 1, insentif: incentivePerPortion },
-    { jabatan: "Tenaga Persiapan", jumlah: 2, insentif: incentivePerPortion },
-    { jabatan: "Tenaga Masak", jumlah: 4, insentif: incentivePerPortion },
-    { jabatan: "Tenaga Pemorsian", jumlah: 2, insentif: incentivePerPortion },
-    { jabatan: "Petugas Kebersihan", jumlah: 2, insentif: incentivePerPortion },
-    { jabatan: "Pencuci Ompreng", jumlah: 2, insentif: incentivePerPortion },
-    { jabatan: "Driver", jumlah: 2, insentif: incentivePerPortion },
-    { jabatan: "Kader Gizi", jumlah: 5, insentif: incentivePerPortion },
-  ];
 
+  const dafnomTotal = useMemo(() =>
+    dafnomEntries.reduce((s, d) => s + d.jumlah * d.insentif, 0),
+    [dafnomEntries]
+  );
+
+  // ── DafNom CRUD ──
+  const openDafnomAdd = () => {
+    setDafnomEditIdx(null);
+    setDafnomForm({ jabatan: "", jumlah: 1, insentif: 2000, nama: "" });
+    setDafnomFormOpen(true);
+  };
+  const openDafnomEdit = (idx) => {
+    setDafnomEditIdx(idx);
+    setDafnomForm({ ...dafnomEntries[idx] });
+    setDafnomFormOpen(true);
+  };
+  const submitDafnom = (e) => {
+    e.preventDefault();
+    let updated;
+    if (dafnomEditIdx !== null) {
+      updated = dafnomEntries.map((d, i) => i === dafnomEditIdx ? { ...dafnomForm, jumlah: Number(dafnomForm.jumlah) || 1, insentif: Number(dafnomForm.insentif) || 0 } : d);
+    } else {
+      updated = [...dafnomEntries, { ...dafnomForm, jumlah: Number(dafnomForm.jumlah) || 1, insentif: Number(dafnomForm.insentif) || 0 }];
+    }
+    setDafnomEntries(updated);
+    saveDafnom(updated);
+    setDafnomFormOpen(false);
+    toast.success(dafnomEditIdx !== null ? "Data diperbarui" : "Data ditambahkan");
+  };
+  const deleteDafnom = (idx) => {
+    if (!confirm("Hapus entry ini?")) return;
+    const updated = dafnomEntries.filter((_, i) => i !== idx);
+    setDafnomEntries(updated);
+    saveDafnom(updated);
+    toast.success("Data dihapus");
+  };
+
+  // ── Excel Export (multi-sheet: LR, LPA, Catatan, DafNom) ──
+  const exportExcel = useCallback(() => {
+    const wb = XLSX.utils.book_new();
+
+    // Sheet 1: LR
+    const lrRows = [
+      ["LAPORAN RESUME (LR)"],
+      [`Periode: ${exportFrom || "Semua"} s/d ${exportTo || "Semua"}`],
+      [],
+      ["Keterangan", "Jumlah (Rp)"],
+      ["Total Pemasukan", lrData.totalPemasukan],
+      ["Total Pengeluaran", lrData.totalPengeluaran],
+      ["Saldo", lrData.saldo],
+      [],
+      ["DETAIL TRANSAKSI"],
+      ["Tanggal", "Kode Akun", "Keterangan", "Debet", "Kredit"],
+    ];
+    for (const t of transaksi) {
+      let pass = true;
+      if (exportFrom && t.transaction_date < exportFrom) pass = false;
+      if (exportTo && t.transaction_date > exportTo) pass = false;
+      if (pass) lrRows.push([t.transaction_date, t.account_code, t.description, t.debit || 0, t.credit || 0]);
+    }
+    const lrSheet = XLSX.utils.aoa_to_sheet(lrRows);
+    lrSheet["!cols"] = [{ wch: 12 }, { wch: 10 }, { wch: 40 }, { wch: 15 }, { wch: 15 }];
+    XLSX.utils.book_append_sheet(wb, lrSheet, "LR - Laporan Resume");
+
+    // Sheet 2: LPA
+    const lpaRows = [
+      ["LAPORAN 2 PEKANAN (LPA)"],
+      [`Periode: ${selectedPeriod ? periods.find(p => p.id === selectedPeriod)?.period_name || selectedPeriod : "Pilih periode"}`],
+      [],
+      ["Keterangan", "Jumlah (Rp)"],
+      ["Total Pemasukan", lpaData.totalPemasukan],
+      ["Total Pengeluaran", lpaData.totalPengeluaran],
+      ["Saldo", lpaData.saldo],
+      [],
+      ["DETAIL TRANSAKSI"],
+      ["Tanggal", "Kode Akun", "Keterangan", "Debet", "Kredit"],
+    ];
+    for (const t of lpaData.pemasukan || []) {
+      lpaRows.push([t.transaction_date, t.account_code, t.description, t.debit || 0, t.credit || 0]);
+    }
+    for (const t of lpaData.pengeluaran || []) {
+      lpaRows.push([t.transaction_date, t.account_code, t.description, t.debit || 0, t.credit || 0]);
+    }
+    const lpaSheet = XLSX.utils.aoa_to_sheet(lpaRows);
+    lpaSheet["!cols"] = [{ wch: 12 }, { wch: 10 }, { wch: 40 }, { wch: 15 }, { wch: 15 }];
+    XLSX.utils.book_append_sheet(wb, lpaSheet, "LPA - Laporan 2 Pekan");
+
+    // Sheet 3: Catatan Harian
+    const catRows = [
+      ["CATATAN HARIAN"],
+      [],
+      ["Tanggal", "Kode Akun", "Keterangan", "Jumlah (Rp)"],
+    ];
+    for (const [date, data] of Object.entries(catatanData).sort(([a], [b]) => b.localeCompare(a))) {
+      for (const t of data.items) {
+        catRows.push([date, t.account_code, t.description, t.credit || 0]);
+      }
+      catRows.push([`TOTAL ${date}`, "", "", data.total]);
+      catRows.push([]);
+    }
+    const catSheet = XLSX.utils.aoa_to_sheet(catRows);
+    catSheet["!cols"] = [{ wch: 12 }, { wch: 10 }, { wch: 40 }, { wch: 15 }];
+    XLSX.utils.book_append_sheet(wb, catSheet, "Catatan Harian");
+
+    // Sheet 4: DafNom
+    const dnRows = [
+      ["DAFTAR NOMINATIF (DAFNOM)"],
+      ["Insentif Relawan SPPG"],
+      [],
+      ["No", "Jabatan", "Nama", "Jumlah Orang", "Insentif/Hari (Rp)", "Total (Rp)"],
+    ];
+    dafnomEntries.forEach((d, i) => {
+      dnRows.push([i + 1, d.jabatan, d.nama || "-", d.jumlah, d.insentif, d.jumlah * d.insentif]);
+    });
+    dnRows.push([]);
+    dnRows.push(["", "", "TOTAL", "", "", dafnomTotal]);
+    const dnSheet = XLSX.utils.aoa_to_sheet(dnRows);
+    dnSheet["!cols"] = [{ wch: 5 }, { wch: 20 }, { wch: 25 }, { wch: 12 }, { wch: 18 }, { wch: 18 }];
+    XLSX.utils.book_append_sheet(wb, dnSheet, "DafNom - Insentif Relawan");
+
+    const filename = `Laporan-SPPG-${new Date().toISOString().slice(0, 10)}.xlsx`;
+    XLSX.writeFile(wb, filename);
+    toast.success("File Excel berhasil diunduh");
+  }, [lrData, lpaData, catatanData, dafnomEntries, dafnomTotal, transaksi, exportFrom, exportTo, selectedPeriod, periods]);
+
+  // ── Word Export: SPTJ ──
+  const exportSPTJWord = useCallback(async () => {
+    const sppgName = settings.sppg_name || "SPPG MBG";
+    const kepala = settings.nama_kepala || "___________________";
+    const addr = settings.sppg_address || "___________________";
+
+    const doc = new Document({
+      sections: [{
+        properties: { page: { margin: { top: 1440, right: 1440, bottom: 1440, left: 1440 } } },
+        children: [
+          // Kop Surat
+          new Paragraph({ alignment: AlignmentType.LEFT, children: [
+            new TextRun({ text: settings.nama_yayasan || "", font: "Arial", size: 16, color: "7A7A7A" }),
+          ]}),
+          new Paragraph({ alignment: AlignmentType.LEFT, spacing: { after: 40 }, children: [
+            new TextRun({ text: sppgName, font: "Arial", size: 28, bold: true }),
+          ]}),
+          new Paragraph({ spacing: { after: 200 }, children: [
+            new TextRun({ text: `ID: ${settings.id_sppg || "-"}  |  ${addr}`, font: "Arial", size: 14, color: "7A7A7A" }),
+          ]}),
+          // Garis
+          new Paragraph({ spacing: { after: 300 }, border: { bottom: { style: BorderStyle.SINGLE, size: 6, color: "1F1F1F" } }, children: [] }),
+          // Title
+          new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 40 }, children: [
+            new TextRun({ text: "SURAT PERNYATAAN TANGGUNG JAWAB", font: "Arial", size: 24, bold: true }),
+          ]}),
+          new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 200 }, children: [
+            new TextRun({ text: "(Lampiran 30j Permenkes)", font: "Arial", size: 16, color: "999999" }),
+          ]}),
+          // Body
+          new Paragraph({ spacing: { after: 200 }, children: [
+            new TextRun({ text: "Yang bertanda tangan di bawah ini:", font: "Arial", size: 20 }),
+          ]}),
+          new Paragraph({ spacing: { after: 40 }, indent: { left: 720 }, children: [
+            new TextRun({ text: "Nama\t\t: ", font: "Arial", size: 20 }),
+            new TextRun({ text: kepala, font: "Arial", size: 20, bold: true }),
+          ]}),
+          new Paragraph({ spacing: { after: 40 }, indent: { left: 720 }, children: [
+            new TextRun({ text: "Jabatan\t\t: ", font: "Arial", size: 20 }),
+            new TextRun({ text: `Kepala ${sppgName}`, font: "Arial", size: 20, bold: true }),
+          ]}),
+          new Paragraph({ spacing: { after: 40 }, indent: { left: 720 }, children: [
+            new TextRun({ text: "Program\t\t: ", font: "Arial", size: 20 }),
+            new TextRun({ text: "Makan Bergizi Gratis (MBG)", font: "Arial", size: 20, bold: true }),
+          ]}),
+          ...(settings.id_sppg ? [new Paragraph({ spacing: { after: 200 }, indent: { left: 720 }, children: [
+            new TextRun({ text: "ID SPPG\t\t: ", font: "Arial", size: 20 }),
+            new TextRun({ text: settings.id_sppg, font: "Arial", size: 20, bold: true }),
+          ]})] : []),
+          new Paragraph({ spacing: { after: 200 }, children: [
+            new TextRun({ text: "Dengan ini menyatakan dengan sesungguhnya bahwa:", font: "Arial", size: 20 }),
+          ]}),
+          // Numbered declarations
+          ...["Dana bantuan pangan yang diterima dari Pemerintah telah digunakan semata-mata untuk kegiatan operasional program Makan Bergizi Gratis sesuai ketentuan yang berlaku;",
+            "Penyaluran bantuan pangan telah dilaksanakan kepada penerima manfaat yang berhak sesuai data yang tercatat dalam sistem;",
+            "Laporan pertanggungjawaban keuangan dan operasional yang disampaikan adalah benar, lengkap, dan dapat dipertanggungjawabkan secara hukum."
+          ].map((text, i) => new Paragraph({ spacing: { after: 120 }, indent: { left: 720 }, children: [
+            new TextRun({ text: `${i + 1}. `, font: "Arial", size: 20 }),
+            new TextRun({ text, font: "Arial", size: 20 }),
+          ]})),
+          new Paragraph({ spacing: { after: 200 }, children: [
+            new TextRun({ text: "Demikian Surat Pernyataan Tanggung Jawab ini saya buat dengan sebenar-benarnya dalam keadaan sadar tanpa adanya paksaan dari pihak manapun.", font: "Arial", size: 20 }),
+          ]}),
+          // Date
+          new Paragraph({ alignment: AlignmentType.RIGHT, spacing: { after: 600 }, children: [
+            new TextRun({ text: `${addr}, ${todayIndo()}`, font: "Arial", size: 20 }),
+          ]}),
+          // Signature
+          new Paragraph({ alignment: AlignmentType.RIGHT, children: [
+            new TextRun({ text: "Kepala SPPG,", font: "Arial", size: 20 }),
+          ]}),
+          new Paragraph({ spacing: { before: 800 }, alignment: AlignmentType.RIGHT, children: [
+            new TextRun({ text: kepala, font: "Arial", size: 20, bold: true }),
+          ]}),
+          new Paragraph({ alignment: AlignmentType.RIGHT, children: [
+            new TextRun({ text: `Kepala ${sppgName}`, font: "Arial", size: 16, color: "5C5C5C" }),
+          ]}),
+        ],
+      }],
+    });
+
+    const blob = await Packer.toBlob(doc);
+    saveAs(blob, `SPTJ-${new Date().toISOString().slice(0, 10)}.docx`);
+    toast.success("SPTJ (Word) berhasil diunduh");
+  }, [settings]);
+
+  // ── Word Export: BAPSD ──
+  const exportBAPSDWord = useCallback(async () => {
+    const sppgName = settings.sppg_name || "SPPG MBG";
+    const today = new Date().toISOString().slice(0, 10);
+    const todayPlans = deliveryPlans.filter(p => p.plan_date === today);
+    const bapsdPortions = todayPlans.reduce((sum, p) => sum + (p.delivery_plan_items || []).reduce((s, item) => s + (item.portions || 0), 0), 0);
+    const bapsdDestinations = todayPlans.reduce((sum, p) => sum + (p.delivery_plan_items || []).length, 0);
+    const driverIds = new Set(todayPlans.map(p => p.delivery_assignments?.[0]?.driver_id).filter(Boolean));
+
+    const makeRow = (no, uraian, ket) => new TableRow({
+      children: [
+        new TableCell({ width: { size: 8, type: WidthType.PERCENTAGE }, children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: no, font: "Arial", size: 18 })] })] }),
+        new TableCell({ width: { size: 40, type: WidthType.PERCENTAGE }, children: [new Paragraph({ children: [new TextRun({ text: uraian, font: "Arial", size: 18 })] })] }),
+        new TableCell({ width: { size: 52, type: WidthType.PERCENTAGE }, children: [new Paragraph({ children: [new TextRun({ text: ket, font: "Arial", size: 18 })] })] }),
+      ],
+    });
+
+    const doc = new Document({
+      sections: [{
+        properties: { page: { margin: { top: 1440, right: 1440, bottom: 1440, left: 1440 } } },
+        children: [
+          new Paragraph({ spacing: { after: 40 }, children: [
+            new TextRun({ text: settings.nama_yayasan || "", font: "Arial", size: 16, color: "7A7A7A" }),
+          ]}),
+          new Paragraph({ spacing: { after: 20 }, children: [
+            new TextRun({ text: sppgName, font: "Arial", size: 28, bold: true }),
+          ]}),
+          new Paragraph({ spacing: { after: 200 }, children: [
+            new TextRun({ text: `ID: ${settings.id_sppg || "-"}  |  ${settings.sppg_address || ""}`, font: "Arial", size: 14, color: "7A7A7A" }),
+          ]}),
+          new Paragraph({ spacing: { after: 300 }, border: { bottom: { style: BorderStyle.SINGLE, size: 6, color: "1F1F1F" } }, children: [] }),
+          new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 40 }, children: [
+            new TextRun({ text: "BERITA ACARA PENYALURAN", font: "Arial", size: 24, bold: true }),
+          ]}),
+          new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 200 }, children: [
+            new TextRun({ text: "(Lampiran 30n Permenkes)", font: "Arial", size: 16, color: "999999" }),
+          ]}),
+          new Paragraph({ spacing: { after: 200 }, children: [
+            new TextRun({ text: `Pada hari ini ${todayIndo()}, telah dilaksanakan penyaluran makanan siap distribusi program Makan Bergizi Gratis di ${sppgName}.`, font: "Arial", size: 20 }),
+          ]}),
+          new Paragraph({ spacing: { after: 200 }, children: [
+            new TextRun({ text: "I.  Rincian Penyaluran", font: "Arial", size: 20, bold: true }),
+          ]}),
+          new Table({
+            width: { size: 100, type: WidthType.PERCENTAGE },
+            rows: [
+              new TableRow({ children: [
+                new TableCell({ width: { size: 8, type: WidthType.PERCENTAGE }, shading: { type: ShadingType.SOLID, color: "4A7C59" }, children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: "No", font: "Arial", size: 18, bold: true, color: "FFFFFF" })] })] }),
+                new TableCell({ width: { size: 40, type: WidthType.PERCENTAGE }, shading: { type: ShadingType.SOLID, color: "4A7C59" }, children: [new Paragraph({ children: [new TextRun({ text: "Uraian", font: "Arial", size: 18, bold: true, color: "FFFFFF" })] })] }),
+                new TableCell({ width: { size: 52, type: WidthType.PERCENTAGE }, shading: { type: ShadingType.SOLID, color: "4A7C59" }, children: [new Paragraph({ children: [new TextRun({ text: "Keterangan", font: "Arial", size: 18, bold: true, color: "FFFFFF" })] })] }),
+              ]}),
+              makeRow("1", "Tanggal Penyaluran", todayIndo()),
+              makeRow("2", "Lokasi / Tujuan", settings.sppg_address || "___________________"),
+              makeRow("3", "Total Porsi Didistribusikan", `${bapsdPortions} porsi`),
+              makeRow("4", "Jumlah Tujuan Pengiriman", `${bapsdDestinations} lokasi`),
+              makeRow("5", "Jumlah Driver Pengantar", `${driverIds.size} orang`),
+              makeRow("6", "Waktu Distribusi", "08:00 — 11:00 WIB"),
+            ],
+          }),
+          new Paragraph({ spacing: { before: 300, after: 200 }, children: [
+            new TextRun({ text: "II.  Pernyataan", font: "Arial", size: 20, bold: true }),
+          ]}),
+          ...["Bahwa penyaluran bantuan pangan di atas telah dilaksanakan sesuai dengan ketentuan yang berlaku;",
+            "Bahwa makanan yang disalurkan dalam kondisi baik, aman, dan layak konsumsi;",
+            "Bahwa berita acara ini dibuat sebagai dasar pertanggungjawaban penyaluran bantuan pangan program Makan Bergizi Gratis."
+          ].map((text, i) => new Paragraph({ spacing: { after: 120 }, indent: { left: 720 }, children: [
+            new TextRun({ text: `${i + 1}. `, font: "Arial", size: 20 }),
+            new TextRun({ text, font: "Arial", size: 20 }),
+          ]})),
+          new Paragraph({ spacing: { after: 200 }, children: [
+            new TextRun({ text: "Demikian Berita Acara ini dibuat dengan sebenar-benarnya.", font: "Arial", size: 20 }),
+          ]}),
+          // Dual Signature
+          new Paragraph({ spacing: { before: 600 }, children: [
+            new TextRun({ text: "Mengetahui,", font: "Arial", size: 20 }),
+            new TextRun({ text: "\t\t\t\t\t\t\t" }),
+            new TextRun({ text: `Kepala ${sppgName},`, font: "Arial", size: 20 }),
+          ]}),
+          new Paragraph({ spacing: { before: 800 }, children: [
+            new TextRun({ text: settings.nama_akuntan || "___________________", font: "Arial", size: 20, bold: true }),
+            new TextRun({ text: "\t\t\t\t" }),
+            new TextRun({ text: settings.nama_kepala || "___________________", font: "Arial", size: 20, bold: true }),
+          ]}),
+          new Paragraph({ children: [
+            new TextRun({ text: "Pengawas Gizi", font: "Arial", size: 16, color: "5C5C5C" }),
+            new TextRun({ text: "\t\t\t\t\t\t\t\t\t" }),
+            new TextRun({ text: `Kepala ${sppgName}`, font: "Arial", size: 16, color: "5C5C5C" }),
+          ]}),
+        ],
+      }],
+    });
+
+    const blob = await Packer.toBlob(doc);
+    saveAs(blob, `BAPSD-${new Date().toISOString().slice(0, 10)}.docx`);
+    toast.success("BAPSD (Word) berhasil diunduh");
+  }, [settings, deliveryPlans]);
+
+  // ── PDF Exports (kept for backward compatibility) ──
   const exportPDF = async (tab) => {
     const doc = new jsPDF();
-    const [logo, settings] = await Promise.all([getLogo(), getSettings()]);
-    const titleY = renderLetterhead(doc, settings, logo);
+    const [logo, settingsData] = await Promise.all([getLogo(), getSettings()]);
+    const titleY = renderLetterhead(doc, settingsData, logo);
     doc.setFontSize(14);
     doc.text(`LAPORAN ${REPORT_TABS.find(t => t.key === tab)?.label || ""}`, 14, titleY);
     doc.setFontSize(9);
     doc.text(`Dicetak: ${todayIndo()}`, 14, titleY + 6);
 
     if (tab === "lr" || tab === "lpa") {
-      let data = tab === "lr" ? lrData : lpaData;
-      if (tab === "lr") {
-        let filtered = transaksi;
-        if (exportFrom) filtered = filtered.filter(t => t.transaction_date >= exportFrom);
-        if (exportTo) filtered = filtered.filter(t => t.transaction_date <= exportTo);
-        const fp = filtered.filter(t => ["1300"].includes(t.account_code));
-        const fe = filtered.filter(t => ["2100", "2200", "2300", "3100"].includes(t.account_code));
-        data = {
-          totalPemasukan: fp.reduce((s, t) => s + (t.debit || 0) - (t.credit || 0), 0),
-          totalPengeluaran: fe.reduce((s, t) => s + (t.credit || 0) - (t.debit || 0), 0),
-          saldo: fp.reduce((s, t) => s + (t.debit || 0) - (t.credit || 0), 0) - fe.reduce((s, t) => s + (t.credit || 0) - (t.debit || 0), 0),
-        };
-      }
+      const data = tab === "lr" ? lrData : lpaData;
       autoTable(doc, {
         startY: titleY + 12,
         head: [["Keterangan", "Jumlah"]],
@@ -158,45 +480,36 @@ export default function ReportsPage() {
         ],
       });
     }
-
     doc.save(`laporan-${tab}-${new Date().toISOString().slice(0,10)}.pdf`);
     toast.success("PDF berhasil diunduh");
   };
 
   const cetakSPTJ = async () => {
     const doc = new jsPDF();
-    const [logo, settings] = await Promise.all([getLogo(), getSettings()]);
+    const [logo, settingsData] = await Promise.all([getLogo(), getSettings()]);
     const ml = 20, mr = 20, pw = 210;
-    const sppgName = settings.sppg_name || "SPPG MBG";
-    let filteredTransaksi = transaksi;
-    if (exportFrom) filteredTransaksi = filteredTransaksi.filter(t => t.transaction_date >= exportFrom);
-    if (exportTo) filteredTransaksi = filteredTransaksi.filter(t => t.transaction_date <= exportTo);
-    const kepala = settings.nama_kepala || "___________________";
-    const addr = settings.sppg_address || "___________________";
+    const sppgName = settingsData.sppg_name || "SPPG MBG";
+    const kepala = settingsData.nama_kepala || "___________________";
+    const addr = settingsData.sppg_address || "___________________";
 
-    let y = renderLetterhead(doc, settings, logo);
+    let y = renderLetterhead(doc, settingsData, logo);
     y = renderLetterTitle(doc, "SURAT PERNYATAAN TANGGUNG JAWAB", "(Lampiran 30j Permenkes)", y, pw, ml, mr);
 
-    // ── Opening ──
     doc.setFontSize(10);
     doc.setFont("helvetica", "normal");
     doc.setTextColor(0x1F, 0x1F, 0x1F);
     doc.text("Yang bertanda tangan di bawah ini:", ml, y);
     y += 8;
-
-    // ── Identity block ──
     y = pv(doc, "Nama", kepala, ml + 3, y);
     y = pv(doc, "Jabatan", `Kepala ${sppgName}`, ml + 3, y);
     y = pv(doc, "Program", "Makan Bergizi Gratis (MBG)", ml + 3, y);
-    if (settings.id_sppg) y = pv(doc, "ID SPPG", settings.id_sppg, ml + 3, y);
+    if (settingsData.id_sppg) y = pv(doc, "ID SPPG", settingsData.id_sppg, ml + 3, y);
     y += 3;
 
-    // ── Declaration intro ──
     doc.setFont("helvetica", "normal");
     doc.text("Dengan ini menyatakan dengan sesungguhnya bahwa:", ml, y);
     y += 8;
 
-    // ── Numbered declarations ──
     const decls = [
       "Dana bantuan pangan yang diterima dari Pemerintah telah digunakan semata-mata untuk kegiatan operasional program Makan Bergizi Gratis sesuai ketentuan yang berlaku;",
       "Penyaluran bantuan pangan telah dilaksanakan kepada penerima manfaat yang berhak sesuai data yang tercatat dalam sistem;",
@@ -209,24 +522,19 @@ export default function ReportsPage() {
       doc.text(lines, ml + 10, y);
       y += lines.length * 4.5 + 3;
     });
-
     y += 3;
 
-    // ── Closing ──
     doc.setFont("helvetica", "normal");
     const closing = "Demikian Surat Pernyataan Tanggung Jawab ini saya buat dengan sebenar-benarnya dalam keadaan sadar tanpa adanya paksaan dari pihak manapun.";
     const closingLines = doc.splitTextToSize(closing, pw - ml - mr);
     doc.text(closingLines, ml, y);
     y += closingLines.length * 4.5 + 10;
 
-    // ── Date (right-aligned) ──
     const dateStr = `${addr}, ${todayIndo()}`;
-    const dateW = doc.getStringUnitWidth(dateStr) * 10 / doc.internal.scaleFactor;
     doc.text(dateStr, pw - mr, y, { align: "right" });
     y += 14;
 
-    // ── Signature (no line, just name + jabatan) ──
-    y = renderSignatureBlock(doc, settings, y, pw, [
+    y = renderSignatureBlock(doc, settingsData, y, pw, [
       { label: "Kepala SPPG,", settingsKey: "nama_kepala", jabatan: `Kepala ${sppgName}` },
     ]);
 
@@ -236,9 +544,9 @@ export default function ReportsPage() {
 
   const cetakBAPSD = async () => {
     const doc = new jsPDF();
-    const [logo, settings] = await Promise.all([getLogo(), getSettings()]);
+    const [logo, settingsData] = await Promise.all([getLogo(), getSettings()]);
     const ml = 20, mr = 20, pw = 210;
-    const sppgName = settings.sppg_name || "SPPG MBG";
+    const sppgName = settingsData.sppg_name || "SPPG MBG";
 
     let filteredPlans = deliveryPlans;
     if (exportFrom) filteredPlans = filteredPlans.filter(p => p.plan_date >= exportFrom);
@@ -249,10 +557,9 @@ export default function ReportsPage() {
     const totalDestinations = todayPlans.reduce((sum, p) => sum + (p.delivery_plan_items || []).length, 0);
     const driverIds = new Set(todayPlans.map(p => p.delivery_assignments?.[0]?.driver_id).filter(Boolean));
 
-    let y = renderLetterhead(doc, settings, logo);
+    let y = renderLetterhead(doc, settingsData, logo);
     y = renderLetterTitle(doc, "BERITA ACARA PENYALURAN", "(Lampiran 30n Permenkes)", y, pw, ml, mr);
 
-    // ── Opening ──
     doc.setFontSize(10);
     doc.setFont("helvetica", "normal");
     doc.setTextColor(0x1F, 0x1F, 0x1F);
@@ -261,7 +568,6 @@ export default function ReportsPage() {
     doc.text(`program Makan Bergizi Gratis di ${sppgName}.`, ml, y);
     y += 10;
 
-    // ── Section I ──
     doc.setFont("helvetica", "bold");
     doc.text("I.  Rincian Penyaluran", ml, y);
     y += 7;
@@ -272,39 +578,19 @@ export default function ReportsPage() {
       head: [["No", "Uraian", "Keterangan"]],
       body: [
         ["1", "Tanggal Penyaluran", todayIndo()],
-        ["2", "Lokasi / Tujuan", settings.sppg_address || todayPlans[0]?.delivery_plan_items?.[0]?.destinations?.name || "___________________"],
+        ["2", "Lokasi / Tujuan", settingsData.sppg_address || "___________________"],
         ["3", "Total Porsi Didistribusikan", `${totalPortions} porsi`],
         ["4", "Jumlah Tujuan Pengiriman", `${totalDestinations} lokasi`],
         ["5", "Jumlah Driver Pengantar", `${driverIds.size} orang`],
         ["6", "Waktu Distribusi", "08:00 — 11:00 WIB"],
       ],
       theme: "grid",
-      headStyles: {
-        fillColor: [0x4A, 0x7C, 0x59],
-        textColor: [0xFF, 0xFF, 0xFF],
-        fontStyle: "bold",
-        fontSize: 9,
-        halign: "center",
-        lineColor: [0x1F, 0x1F, 0x1F],
-        lineWidth: 0.3,
-      },
-      bodyStyles: {
-        fontSize: 9,
-        textColor: [0x1F, 0x1F, 0x1F],
-        lineColor: [0x1F, 0x1F, 0x1F],
-        lineWidth: 0.15,
-      },
-      columnStyles: {
-        0: { halign: "center", cellWidth: 12 },
-        1: { cellWidth: 58 },
-        2: { cellWidth: "auto" },
-      },
-      alternateRowStyles: { fillColor: [0xF9, 0xF6, 0xF0] },
+      headStyles: { fillColor: [0x4A, 0x7C, 0x59], textColor: [0xFF, 0xFF, 0xFF], fontStyle: "bold", fontSize: 9, halign: "center" },
+      bodyStyles: { fontSize: 9, textColor: [0x1F, 0x1F, 0x1F] },
+      columnStyles: { 0: { halign: "center", cellWidth: 12 }, 1: { cellWidth: 58 }, 2: { cellWidth: "auto" } },
     });
 
     y = doc.lastAutoTable.finalY + 10;
-
-    // ── Section II ──
     doc.setFont("helvetica", "bold");
     doc.text("II.  Pernyataan", ml, y);
     y += 7;
@@ -321,16 +607,13 @@ export default function ReportsPage() {
       doc.text(lines, ml + 10, y);
       y += lines.length * 4.5 + 3;
     });
-
     y += 4;
 
-    // ── Closing ──
     doc.setFont("helvetica", "normal");
     doc.text("Demikian Berita Acara ini dibuat dengan sebenar-benarnya.", ml, y);
     y += 12;
 
-    // ── Dual signature (no lines) ──
-    y = renderSignatureBlock(doc, settings, y, pw, [
+    y = renderSignatureBlock(doc, settingsData, y, pw, [
       { label: "Pengawas Gizi,", settingsKey: "nama_akuntan", jabatan: "Pengawas Gizi" },
       { label: `Kepala ${sppgName},`, settingsKey: "nama_kepala", jabatan: `Kepala ${sppgName}` },
     ]);
@@ -360,17 +643,31 @@ export default function ReportsPage() {
           <p className="text-[#5C5C5C] mt-1">LR, LPA, Catatan, DafNom, SPTJ, BAPSD</p>
         </div>
 
-        {/* Tab Navigation */}
-        <div className="flex flex-wrap items-center gap-3 text-sm">
-          <label className="text-xs uppercase tracking-widest text-[#5C5C5C] font-semibold">Filter Tanggal Export:</label>
-          <input type="date" value={exportFrom} onChange={e => setExportFrom(e.target.value)} className="px-3 py-1.5 rounded-md border border-[#EAE4D8] bg-white text-sm" />
-          <span className="text-[#5C5C5C]">s/d</span>
-          <input type="date" value={exportTo} onChange={e => setExportTo(e.target.value)} className="px-3 py-1.5 rounded-md border border-[#EAE4D8] bg-white text-sm" />
-          {(exportFrom || exportTo) && (
-            <button onClick={() => { setExportFrom(""); setExportTo(""); }} className="btn-ghost text-xs">Reset</button>
-          )}
+        {/* Date Filter + Export Buttons */}
+        <div className="card-soft p-4 space-y-3">
+          <div className="flex flex-wrap items-center gap-3 text-sm">
+            <label className="text-xs uppercase tracking-widest text-[#5C5C5C] font-semibold">Filter Tanggal:</label>
+            <input type="date" value={exportFrom} onChange={e => setExportFrom(e.target.value)} className="px-3 py-1.5 rounded-md border border-[#EAE4D8] bg-white text-sm" />
+            <span className="text-[#5C5C5C]">s/d</span>
+            <input type="date" value={exportTo} onChange={e => setExportTo(e.target.value)} className="px-3 py-1.5 rounded-md border border-[#EAE4D8] bg-white text-sm" />
+            {(exportFrom || exportTo) && (
+              <button onClick={() => { setExportFrom(""); setExportTo(""); }} className="btn-ghost text-xs">Reset</button>
+            )}
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <button onClick={exportExcel} className="btn-primary flex items-center gap-2 text-sm">
+              <Download size={14}/> Export Excel (LR + LPA + Catatan + DafNom)
+            </button>
+            <button onClick={exportSPTJWord} className="btn-outline flex items-center gap-2 text-sm">
+              <Download size={14}/> Export SPTJ (Word)
+            </button>
+            <button onClick={exportBAPSDWord} className="btn-outline flex items-center gap-2 text-sm">
+              <Download size={14}/> Export BAPSD (Word)
+            </button>
+          </div>
         </div>
 
+        {/* Tab Navigation */}
         <div className="flex gap-2 overflow-x-auto pb-2">
           {REPORT_TABS.map(tab => {
             const Icon = tab.icon;
@@ -505,25 +802,50 @@ export default function ReportsPage() {
             {activeTab === "dafnom" && (
               <div className="space-y-4">
                 <div className="card-soft overflow-hidden">
-                  <div className="px-5 py-3 border-b border-[#EAE4D8] bg-[#F9F6F0] font-display font-bold">
-                    Daftar Nominatif Insentif Relawan
+                  <div className="px-5 py-3 border-b border-[#EAE4D8] bg-[#F9F6F0] flex items-center justify-between">
+                    <span className="font-display font-bold">Daftar Nominatif Insentif Relawan</span>
+                    <button onClick={openDafnomAdd} className="btn-primary text-xs flex items-center gap-1">
+                      <Plus size={12}/> Tambah
+                    </button>
                   </div>
                   <div className="overflow-x-auto">
-                  <table className="w-full text-sm" style={{ minWidth: "500px" }}>
+                  <table className="w-full text-sm" style={{ minWidth: "600px" }}>
                     <thead className="bg-[#EAE4D8] text-xs uppercase tracking-wider">
-                      <tr><th className="text-left py-3 px-4">No</th><th className="text-left py-3 px-4">Jabatan</th><th className="text-right py-3 px-4">Jumlah Orang</th><th className="text-right py-3 px-4">Insentif/Hari</th><th className="text-right py-3 px-4">Total</th></tr>
+                      <tr>
+                        <th className="text-left py-3 px-4">No</th>
+                        <th className="text-left py-3 px-4">Jabatan</th>
+                        <th className="text-left py-3 px-4">Nama</th>
+                        <th className="text-right py-3 px-4">Jumlah</th>
+                        <th className="text-right py-3 px-4">Insentif/Hari</th>
+                        <th className="text-right py-3 px-4">Total</th>
+                        <th className="text-right py-3 px-4">Aksi</th>
+                      </tr>
                     </thead>
                     <tbody>
-                      {dafnomData.map((d, i) => (
+                      {dafnomEntries.map((d, i) => (
                         <tr key={i} className="border-b border-[#EAE4D8] last:border-0 hover:bg-[#F9F6F0]">
                           <td className="py-3 px-4">{i + 1}</td>
                           <td className="py-3 px-4 font-medium">{d.jabatan}</td>
+                          <td className="py-3 px-4 text-[#5C5C5C]">{d.nama || "—"}</td>
                           <td className="py-3 px-4 text-right">{d.jumlah}</td>
                           <td className="py-3 px-4 text-right">{fmtIDR(d.insentif)}</td>
                           <td className="py-3 px-4 text-right font-semibold">{fmtIDR(d.jumlah * d.insentif)}</td>
+                          <td className="py-3 px-4 text-right">
+                            <div className="flex justify-end gap-1">
+                              <button onClick={() => openDafnomEdit(i)} className="btn-ghost text-xs"><Pencil size={14}/></button>
+                              <button onClick={() => deleteDafnom(i)} className="btn-ghost text-xs text-[#C5533B]"><Trash2 size={14}/></button>
+                            </div>
+                          </td>
                         </tr>
                       ))}
                     </tbody>
+                    <tfoot>
+                      <tr className="bg-[#EAE4D8] font-bold">
+                        <td colSpan={5} className="py-3 px-4 text-right">Total Insentif/Hari:</td>
+                        <td className="py-3 px-4 text-right">{fmtIDR(dafnomTotal)}</td>
+                        <td></td>
+                      </tr>
+                    </tfoot>
                   </table>
                   </div>
                 </div>
@@ -535,9 +857,7 @@ export default function ReportsPage() {
             {activeTab === "sptj" && (
               <div className="space-y-4">
                 <div className="bg-white border border-[#EAE4D8] rounded-xl shadow-sm max-w-[700px] mx-auto">
-                  {/* Paper */}
                    <div className="p-4 sm:p-8 md:p-12">
-                    {/* Kop Surat */}
                     <div className="flex items-start gap-4 pb-4 border-b-2 border-[#1F1F1F]">
                       <div className="w-14 h-14 rounded-lg bg-[#4A7C59] text-white grid place-items-center shrink-0 text-xl font-bold">S</div>
                       <div>
@@ -549,18 +869,13 @@ export default function ReportsPage() {
                         </div>
                       </div>
                     </div>
-
-                    {/* Title */}
                     <div className="text-center mt-6 mb-1">
                       <h2 className="font-bold text-base uppercase tracking-wide">Surat Pernyataan Tanggung Jawab</h2>
                       <p className="text-[11px] text-[#999]">(Lampiran 30j Permenkes)</p>
                     </div>
                     <div className="border-t border-[#1F1F1F] mb-6"></div>
-
-                    {/* Body */}
                     <div className="text-[13px] leading-relaxed space-y-4">
                       <p>Yang bertanda tangan di bawah ini:</p>
-
                       <table className="text-[13px] ml-4">
                         <tbody>
                           <tr><td className="pr-2 text-[#5C5C5C]">Nama</td><td className="pr-2">:</td><td className="font-bold">{settings.nama_kepala || "___________________"}</td></tr>
@@ -569,21 +884,14 @@ export default function ReportsPage() {
                           {settings.id_sppg && <tr><td className="pr-2 text-[#5C5C5C]">ID SPPG</td><td className="pr-2">:</td><td className="font-bold">{settings.id_sppg}</td></tr>}
                         </tbody>
                       </table>
-
                       <p>Dengan ini menyatakan dengan sesungguhnya bahwa:</p>
-
                       <ol className="list-decimal ml-6 space-y-2">
                         <li>Dana bantuan pangan yang diterima dari Pemerintah telah digunakan semata-mata untuk kegiatan operasional program Makan Bergizi Gratis sesuai ketentuan yang berlaku;</li>
                         <li>Penyaluran bantuan pangan telah dilaksanakan kepada penerima manfaat yang berhak sesuai data yang tercatat dalam sistem;</li>
                         <li>Laporan pertanggungjawaban keuangan dan operasional yang disampaikan adalah benar, lengkap, dan dapat dipertanggungjawabkan secara hukum.</li>
                       </ol>
-
                       <p>Demikian Surat Pernyataan Tanggung Jawab ini saya buat dengan sebenar-benarnya dalam keadaan sadar tanpa adanya paksaan dari pihak manapun.</p>
-
-                      {/* Date */}
                       <p className="mt-6 text-right">{settings.sppg_address || "___________________"}, {todayIndo()}</p>
-
-                      {/* Signature */}
                       <div className="flex justify-end mt-2">
                         <div className="text-center w-48">
                           <div className="text-[13px]">Kepala SPPG,</div>
@@ -595,7 +903,10 @@ export default function ReportsPage() {
                     </div>
                   </div>
                 </div>
-                <button onClick={cetakSPTJ} className="btn-outline flex items-center gap-2"><Printer size={14}/> Cetak SPTJ (PDF)</button>
+                <div className="flex gap-2">
+                  <button onClick={cetakSPTJ} className="btn-outline flex items-center gap-2"><Printer size={14}/> Cetak SPTJ (PDF)</button>
+                  <button onClick={exportSPTJWord} className="btn-primary flex items-center gap-2"><Download size={14}/> Download SPTJ (Word)</button>
+                </div>
               </div>
             )}
 
@@ -610,7 +921,6 @@ export default function ReportsPage() {
               <div className="space-y-4">
                 <div className="bg-white border border-[#EAE4D8] rounded-xl shadow-sm max-w-[700px] mx-auto">
                    <div className="p-4 sm:p-8 md:p-12">
-                    {/* Kop Surat */}
                     <div className="flex items-start gap-4 pb-4 border-b-2 border-[#1F1F1F]">
                       <div className="w-14 h-14 rounded-lg bg-[#4A7C59] text-white grid place-items-center shrink-0 text-xl font-bold">S</div>
                       <div>
@@ -622,19 +932,13 @@ export default function ReportsPage() {
                         </div>
                       </div>
                     </div>
-
-                    {/* Title */}
                     <div className="text-center mt-6 mb-1">
                       <h2 className="font-bold text-base uppercase tracking-wide">Berita Acara Penyaluran</h2>
                       <p className="text-[11px] text-[#999]">(Lampiran 30n Permenkes)</p>
                     </div>
                     <div className="border-t border-[#1F1F1F] mb-6"></div>
-
-                    {/* Body */}
                     <div className="text-[13px] leading-relaxed space-y-4">
                       <p>Pada hari ini {todayIndo()}, telah dilaksanakan penyaluran makanan siap distribusi program Makan Bergizi Gratis di {settings.sppg_name || "SPPG MBG"}.</p>
-
-                      {/* Section I */}
                       <p className="font-bold mt-4">I.  Rincian Penyaluran</p>
                       <table className="w-full text-[12px] border border-[#1F1F1F]">
                         <thead>
@@ -661,18 +965,13 @@ export default function ReportsPage() {
                           ))}
                         </tbody>
                       </table>
-
-                      {/* Section II */}
                       <p className="font-bold mt-4">II.  Pernyataan</p>
                       <ol className="list-decimal ml-6 space-y-2">
                         <li>Bahwa penyaluran bantuan pangan di atas telah dilaksanakan sesuai dengan ketentuan yang berlaku;</li>
                         <li>Bahwa makanan yang disalurkan dalam kondisi baik, aman, dan layak konsumsi;</li>
                         <li>Bahwa berita acara ini dibuat sebagai dasar pertanggungjawaban penyaluran bantuan pangan program Makan Bergizi Gratis.</li>
                       </ol>
-
                       <p className="mt-4">Demikian Berita Acara ini dibuat dengan sebenar-benarnya.</p>
-
-                      {/* Dual Signature */}
                       <div className="flex justify-between mt-8">
                         <div className="text-center w-48">
                           <div className="text-[13px]">Mengetahui,</div>
@@ -690,11 +989,48 @@ export default function ReportsPage() {
                     </div>
                   </div>
                 </div>
-                <button onClick={cetakBAPSD} className="btn-outline flex items-center gap-2"><Printer size={14}/> Cetak BAPSD (PDF)</button>
+                <div className="flex gap-2">
+                  <button onClick={cetakBAPSD} className="btn-outline flex items-center gap-2"><Printer size={14}/> Cetak BAPSD (PDF)</button>
+                  <button onClick={exportBAPSDWord} className="btn-primary flex items-center gap-2"><Download size={14}/> Download BAPSD (Word)</button>
+                </div>
               </div>
               );
             })()}
           </>
+        )}
+
+        {/* DafNom Form Modal */}
+        {dafnomFormOpen && (
+          <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4" onClick={() => setDafnomFormOpen(false)}>
+            <form onClick={e => e.stopPropagation()} onSubmit={submitDafnom} className="card-soft p-4 sm:p-6 w-full max-w-md space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="font-display text-lg font-bold">{dafnomEditIdx !== null ? "Edit Relawan" : "Tambah Relawan"}</h3>
+                <button type="button" onClick={() => setDafnomFormOpen(false)} className="btn-ghost"><X size={16}/></button>
+              </div>
+              <div>
+                <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Jabatan</label>
+                <input required className="w-full mt-1 px-3 py-2 rounded-md border border-[#EAE4D8] bg-[#F9F6F0] text-sm" value={dafnomForm.jabatan} onChange={e => setDafnomForm(p => ({ ...p, jabatan: e.target.value }))} placeholder="Contoh: Kepala SPPG" />
+              </div>
+              <div>
+                <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Nama</label>
+                <input className="w-full mt-1 px-3 py-2 rounded-md border border-[#EAE4D8] bg-[#F9F6F0] text-sm" value={dafnomForm.nama} onChange={e => setDafnomForm(p => ({ ...p, nama: e.target.value }))} placeholder="Nama lengkap (opsional)" />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Jumlah Orang</label>
+                  <input required type="number" min="1" className="w-full mt-1 px-3 py-2 rounded-md border border-[#EAE4D8] bg-[#F9F6F0] text-sm" value={dafnomForm.jumlah} onChange={e => setDafnomForm(p => ({ ...p, jumlah: parseInt(e.target.value) || 1 }))} />
+                </div>
+                <div>
+                  <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Insentif/Hari (Rp)</label>
+                  <input required type="number" min="0" className="w-full mt-1 px-3 py-2 rounded-md border border-[#EAE4D8] bg-[#F9F6F0] text-sm" value={dafnomForm.insentif} onChange={e => setDafnomForm(p => ({ ...p, insentif: parseInt(e.target.value) || 0 }))} />
+                </div>
+              </div>
+              <div className="flex justify-end gap-2">
+                <button type="button" onClick={() => setDafnomFormOpen(false)} className="btn-ghost">Batal</button>
+                <button type="submit" className="btn-primary"><Save size={14}/> Simpan</button>
+              </div>
+            </form>
+          </div>
         )}
       </div>
     </Layout>

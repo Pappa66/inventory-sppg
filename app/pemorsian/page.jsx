@@ -72,19 +72,21 @@ function timeStr(ts) {
   return new Date(ts).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" });
 }
 
-function PhotoSlot({ label, desc, preview, onUpload, onRemove }) {
+function PhotoSlot({ label, desc, preview, onUpload, onRemove, uploading }) {
   return (
     <div className="border border-[#EAE4D8] rounded-lg p-3 bg-[#F9F6F0]">
       <div className="flex items-center gap-2 mb-1">
         <Camera size={14} className="text-[#4A7C59]" />
         <span className="text-sm font-semibold">{label}</span>
+        {uploading && <span className="text-[10px] text-[#D97706] font-semibold">Mengunggah...</span>}
       </div>
       {desc && <p className="text-xs text-[#5C5C5C] mb-2">{desc}</p>}
       {preview ? (
         <div className="relative inline-block">
           <img src={preview} alt={label} className="w-24 h-24 rounded-lg object-cover border border-[#EAE4D8]" />
-          <button type="button" onClick={onRemove} className="absolute -top-2 -right-2 bg-[#C5533B] text-white rounded-full p-1 shadow-md"><X size={14} /></button>
-          <div className="absolute bottom-1 left-1 bg-[#4A7C59] text-white text-[9px] px-1.5 py-0.5 rounded-full font-semibold">✓</div>
+          {!uploading && <button type="button" onClick={onRemove} className="absolute -top-2 -right-2 bg-[#C5533B] text-white rounded-full p-1 shadow-md"><X size={14} /></button>}
+          {uploading && <div className="absolute inset-0 bg-black/30 rounded-lg flex items-center justify-center"><div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" /></div>}
+          {!uploading && <div className="absolute bottom-1 left-1 bg-[#4A7C59] text-white text-[9px] px-1.5 py-0.5 rounded-full font-semibold">✓</div>}
         </div>
       ) : (
         <label className="flex flex-col items-center justify-center w-24 h-24 border-2 border-dashed border-[#EAE4D8] rounded-lg cursor-pointer hover:border-[#4A7C59] transition-colors">
@@ -120,6 +122,7 @@ export default function Page() {
   });
   const [photos, setPhotos] = useState({});
   const [menuTargets, setMenuTargets] = useState(null);
+  const [deliveryTargets, setDeliveryTargets] = useState(null);
 
   useEffect(() => { setForm(p => ({ ...p, task_date: selectedDate })); }, [selectedDate]);
 
@@ -151,6 +154,22 @@ export default function Page() {
           setMenuTargets(targets);
         })
         .catch(() => {});
+      api.get(`/delivery-plans?plan_date=${dateStr()}`)
+        .then(({ data }) => {
+          const plans = data || [];
+          const dTargets = { BALITA: 0, PORTION_SMALL: 0, PORTION_LARGE: 0, BUMIL_BUSUI: 0 };
+          for (const plan of plans) {
+            const items = plan.delivery_plan_items || [];
+            for (const it of items) {
+              const cat = it.menu_category || it.category;
+              if (cat && dTargets[cat] !== undefined) {
+                dTargets[cat] += it.portions || 0;
+              }
+            }
+          }
+          setDeliveryTargets(dTargets);
+        })
+        .catch(() => {});
     }
   }, [isPemorsian]);
 
@@ -163,19 +182,40 @@ export default function Page() {
   }, [selectedDate, role]);
   useEffect(() => { load(); }, [load]);
 
-  const handlePhoto = (key, e) => {
+  const [photoUrls, setPhotoUrls] = useState({});
+  const [uploading, setUploading] = useState({});
+
+  const handlePhoto = async (key, e) => {
     const file = e.target.files?.[0];
     if (!file) return;
     if (file.size > 5 * 1024 * 1024) { setError("Ukuran foto maks 5MB"); return; }
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      if (isPemorsian) {
-        setOmpreng(p => ({ ...p, [key]: { ...p[key], photo: reader.result } }));
-      } else {
-        setPhotos(prev => ({ ...prev, [key]: reader.result }));
+    setUploading(p => ({ ...p, [key]: true }));
+    try {
+      const reader = new FileReader();
+      const dataUrl = await new Promise((resolve, reject) => {
+        reader.onloadend = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+      try {
+        const { data } = await api.post("/upload", { file: dataUrl, folder: cfg.taskType });
+        const url = data?.url || "";
+        if (url) {
+          setPhotoUrls(p => ({ ...p, [key]: url }));
+          if (isPemorsian) {
+            setOmpreng(p => ({ ...p, [key]: { ...p[key], photo: url } }));
+          } else {
+            setPhotos(prev => ({ ...prev, [key]: url }));
+          }
+        } else {
+          throw new Error("No URL returned");
+        }
+      } catch {
+        setError("Gagal upload foto. Periksa koneksi internet.");
       }
-    };
-    reader.readAsDataURL(file);
+    } finally {
+      setUploading(p => ({ ...p, [key]: false }));
+    }
   };
 
   const removePhoto = (key) => {
@@ -184,17 +224,7 @@ export default function Page() {
     } else {
       setPhotos(prev => { const n = { ...prev }; delete n[key]; return n; });
     }
-  };
-
-  const uploadPhoto = async (dataUrl, folder) => {
-    if (!dataUrl) return "";
-    if (!dataUrl.startsWith("data:")) return dataUrl;
-    try {
-      const { data } = await api.post("/upload", { file: dataUrl, folder });
-      return data?.url || dataUrl;
-    } catch {
-      return dataUrl;
-    }
+    setPhotoUrls(p => { const n = { ...p }; delete n[key]; return n; });
   };
 
   const submitTask = async (e) => {
@@ -207,40 +237,42 @@ export default function Page() {
         const filled = CATEGORIES.filter(c => ompreng[c.key].qty > 0 || ompreng[c.key].photo);
         if (filled.length === 0) { setError("Isi minimal 1 kategori ompreng"); setSubmitting(false); return; }
 
-        for (const cat of filled) {
-          const photoUrl = await uploadPhoto(ompreng[cat.key].photo, "pemorsian");
-          await api.post("/daily-tasks", {
-            task_date: form.task_date,
-            task_type: cfg.taskType,
-            category: cat.key,
-            portions: parseInt(ompreng[cat.key].qty) || 0,
-            photo_url: photoUrl,
-            description: `${cat.label}: ${form.description || "Pemorsian"}`,
-            status: "SELESAI",
-          });
-        }
+        const hasUploading = filled.some(c => uploading[c.key]);
+        if (hasUploading) { setError("Foto masih diunggah. Tunggu sebentar."); setSubmitting(false); return; }
+
+        const payload = filled.map(cat => ({
+          task_date: form.task_date,
+          task_type: cfg.taskType,
+          category: cat.key,
+          portions: parseInt(ompreng[cat.key].qty) || 0,
+          photo_url: ompreng[cat.key].photo || null,
+          description: `${cat.label}: ${form.description || "Pemorsian"}`,
+          status: "SELESAI",
+        }));
+        await api.post("/daily-tasks", payload);
       } else if (cfg.multiPhoto) {
         const slots = cfg.photoSlots || [];
         const entries = slots.map((s, i) => ({ idx: i, slot: s, photo: photos[i] })).filter(e => e.photo);
         if (entries.length === 0) { setError("Minimal upload 1 foto"); setSubmitting(false); return; }
-        for (const entry of entries) {
-          const photoUrl = await uploadPhoto(entry.photo, cfg.taskType);
-          await api.post("/daily-tasks", {
-            task_date: form.task_date,
-            task_type: cfg.taskType,
-            category: null, portions: 0,
-            photo_url: photoUrl,
-            description: `${entry.slot.label}: ${form.description || entry.slot.desc}`,
-            status: "SELESAI",
-          });
-        }
+        const hasUploading = entries.some(e => uploading[e.idx]);
+        if (hasUploading) { setError("Foto masih diunggah. Tunggu sebentar."); setSubmitting(false); return; }
+
+        const payload = entries.map(entry => ({
+          task_date: form.task_date,
+          task_type: cfg.taskType,
+          category: null, portions: 0,
+          photo_url: entry.photo,
+          description: `${entry.slot.label}: ${form.description || entry.slot.desc}`,
+          status: "SELESAI",
+        }));
+        await api.post("/daily-tasks", payload);
       } else {
-        const photoUrl = await uploadPhoto(photos[0], cfg.taskType);
+        if (uploading[0]) { setError("Foto masih diunggah. Tunggu sebentar."); setSubmitting(false); return; }
         await api.post("/daily-tasks", {
           task_date: form.task_date,
           task_type: cfg.taskType,
           category: null, portions: 0,
-          photo_url: photoUrl,
+          photo_url: photos[0] || null,
           description: form.description,
           status: "SELESAI",
         });
@@ -251,6 +283,8 @@ export default function Page() {
       setForm({ task_date: selectedDate, description: "" });
       setOmpreng({ BALITA: { qty: 0, photo: null }, PORTION_SMALL: { qty: 0, photo: null }, PORTION_LARGE: { qty: 0, photo: null }, BUMIL_BUSUI: { qty: 0, photo: null } });
       setPhotos({});
+      setPhotoUrls({});
+      setUploading({});
       load();
       setTimeout(() => setSuccess(""), 3000);
     } catch (er) {
@@ -348,7 +382,10 @@ export default function Page() {
                     </tr>
                   );
                 })}
-                {tasks.length === 0 && <tr><td colSpan={7} className="py-10 text-center text-[#5C5C5C]">Belum ada tugas untuk tanggal ini.</td></tr>}
+                {tasks.length === 0 && <tr><td colSpan={7} className="py-10 text-center text-[#5C5C5C]">
+                  <p className="mb-3">Belum ada tugas untuk tanggal ini.</p>
+                  <button onClick={() => setOpen(true)} className="btn-primary text-xs">+ Input Tugas</button>
+                </td></tr>}
               </tbody>
             </table>
           </div>
@@ -374,31 +411,44 @@ export default function Page() {
                 </div>
               );
             })}
-            {tasks.length === 0 && <div className="text-center text-[#5C5C5C] py-10">Belum ada tugas untuk tanggal ini.</div>}
+            {tasks.length === 0 && <div className="text-center text-[#5C5C5C] py-10">
+              <p className="mb-3">Belum ada tugas untuk tanggal ini.</p>
+              <button onClick={() => setOpen(true)} className="btn-primary text-xs">+ Input Tugas</button>
+            </div>}
           </div>
         </div>
 
         {open && (
-          <div className="fixed inset-0 z-40 bg-black/40 grid place-items-center p-4 overflow-y-auto" onClick={() => setOpen(false)}>
-            <form onClick={(e) => e.stopPropagation()} onSubmit={submitTask} className="card-soft p-4 sm:p-6 w-full max-w-lg my-8">
-              <div className="flex items-center justify-between">
-                <h2 className="font-display text-2xl font-bold">Input {cfg.title}</h2>
-                <button type="button" onClick={() => setOpen(false)} className="btn-ghost p-1"><X size={20} /></button>
+          <div className="fixed inset-0 z-40 bg-black/40 flex items-end sm:items-center justify-center sm:p-4" onClick={() => setOpen(false)}>
+            <form onClick={(e) => e.stopPropagation()} onSubmit={submitTask} className="card-soft w-full sm:max-w-lg sm:rounded-xl rounded-t-xl max-h-[90vh] flex flex-col">
+              <div className="p-4 sm:p-6 pb-0 flex items-center justify-between shrink-0">
+                <h2 className="font-display text-xl sm:text-2xl font-bold">Input {cfg.title}</h2>
+                <button type="button" onClick={() => setOpen(false)} className="btn-ghost p-2 min-w-[44px] min-h-[44px] flex items-center justify-center"><X size={20} /></button>
               </div>
 
-              <div className="grid grid-cols-1 gap-3 mt-4">
+              <div className="p-4 sm:p-6 overflow-y-auto flex-1 space-y-3">
                 <div>
                   <label className="text-xs uppercase tracking-widest text-[#5C5C5C] flex items-center gap-1"><CalendarDays size={12} /> Tanggal</label>
-                  <input required type="date" className="w-full mt-1 px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={form.task_date} onChange={(e) => setForm({ ...form, task_date: e.target.value })} />
+                  <input required type="date" className="w-full mt-1 px-4 py-3 rounded-md border border-[#EAE4D8] bg-[#F9F6F0] text-base" value={form.task_date} onChange={(e) => setForm({ ...form, task_date: e.target.value })} />
                 </div>
 
                 {isPemorsian ? (
                   <div>
                     <label className="text-xs uppercase tracking-widest text-[#5C5C5C] font-semibold mb-2 block">Ompreng per Kategori Penerima</label>
                     {menuTargets && (
-                      <p className="text-xs text-[#4A7C59] mb-2 bg-[#4A7C59]/10 px-3 py-1.5 rounded-md">
-                        Target dari menu hari ini: BALITA {menuTargets.BALITA || 0} · Porsi Kecil {menuTargets.PORTION_SMALL || 0} · Porsi Besar {menuTargets.PORTION_LARGE || 0} · Bumil/Busui {menuTargets.BUMIL_BUSUI || 0}
-                      </p>
+                      <div className="text-xs mb-2 bg-[#4A7C59]/10 px-3 py-1.5 rounded-md space-y-1">
+                        <p className="text-[#4A7C59] font-semibold">
+                          Target menu: BALITA {menuTargets.BALITA || 0} · Porsi Kecil {menuTargets.PORTION_SMALL || 0} · Porsi Besar {menuTargets.PORTION_LARGE || 0} · Bumil/Busui {menuTargets.BUMIL_BUSUI || 0}
+                        </p>
+                        {deliveryTargets && (
+                          <p className="text-[#2C4251]">
+                            Target antar: BALITA {deliveryTargets.BALITA || 0} · Porsi Kecil {deliveryTargets.PORTION_SMALL || 0} · Porsi Besar {deliveryTargets.PORTION_LARGE || 0} · Bumil/Busui {deliveryTargets.BUMIL_BUSUI || 0}
+                          </p>
+                        )}
+                        {deliveryTargets && CATEGORIES.some(cat => (menuTargets[cat.key] || 0) !== (deliveryTargets[cat.key] || 0)) && (
+                          <p className="text-[#D97706] font-semibold">⚠ Selisih antara menu dan rencana antar</p>
+                        )}
+                      </div>
                     )}
                     <div className="space-y-3">
                       {CATEGORIES.map((cat) => (
@@ -407,14 +457,14 @@ export default function Page() {
                             <span className="w-2 h-2 rounded-full" style={{ background: cat.color }} />
                             <span className="text-sm font-semibold">{cat.label}</span>
                           </div>
-                          <div className="grid grid-cols-2 gap-3">
+                          <div className="flex flex-col sm:grid sm:grid-cols-2 gap-3">
                             <div>
                               <label className="text-[10px] uppercase text-[#5C5C5C]">Jumlah Ompreng</label>
-                              <input type="number" min="0" className="w-full mt-1 px-3 py-2 rounded-md border border-[#EAE4D8] bg-white text-sm" value={ompreng[cat.key].qty || ""} onChange={(e) => setOmpreng(p => ({ ...p, [cat.key]: { ...p[cat.key], qty: parseFloat(e.target.value) || 0 } }))} />
+                              <input type="number" min="0" inputMode="numeric" className="w-full mt-1 px-3 py-3 rounded-md border border-[#EAE4D8] bg-white text-base" value={ompreng[cat.key].qty || ""} onChange={(e) => setOmpreng(p => ({ ...p, [cat.key]: { ...p[cat.key], qty: parseFloat(e.target.value) || 0 } }))} />
                             </div>
                             <div>
                               <label className="text-[10px] uppercase text-[#5C5C5C]">Foto</label>
-                              <PhotoSlot label="Foto" preview={ompreng[cat.key].photo} onUpload={(e) => handlePhoto(cat.key, e)} onRemove={() => removePhoto(cat.key)} />
+                              <PhotoSlot label="Foto" preview={ompreng[cat.key].photo} onUpload={(e) => handlePhoto(cat.key, e)} onRemove={() => removePhoto(cat.key)} uploading={uploading[cat.key]} />
                             </div>
                           </div>
                         </div>
@@ -424,9 +474,9 @@ export default function Page() {
                 ) : cfg.multiPhoto ? (
                   <div>
                     <label className="text-xs uppercase tracking-widest text-[#5C5C5C] font-semibold mb-2 block">Foto Dokumentasi</label>
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-3 sm:grid sm:grid-cols-2 sm:gap-3">
                       {(cfg.photoSlots || []).map((slot, idx) => (
-                        <PhotoSlot key={idx} label={slot.label} desc={slot.desc} preview={photos[idx]} onUpload={(e) => handlePhoto(idx, e)} onRemove={() => removePhoto(idx)} />
+                        <PhotoSlot key={idx} label={slot.label} desc={slot.desc} preview={photos[idx]} onUpload={(e) => handlePhoto(idx, e)} onRemove={() => removePhoto(idx)} uploading={uploading[idx]} />
                       ))}
                     </div>
                   </div>
@@ -456,9 +506,9 @@ export default function Page() {
                 </div>
               </div>
 
-              <div className="flex justify-end gap-2 mt-5">
-                <button type="button" onClick={() => setOpen(false)} className="btn-ghost">Batal</button>
-                <button type="submit" disabled={submitting} className="btn-primary disabled:opacity-50">{submitting ? "Menyimpan..." : "Simpan Tugas"}</button>
+              <div className="p-4 sm:p-6 pt-3 border-t border-[#EAE4D8] flex gap-3 shrink-0 bg-white sm:bg-transparent rounded-b-xl">
+                <button type="button" onClick={() => setOpen(false)} className="btn-ghost flex-1 py-3">Batal</button>
+                <button type="submit" disabled={submitting} className="btn-primary flex-1 py-3 min-h-[48px] disabled:opacity-50 text-base font-semibold">{submitting ? "Menyimpan..." : "Simpan Tugas"}</button>
               </div>
             </form>
           </div>

@@ -218,7 +218,46 @@ export default function Page() {
         {loading ? (
           <div className="card-soft p-12 text-center"><div className="animate-spin w-8 h-8 border-2 border-[#4A7C59] border-t-transparent rounded-full mx-auto" /></div>
         ) : (
-          <div className="card-soft overflow-hidden">
+          <>
+          {/* Mobile Card View */}
+          <div className="md:hidden space-y-3">
+            {paginated.length === 0 && (
+              <div className="card-soft p-12 text-center text-[#5C5C5C]">
+                <p className="mb-3">Belum ada data anggaran.</p>
+                {canEdit && <button onClick={() => { setEditId(null); setForm(EMPTY_FORM); setOpenForm(true); }} className="btn-primary text-xs">+ Tambah Anggaran</button>}
+              </div>
+            )}
+            {paginated.map(a => {
+              const totalR = (a.bahan_rab || 0) + (a.ops_rab || 0) + (a.ins_rab || 0);
+              const totalA = (a.bahan_actual || 0) + (a.ops_actual || 0) + (a.ins_actual || 0);
+              const selisih = totalR - totalA;
+              const totalP = BAHAN_FIELDS.reduce((s, f) => s + (a[f.key] || 0), 0);
+              return (
+                <div key={a.id} className="card-soft p-4 space-y-2">
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <div className="font-semibold text-sm">{a.plan_date}</div>
+                      <div className="text-xs text-[#5C5C5C]">Total Porsi: {totalP.toLocaleString("id-ID")}</div>
+                    </div>
+                    {canEdit && (
+                      <div className="flex gap-1 shrink-0">
+                        <button onClick={() => openEdit(a)} className="btn-ghost text-xs"><Pencil size={14}/></button>
+                        {canDelete && <button onClick={() => handleDelete(a.id)} className="btn-ghost text-xs text-[#C5533B]"><Trash2 size={14}/></button>}
+                      </div>
+                    )}
+                  </div>
+                  <div className="grid grid-cols-3 gap-2 text-xs">
+                    <div><span className="text-[#5C5C5C]">RAB:</span> <span className="font-semibold">{fmtIDR(totalR)}</span></div>
+                    <div><span className="text-[#5C5C5C]">Aktual:</span> <span className="font-semibold">{fmtIDR(totalA)}</span></div>
+                    <div><span className="text-[#5C5C5C]">Selisih:</span> <span className={`font-semibold ${selisih >= 0 ? "text-[#4A7C59]" : "text-[#C5533B]"}`}>{fmtIDR(selisih)}</span></div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Desktop Table View */}
+          <div className="hidden md:block card-soft overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-sm min-w-[900px]">
                 <thead className="bg-[#EAE4D8] text-[#5C5C5C] text-xs uppercase tracking-wider">
@@ -263,11 +302,15 @@ export default function Page() {
                       </tr>
                     );
                   })}
-                  {paginated.length === 0 && <tr><td colSpan={canEdit ? 10 : 9} className="py-10 text-center text-[#5C5C5C]">Belum ada data anggaran.</td></tr>}
+                  {paginated.length === 0 && <tr><td colSpan={canEdit ? 10 : 9} className="py-10 text-center text-[#5C5C5C]">
+                    <p className="mb-3">Belum ada data anggaran.</p>
+                    {canEdit && <button onClick={() => { setEditId(null); setForm(EMPTY_FORM); setOpenForm(true); }} className="btn-primary text-xs">+ Tambah Anggaran</button>}
+                  </td></tr>}
                 </tbody>
               </table>
             </div>
           </div>
+          </>
         )}
 
         {totalPages > 1 && <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />}
