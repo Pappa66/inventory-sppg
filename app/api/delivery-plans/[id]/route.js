@@ -51,6 +51,23 @@ export async function PATCH(request, { params }) {
       if (error) return apiError(error.message);
     }
 
+    if (Array.isArray(body.items)) {
+      await supabase.from("delivery_plan_items").delete().eq("plan_id", id);
+      if (body.items.length > 0) {
+        const newItems = body.items.map(item => ({
+          id: crypto.randomUUID(),
+          plan_id: id,
+          destination_id: item.destination_id,
+          category: item.category,
+          portions: item.portions || 0,
+          notes: item.notes || null,
+          created_at: new Date().toISOString(),
+        }));
+        const { error: itemsErr } = await supabase.from("delivery_plan_items").insert(newItems);
+        if (itemsErr) return apiError(itemsErr.message);
+      }
+    }
+
     if (body.driver_id !== undefined) {
       const { data: existingAssignment } = await supabase
         .from("delivery_assignments")
@@ -92,13 +109,16 @@ export async function PATCH(request, { params }) {
 export async function DELETE(request, { params }) {
   try {
     const user = await getTokenUser(request);
-    requireRoles("admin_apps","admin_sppg")(user);
+    requireRoles("admin_apps","admin_sppg","field_assistant")(user);
 
     const { id } = await params;
     const supabase = await createClient();
 
     const { data: old } = await supabase.from("delivery_plans").select("*").eq("id", id).single();
     if (!old) return apiError("Delivery plan tidak ditemukan", 404);
+
+    await supabase.from("delivery_plan_items").delete().eq("plan_id", id);
+    await supabase.from("delivery_assignments").delete().eq("plan_id", id);
 
     const { error } = await supabase.from("delivery_plans").delete().eq("id", id);
     if (error) return apiError(error.message);

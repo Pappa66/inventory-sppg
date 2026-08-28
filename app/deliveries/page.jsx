@@ -11,7 +11,7 @@ import {
   ASSIGNMENT_STATUSES,
   fmtDate,
 } from "@/lib/format";
-import { Plus, Truck, MapPin, Users, ChevronDown, ChevronUp } from "lucide-react";
+import { Plus, Truck, MapPin, Users, ChevronDown, ChevronUp, Pencil, Trash2 } from "lucide-react";
 import { SkeletonTable } from "@/components/Skeleton";
 import Pagination from "@/components/Pagination";
 
@@ -40,6 +40,8 @@ export default function Page() {
   const [expandedPlan, setExpandedPlan] = useState(null);
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
+  const [editingPlan, setEditingPlan] = useState(null);
+  const [deleteConfirmId, setDeleteConfirmId] = useState(null);
   const perPage = 15;
 
   const canWrite = activeRole === "admin_apps" || activeRole === "admin_sppg" || activeRole === "field_assistant";
@@ -84,6 +86,7 @@ export default function Page() {
   }, [plansForDate, page]);
 
   const openCreate = () => {
+    setEditingPlan(null);
     setForm({ ...EMPTY_PLAN, plan_date: selectedDate });
     setPortions({});
     setOpen(true);
@@ -156,6 +159,75 @@ export default function Page() {
     }
   };
 
+  const openEdit = (plan) => {
+    const existingPortions = {};
+    const existingDestIds = [];
+    for (const item of plan.delivery_plan_items || []) {
+      existingDestIds.push(item.destination_id);
+      existingPortions[item.destination_id] = {
+        BALITA: item.portions?.BALITA || item.balita_portions || 0,
+        PORTION_SMALL: item.portions?.PORTION_SMALL || item.portion_small_portions || 0,
+        PORTION_LARGE: item.portions?.PORTION_LARGE || item.portion_large_portions || 0,
+        BUMIL_BUSUI: item.portions?.BUMIL_BUSUI || item.bumil_busui_portions || 0,
+      };
+    }
+    setEditingPlan(plan);
+    setForm({
+      plan_date: plan.plan_date,
+      destination_ids: existingDestIds,
+      driver_id: plan.delivery_assignments?.[0]?.driver_id || "",
+      notes: plan.notes || "",
+    });
+    setPortions(existingPortions);
+    setQuickFill({ BALITA: 0, PORTION_SMALL: 0, PORTION_LARGE: 0, BUMIL_BUSUI: 0 });
+    setOpen(true);
+  };
+
+  const submitEdit = async (e) => {
+    e.preventDefault();
+    if (form.destination_ids.length === 0) {
+      toast.error("Pilih minimal satu tujuan");
+      return;
+    }
+    try {
+      const payload = {
+        plan_date: form.plan_date,
+        notes: form.notes,
+        driver_id: form.driver_id || null,
+        items: form.destination_ids.flatMap((destId) => {
+          const destPortions = portions[destId] || {};
+          return Object.entries(destPortions)
+            .filter(([, qty]) => qty > 0)
+            .map(([category, qty]) => ({
+              destination_id: destId,
+              category,
+              portions: qty,
+            }));
+        }),
+      };
+      await api.patch(`/delivery-plans/${editingPlan.id}`, payload);
+      toast.success("Rencana antar diperbarui");
+      setOpen(false);
+      setEditingPlan(null);
+      setForm(EMPTY_PLAN);
+      setPortions({});
+      load();
+    } catch (er) {
+      toast.error(formatErr(er));
+    }
+  };
+
+  const deletePlan = async (planId) => {
+    try {
+      await api.delete(`/delivery-plans/${planId}`);
+      toast.success("Rencana antar dihapus");
+      setDeleteConfirmId(null);
+      load();
+    } catch (er) {
+      toast.error(formatErr(er));
+    }
+  };
+
   const statusBadge = (status) => {
     const s = ASSIGNMENT_STATUSES[status] || ASSIGNMENT_STATUSES.PENDING;
     return (
@@ -208,22 +280,22 @@ export default function Page() {
         {/* Date Picker + Search */}
         <div className="flex items-end gap-4 flex-wrap">
           <div>
-            <label className="text-xs uppercase tracking-widest text-[#5C5C5C] block mb-1">Tanggal</label>
+            <label className="form-label block mb-1">Tanggal</label>
             <input
               data-testid="plan-date"
               type="date"
-              className="px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0] text-sm"
+              className="form-input"
               value={selectedDate}
               onChange={(e) => setSelectedDate(e.target.value)}
             />
           </div>
           <div className="relative flex-1 min-w-0 max-w-sm">
-            <label className="text-xs uppercase tracking-widest text-[#5C5C5C] block mb-1">Cari</label>
+            <label className="form-label block mb-1">Cari</label>
             <input
               data-testid="search-plan"
               type="text"
               placeholder="Cari driver atau catatan..."
-              className="w-full px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0] text-sm"
+              className="form-input"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
@@ -244,6 +316,7 @@ export default function Page() {
                     <th className="text-left py-3 px-4">Status</th>
                     <th className="text-left py-3 px-4">Catatan</th>
                     {canWrite && <th className="text-left py-3 px-4">Tugaskan</th>}
+                    {canWrite && <th className="text-center py-3 px-4 w-20">Aksi</th>}
                   </tr>
                 </thead>
                 <tbody>
@@ -272,7 +345,7 @@ export default function Page() {
                             <td className="py-3 px-4">
                               <select
                                 data-testid={`assign-driver-${p.id}`}
-                                className="px-3 py-1.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0] text-xs"
+                                className="form-select text-xs"
                                 value={p.driver_id || ""}
                                 onChange={(e) => assignDriver(p.id, e.target.value)}
                               >
@@ -281,6 +354,18 @@ export default function Page() {
                                   <option key={d.id} value={d.id}>{d.name}</option>
                                 ))}
                               </select>
+                            </td>
+                          )}
+                          {canWrite && (
+                            <td className="py-3 px-4">
+                              <div className="flex items-center justify-center gap-1">
+                                <button onClick={() => openEdit(p)} className="btn-ghost p-1.5 text-[#4A7C59] hover:bg-[#4A7C59]/10" title="Edit">
+                                  <Pencil size={14} />
+                                </button>
+                                <button onClick={() => setDeleteConfirmId(p.id)} className="btn-ghost p-1.5 text-[#C5533B] hover:bg-[#C5533B]/10" title="Hapus">
+                                  <Trash2 size={14} />
+                                </button>
+                              </div>
                             </td>
                           )}
                         </tr>
@@ -304,7 +389,7 @@ export default function Page() {
                   })}
                   {paginated.length === 0 && (
                     <tr>
-                      <td colSpan={canWrite ? 5 : 4} className="py-10 text-center text-[#5C5C5C]">
+                      <td colSpan={canWrite ? 6 : 4} className="py-10 text-center text-[#5C5C5C]">
                         <p className="mb-3">Belum ada rencana antar untuk tanggal ini.</p>
                         {canWrite && <button onClick={() => setOpen(true)} className="btn-primary text-xs">+ Buat Rencana Antar</button>}
                       </td>
@@ -349,18 +434,28 @@ export default function Page() {
                       </div>
                     ))}
                     {canWrite && (
-                      <div>
-                        <label className="text-[10px] uppercase tracking-widest text-[#5C5C5C]">Tugaskan Driver</label>
-                        <select
-                          className="w-full mt-1 px-3 py-1.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0] text-xs"
-                          value={p.driver_id || ""}
-                          onChange={(e) => assignDriver(p.id, e.target.value)}
-                        >
-                          <option value="">— Pilih Driver —</option>
-                          {drivers.map((d) => (
-                            <option key={d.id} value={d.id}>{d.name}</option>
-                          ))}
-                        </select>
+                      <div className="flex items-center gap-2">
+                        <div className="flex-1">
+                          <label className="text-[10px] uppercase tracking-widest text-[#5C5C5C]">Tugaskan Driver</label>
+                          <select
+                            className="w-full mt-1 form-select text-xs"
+                            value={p.driver_id || ""}
+                            onChange={(e) => assignDriver(p.id, e.target.value)}
+                          >
+                            <option value="">— Pilih Driver —</option>
+                            {drivers.map((d) => (
+                              <option key={d.id} value={d.id}>{d.name}</option>
+                            ))}
+                          </select>
+                        </div>
+                        <div className="flex items-center gap-1 pt-4">
+                          <button onClick={() => openEdit(p)} className="btn-ghost p-1.5 text-[#4A7C59]" title="Edit">
+                            <Pencil size={14} />
+                          </button>
+                          <button onClick={() => setDeleteConfirmId(p.id)} className="btn-ghost p-1.5 text-[#C5533B]" title="Hapus">
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
                       </div>
                     )}
                   </div>
@@ -380,16 +475,16 @@ export default function Page() {
 
         {/* Create Plan Modal */}
         {open && (
-          <div className="modal-overlay" onClick={() => setOpen(false)}>
+          <div className="modal-overlay" onClick={() => { setOpen(false); setEditingPlan(null); }}>
             <form
               onClick={(e) => e.stopPropagation()}
-              onSubmit={submitPlan}
+              onSubmit={editingPlan ? submitEdit : submitPlan}
               className="modal-panel modal-panel-lg"
               data-testid="plan-modal"
             >
               <div className="modal-header">
-                <h2 className="font-display text-2xl font-bold">Buat Rencana Antar</h2>
-                <button type="button" onClick={() => setOpen(false)} className="btn-ghost text-lg leading-none p-1">&times;</button>
+                <h2 className="font-display text-2xl font-bold">{editingPlan ? "Edit Rencana Antar" : "Buat Rencana Antar"}</h2>
+                <button type="button" onClick={() => { setOpen(false); setEditingPlan(null); }} className="btn-ghost text-lg leading-none p-1">&times;</button>
               </div>
               <div className="modal-body">
                 <div className="grid grid-cols-1 gap-3">
@@ -491,10 +586,28 @@ export default function Page() {
                 </div>
               </div>
               <div className="modal-footer">
-                <button type="button" onClick={() => setOpen(false)} className="btn-ghost">Batal</button>
-                <button data-testid="save-plan" type="submit" className="btn-primary">Simpan Rencana</button>
+                <button type="button" onClick={() => { setOpen(false); setEditingPlan(null); }} className="btn-ghost">Batal</button>
+                <button data-testid="save-plan" type="submit" className="btn-primary">{editingPlan ? "Update Rencana" : "Simpan Rencana"}</button>
               </div>
             </form>
+          </div>
+        )}
+
+        {deleteConfirmId && (
+          <div className="modal-overlay" onClick={() => setDeleteConfirmId(null)}>
+            <div className="modal-panel modal-panel-sm" onClick={(e) => e.stopPropagation()}>
+              <div className="modal-header">
+                <h2 className="font-display text-lg font-bold text-[#C5533B]">Hapus Rencana?</h2>
+                <button type="button" onClick={() => setDeleteConfirmId(null)} className="btn-ghost text-lg leading-none p-1">&times;</button>
+              </div>
+              <div className="modal-body">
+                <p className="text-sm text-[#5C5C5C]">Semua item destinasi dan penugasan driver untuk rencana ini akan dihapus. Tindakan ini tidak dapat dibatalkan.</p>
+              </div>
+              <div className="modal-footer">
+                <button onClick={() => setDeleteConfirmId(null)} className="btn-ghost">Batal</button>
+                <button onClick={() => deletePlan(deleteConfirmId)} className="btn-primary bg-[#C5533B] hover:bg-[#A9432F]">Hapus</button>
+              </div>
+            </div>
           </div>
         )}
       </div>
