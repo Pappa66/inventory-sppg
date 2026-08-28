@@ -17,7 +17,7 @@ export async function GET(request) {
     if (error) return apiError(error.message);
     return apiSuccess(data);
   } catch (e) {
-    return apiError(e.message);
+    return apiError("Internal server error", 500);
   }
 }
 

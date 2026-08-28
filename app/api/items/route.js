@@ -21,6 +21,7 @@ export async function POST(request) {
     const user = await getTokenUser(request);
     requireRoles(...CAN_EDIT)(user);
     const body = await request.json();
+    if (!body.name || !body.unit || !body.category) return apiError("Nama, satuan, dan kategori wajib diisi");
     const supabase = await createClient();
 
     const item = {

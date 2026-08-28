@@ -17,8 +17,10 @@ export async function GET(request, { params }) {
 
     if (auditErr) return apiError("Gagal ambil riwayat: " + auditErr.message, 500);
 
+    const allowedEntities = ["items", "users", "stock_lots", "item_hierarchies", "periods", "suppliers"];
+    const tableName = allowedEntities.includes(entity) ? entity : "items";
     const { data: item } = await supabase
-      .from("items")
+      .from(tableName)
       .select("*")
       .eq("id", entity_id)
       .maybeSingle();

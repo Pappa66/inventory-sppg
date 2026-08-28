@@ -19,6 +19,8 @@ export async function POST(request) {
     const user = await getTokenUser(request);
     requireRoles("admin_apps","admin_sppg")(user);
     const body = await request.json();
+    if (!body.name || !body.email) return apiError("Nama dan email wajib diisi");
+    if (!body.password || body.password.length < 6) return apiError("Password minimal 6 karakter");
     const supabase = await createClient();
 
     const id = crypto.randomUUID();

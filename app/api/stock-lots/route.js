@@ -23,6 +23,7 @@ export async function POST(request) {
     const user = await getTokenUser(request);
     requireRoles("admin_apps","admin_sppg", "field_assistant", "kitchen_head", "head_chef")(user);
     const body = await request.json();
+    if (!body.item_id || !body.quantity) return apiError("Item dan jumlah wajib diisi");
     const supabase = await createClient();
 
     const lot = {
