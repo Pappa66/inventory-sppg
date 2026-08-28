@@ -6,7 +6,7 @@ import { api, formatErr } from "@/lib/api";
 import { DAYS, MENU_STATUS, fmtDateTime, AKG_STANDARDS } from "@/lib/format";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
-import { CheckCircle2, XCircle, Flame, Send } from "lucide-react";
+import { CheckCircle2, XCircle, Flame, Send, X } from "lucide-react";
 
 export default function Page() {
   const { user, activeRole } = useAuth();
@@ -128,15 +128,20 @@ export default function Page() {
         </div>}
 
         {signing && (
-          <div className="fixed inset-0 z-40 bg-black/40 grid place-items-center p-4" onClick={()=>setSigning(null)}>
-            <div onClick={(e)=>e.stopPropagation()} className="card-soft p-6 w-full max-w-lg">
-              <h2 className="font-display text-2xl font-bold">Tanda Tangan Digital · Ahli Gizi</h2>
-              <p className="text-[#5C5C5C] text-sm mt-1">Menu untuk {DAYS.find(d=>d.key===signing.day)?.label}, minggu {signing.week_start}.</p>
-              <label className="text-xs uppercase tracking-widest text-[#5C5C5C] mt-4 block">Tanda tangan (nama + catatan)</label>
-              <input data-testid="signature-input" className="w-full mt-1 px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0] audit-ts" value={signature} onChange={(e)=>setSignature(e.target.value)}/>
-              <label className="text-xs uppercase tracking-widest text-[#5C5C5C] mt-3 block">Catatan (opsional, wajib jika ditolak)</label>
-              <textarea data-testid="approval-note" rows={2} className="w-full mt-1 px-3 py-2 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={note} onChange={(e)=>setNote(e.target.value)}/>
-              <div className="flex justify-end gap-2 mt-4">
+          <div className="modal-overlay" onClick={()=>setSigning(null)}>
+            <div onClick={(e)=>e.stopPropagation()} className="modal-panel modal-panel-md">
+              <div className="modal-header">
+                <h2 className="font-display text-2xl font-bold">Tanda Tangan Digital · Ahli Gizi</h2>
+                <button onClick={()=>setSigning(null)} className="btn-ghost p-2 min-w-[44px] min-h-[44px] flex items-center justify-center"><X size={18}/></button>
+              </div>
+              <div className="modal-body">
+                <p className="text-[#5C5C5C] text-sm">Menu untuk {DAYS.find(d=>d.key===signing.day)?.label}, minggu {signing.week_start}.</p>
+                <label className="form-label mt-4 block">Tanda tangan (nama + catatan)</label>
+                <input data-testid="signature-input" className="form-input w-full mt-1" value={signature} onChange={(e)=>setSignature(e.target.value)}/>
+                <label className="form-label mt-3 block">Catatan (opsional, wajib jika ditolak)</label>
+                <textarea data-testid="approval-note" rows={2} className="form-textarea w-full mt-1" value={note} onChange={(e)=>setNote(e.target.value)}/>
+              </div>
+              <div className="modal-footer">
                 <button data-testid="reject-menu" onClick={()=>approve(false)} className="btn-outline" style={{borderColor:"#C5533B", color:"#C5533B"}}><XCircle size={14}/> Tolak</button>
                 <button data-testid="approve-menu" onClick={()=>approve(true)} className="btn-primary"><CheckCircle2 size={14}/> Setujui & Tanda Tangan</button>
               </div>

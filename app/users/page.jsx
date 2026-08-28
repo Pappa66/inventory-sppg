@@ -162,22 +162,27 @@ export default function Page() {
         )}
 
         {open && (
-          <div className="fixed inset-0 z-40 bg-black/40 grid place-items-center p-4" onClick={()=>setOpen(false)}>
-            <form onClick={(e)=>e.stopPropagation()} onSubmit={create} className="card-soft p-4 sm:p-6 w-full max-w-md" data-testid="user-create-modal">
-              <h2 className="font-display text-2xl font-bold">Pengguna Baru</h2>
-              <div className="grid grid-cols-1 gap-3 mt-4">
-                <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Nama</label>
-                <input data-testid="new-user-name" required className="px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={form.name} onChange={(e)=>setForm({...form, name:e.target.value})}/>
-                <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Email</label>
-                <input data-testid="new-user-email" type="email" required className="px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={form.email} onChange={(e)=>setForm({...form, email:e.target.value})}/>
-                <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Peran</label>
-                <select data-testid="new-user-role" className="px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={form.role} onChange={(e)=>setForm({...form, role:e.target.value})}>
-                  {Object.entries(ROLE_LABELS).map(([k,v])=><option key={k} value={k}>{v}</option>)}
-                </select>
-                <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Password awal</label>
-                <input data-testid="new-user-password" required minLength={6} type="password" className="px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={form.password} onChange={(e)=>setForm({...form, password:e.target.value})}/>
+          <div className="modal-overlay" onClick={()=>setOpen(false)}>
+            <form onClick={(e)=>e.stopPropagation()} onSubmit={create} className="modal-panel modal-panel-md" data-testid="user-create-modal">
+              <div className="modal-header">
+                <h2 className="font-display text-2xl font-bold">Pengguna Baru</h2>
+                <button type="button" onClick={()=>setOpen(false)} className="btn-ghost text-xs">✕</button>
               </div>
-              <div className="flex justify-end gap-2 mt-5">
+              <div className="modal-body">
+                <div className="grid grid-cols-1 gap-3">
+                  <label className="form-label">Nama</label>
+                  <input data-testid="new-user-name" required className="form-input" value={form.name} onChange={(e)=>setForm({...form, name:e.target.value})}/>
+                  <label className="form-label">Email</label>
+                  <input data-testid="new-user-email" type="email" required className="form-input" value={form.email} onChange={(e)=>setForm({...form, email:e.target.value})}/>
+                  <label className="form-label">Peran</label>
+                  <select data-testid="new-user-role" className="form-select" value={form.role} onChange={(e)=>setForm({...form, role:e.target.value})}>
+                    {Object.entries(ROLE_LABELS).map(([k,v])=><option key={k} value={k}>{v}</option>)}
+                  </select>
+                  <label className="form-label">Password awal</label>
+                  <input data-testid="new-user-password" required minLength={6} type="password" className="form-input" value={form.password} onChange={(e)=>setForm({...form, password:e.target.value})}/>
+                </div>
+              </div>
+              <div className="modal-footer">
                 <button type="button" onClick={()=>setOpen(false)} className="btn-ghost">Batal</button>
                 <button data-testid="submit-new-user" type="submit" className="btn-primary">Simpan</button>
               </div>
@@ -186,21 +191,28 @@ export default function Page() {
         )}
 
         {editingUser && (
-          <div className="fixed inset-0 z-40 bg-black/40 grid place-items-center p-4" onClick={()=>setEditingUser(null)}>
-            <form onClick={(e)=>e.stopPropagation()} onSubmit={saveEdit} className="card-soft p-4 sm:p-6 w-full max-w-md">
-              <h2 className="font-display text-2xl font-bold">Edit Pengguna</h2>
-              <p className="text-sm text-[#5C5C5C] mt-1">{editingUser.email}</p>
-              <div className="grid grid-cols-1 gap-3 mt-4">
-                <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Nama</label>
-                <input required className="px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={editForm.name} onChange={(e)=>setEditForm({...editForm, name:e.target.value})}/>
-                <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Peran</label>
-                <select className="px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={editForm.role} onChange={(e)=>setEditForm({...editForm, role:e.target.value})}>
-                  {Object.entries(ROLE_LABELS).map(([k,v])=><option key={k} value={k}>{v}</option>)}
-                </select>
-                <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Password Baru (kosongkan jika tidak ubah)</label>
-                <input minLength={6} type="password" placeholder="Minimal 6 karakter" className="px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={editForm.password} onChange={(e)=>setEditForm({...editForm, password:e.target.value})}/>
+          <div className="modal-overlay" onClick={()=>setEditingUser(null)}>
+            <form onClick={(e)=>e.stopPropagation()} onSubmit={saveEdit} className="modal-panel modal-panel-md">
+              <div className="modal-header">
+                <div>
+                  <h2 className="font-display text-2xl font-bold">Edit Pengguna</h2>
+                  <p className="text-sm text-[#5C5C5C] mt-1">{editingUser.email}</p>
+                </div>
+                <button type="button" onClick={()=>setEditingUser(null)} className="btn-ghost text-xs">✕</button>
               </div>
-              <div className="flex justify-end gap-2 mt-5">
+              <div className="modal-body">
+                <div className="grid grid-cols-1 gap-3">
+                  <label className="form-label">Nama</label>
+                  <input required className="form-input" value={editForm.name} onChange={(e)=>setEditForm({...editForm, name:e.target.value})}/>
+                  <label className="form-label">Peran</label>
+                  <select className="form-select" value={editForm.role} onChange={(e)=>setEditForm({...editForm, role:e.target.value})}>
+                    {Object.entries(ROLE_LABELS).map(([k,v])=><option key={k} value={k}>{v}</option>)}
+                  </select>
+                  <label className="form-label">Password Baru (kosongkan jika tidak ubah)</label>
+                  <input minLength={6} type="password" placeholder="Minimal 6 karakter" className="form-input" value={editForm.password} onChange={(e)=>setEditForm({...editForm, password:e.target.value})}/>
+                </div>
+              </div>
+              <div className="modal-footer">
                 <button type="button" onClick={()=>setEditingUser(null)} className="btn-ghost">Batal</button>
                 <button type="submit" className="btn-primary">Simpan</button>
               </div>

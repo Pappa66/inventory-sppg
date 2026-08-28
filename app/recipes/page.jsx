@@ -202,21 +202,24 @@ export default function Page() {
         <Pagination page={page} totalPages={Math.ceil(recipes.length / perPage)} onPageChange={setPage} />
 
         {open && (
-          <div className="fixed inset-0 z-40 bg-black/40 grid place-items-center p-4 overflow-y-auto" onClick={() => setOpen(false)}>
-            <form onClick={(e) => e.stopPropagation()} onSubmit={save} className="card-soft p-4 sm:p-6 w-full max-w-xl my-8">
-              <h2 className="font-display text-2xl font-bold">{editing ? "Edit Resep" : "Resep Baru"}</h2>
-              <div className="grid grid-cols-2 gap-3 mt-4">
+          <div className="modal-overlay" onClick={() => setOpen(false)}>
+            <form onClick={(e) => e.stopPropagation()} onSubmit={save} className="modal-panel modal-panel-lg">
+              <div className="modal-header">
+                <h2 className="font-display text-2xl font-bold">{editing ? "Edit Resep" : "Resep Baru"}</h2>
+              </div>
+              <div className="modal-body">
+              <div className="grid grid-cols-2 gap-3">
                 <div className="col-span-2">
-                  <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Nama</label>
-                  <input data-testid="recipe-name" required className="w-full mt-1 px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+                  <label className="form-label">Nama</label>
+                  <input data-testid="recipe-name" required className="form-input" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
                 </div>
                 <div>
-                  <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Porsi standar</label>
-                  <input type="number" className="w-full mt-1 px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={form.servings || ""} onChange={(e) => setForm({ ...form, servings: parseInt(e.target.value) || 1 })} />
+                  <label className="form-label">Porsi standar</label>
+                  <input type="number" className="form-input" value={form.servings || ""} onChange={(e) => setForm({ ...form, servings: parseInt(e.target.value) || 1 })} />
                 </div>
                 <div>
-                  <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Kategori Menu</label>
-                  <select className="w-full mt-1 px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={form.menu_category || ""} onChange={(e) => setForm({ ...form, menu_category: e.target.value || null })}>
+                  <label className="form-label">Kategori Menu</label>
+                  <select className="form-select" value={form.menu_category || ""} onChange={(e) => setForm({ ...form, menu_category: e.target.value || null })}>
                     <option value="">— Tanpa kategori —</option>
                     {Object.entries(MENU_CATEGORIES).map(([k, v]) => (
                       <option key={k} value={k}>{v.label}</option>
@@ -224,7 +227,7 @@ export default function Page() {
                   </select>
                 </div>
                 <div className="col-span-2">
-                  <label className="text-xs uppercase tracking-widest text-[#5C5C5C] flex items-center gap-2"><Camera size={12} /> Foto Menu</label>
+                  <label className="form-label flex items-center gap-2"><Camera size={12} /> Foto Menu</label>
                   <div className="mt-1">
                     <input data-testid="recipe-photo" type="file" accept="image/*" capture="environment" className="hidden" id="recipe-photo-input"
                       onChange={(e) => {
@@ -251,7 +254,7 @@ export default function Page() {
                 </div>
                 <div className="col-span-2">
                   <div className="flex items-center justify-between mt-2">
-                    <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Bahan</label>
+                    <label className="form-label">Bahan</label>
                     <button data-testid="add-ing" type="button" onClick={addRow} className="btn-ghost text-xs"><Plus size={12} /> Baris</button>
                   </div>
                   <div className="space-y-2 mt-2">
@@ -260,12 +263,12 @@ export default function Page() {
                       return (
                         <div key={i}>
                           <div className="grid grid-cols-6 sm:grid-cols-12 gap-2">
-                            <select className="col-span-6 px-2 py-2 rounded-md border border-[#EAE4D8] bg-[#F9F6F0] text-sm" value={ing.item_id} onChange={(e) => upd(i, "item_id", e.target.value)}>
+                            <select className="form-select col-span-6 text-sm" value={ing.item_id} onChange={(e) => upd(i, "item_id", e.target.value)}>
                               <option value="">— bahan —</option>
                               {items.map(it => <option key={it.id} value={it.id}>{it.name} ({it.unit})</option>)}
                             </select>
-                            <input placeholder="qty" type="number" step="0.01" className="col-span-3 px-2 py-2 rounded-md border border-[#EAE4D8] bg-[#F9F6F0] text-sm" value={ing.quantity || ""} onChange={(e) => upd(i, "quantity", parseFloat(e.target.value) || 0)} />
-                            <input placeholder="unit" className="col-span-2 px-2 py-2 rounded-md border border-[#EAE4D8] bg-[#F9F6F0] text-sm" value={ing.unit} onChange={(e) => upd(i, "unit", e.target.value)} />
+                            <input placeholder="qty" type="number" step="0.01" className="form-input col-span-3 text-sm" value={ing.quantity || ""} onChange={(e) => upd(i, "quantity", parseFloat(e.target.value) || 0)} />
+                            <input placeholder="unit" className="form-input col-span-2 text-sm" value={ing.unit} onChange={(e) => upd(i, "unit", e.target.value)} />
                             <button type="button" onClick={() => rm(i)} className="col-span-1 text-[#C5533B] p-1.5">×</button>
                           </div>
                           {item?.nutrition_per_100g && ing.quantity > 0 && (
@@ -297,8 +300,8 @@ export default function Page() {
                   </div>
                 )}
                 <div className="col-span-2">
-                  <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Instruksi (opsional)</label>
-                  <textarea rows={3} className="w-full mt-1 px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={form.instructions} onChange={(e) => setForm({ ...form, instructions: e.target.value })} />
+                  <label className="form-label">Instruksi (opsional)</label>
+                  <textarea rows={3} className="form-textarea" value={form.instructions} onChange={(e) => setForm({ ...form, instructions: e.target.value })} />
                 </div>
                 {(activeRole === "nutritionist" || activeRole === "admin_apps" || activeRole === "admin_sppg") && (
                   <div className="col-span-2 border-t border-[#EAE4D8] pt-3">
@@ -338,7 +341,8 @@ export default function Page() {
                   </div>
                 </div>
               </div>
-              <div className="flex justify-end gap-2 mt-5">
+              </div>
+              <div className="modal-footer">
                 <button type="button" onClick={() => setOpen(false)} className="btn-ghost">Batal</button>
                 <button data-testid="save-recipe" type="submit" className="btn-primary">{editing ? "Simpan Versi Baru" : "Simpan"}</button>
               </div>

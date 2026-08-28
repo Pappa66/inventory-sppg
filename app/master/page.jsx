@@ -6,7 +6,7 @@ import { api, formatErr } from "@/lib/api";
 import { fmtIDR, fmtDateTime, ZONES, ZONE_COLORS, ZONE_LABELS, COMMON_ALLERGENS, ITEM_CATEGORIES } from "@/lib/format";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
-import { Plus, History, Search, Package, Filter } from "lucide-react";
+import { Plus, History, Search, Package, Filter, X } from "lucide-react";
 import { SkeletonTable } from "@/components/Skeleton";
 import Pagination from "@/components/Pagination";
 
@@ -274,67 +274,76 @@ export default function Page() {
 
         {/* Add/Edit modal */}
         {open && (
-          <div className="fixed inset-0 z-40 bg-black/40 grid place-items-center p-4" onClick={() => setOpen(false)}>
-            <form onClick={(e) => e.stopPropagation()} onSubmit={save} className="card-soft p-4 sm:p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
-              <h2 className="font-display text-2xl font-bold">{editing ? "Edit Bahan" : "Bahan Baru"}</h2>
-              <div className="grid grid-cols-1 gap-3 mt-4">
-                <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Nama</label>
-                <input data-testid="item-name" required className="px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
-                <div className="grid grid-cols-2 gap-3">
+          <div className="modal-overlay" onClick={() => setOpen(false)}>
+            <form onClick={(e) => e.stopPropagation()} onSubmit={save} className="modal-panel modal-panel-md">
+              <div className="modal-header">
+                <h2 className="font-display text-2xl font-bold">{editing ? "Edit Bahan" : "Bahan Baru"}</h2>
+                <button type="button" onClick={() => setOpen(false)} className="btn-ghost p-1">
+                  <X size={20} />
+                </button>
+              </div>
+              <div className="modal-body">
+                <div className="grid grid-cols-1 gap-3">
                   <div>
-                    <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Kategori</label>
-                    <select className="w-full mt-1 px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })}>
-                      {Object.entries(ITEM_CATEGORIES).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
-                    </select>
+                    <label className="form-label">Nama</label>
+                    <input data-testid="item-name" required className="form-input" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="form-label">Kategori</label>
+                      <select className="form-select" value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })}>
+                        {Object.entries(ITEM_CATEGORIES).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="form-label">Satuan</label>
+                      <input className="form-input" value={form.unit} onChange={(e) => setForm({ ...form, unit: e.target.value })} />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="form-label">Par-Level</label>
+                      <input type="number" step="0.01" className="form-input" value={form.par_level || ""} onChange={(e) => setForm({ ...form, par_level: parseFloat(e.target.value) || 0 })} />
+                    </div>
+                    <div>
+                      <label className="form-label">Harga / Satuan</label>
+                      <input type="number" step="100" className="form-input" value={form.price_per_unit || ""} onChange={(e) => setForm({ ...form, price_per_unit: parseFloat(e.target.value) || 0 })} />
+                    </div>
                   </div>
                   <div>
-                    <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Satuan</label>
-                    <input className="w-full mt-1 px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={form.unit} onChange={(e) => setForm({ ...form, unit: e.target.value })} />
+                    <label className="form-label">Zona Penyimpanan</label>
+                    <div className="grid grid-cols-3 gap-2 mt-1">
+                      {ZONES.map(z => (
+                        <button data-testid={`zone-${z}`} type="button" key={z} onClick={() => setForm({ ...form, zone: z })} className="px-3 py-2 rounded-md border text-sm font-semibold transition"
+                          style={form.zone === z ? { background: ZONE_COLORS[z], color: "white", borderColor: ZONE_COLORS[z] } : { background: "#F9F6F0", color: ZONE_COLORS[z], borderColor: "#EAE4D8" }}>{ZONE_LABELS[z]}</button>
+                      ))}
+                    </div>
                   </div>
-                </div>
-                <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Par-Level</label>
-                    <input type="number" step="0.01" className="w-full mt-1 px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={form.par_level || ""} onChange={(e) => setForm({ ...form, par_level: parseFloat(e.target.value) || 0 })} />
+                    <label className="form-label">Alergen (klik untuk toggle)</label>
+                    <div className="flex flex-wrap gap-2 mt-1">
+                      {COMMON_ALLERGENS.map(a => {
+                        const on = form.allergens?.includes(a);
+                        return <button data-testid={`allergen-${a}`} type="button" key={a} onClick={() => setForm(p => ({ ...p, allergens: on ? p.allergens.filter(x => x !== a) : [...(p.allergens || []), a] }))} className={`tag ${on ? "bg-[#C5533B]/15 text-[#C5533B]" : "bg-[#EAE4D8] text-[#5C5C5C]"}`}>{a}</button>;
+                      })}
+                    </div>
                   </div>
                   <div>
-                    <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Harga / Satuan</label>
-                    <input type="number" step="100" className="w-full mt-1 px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={form.price_per_unit || ""} onChange={(e) => setForm({ ...form, price_per_unit: parseFloat(e.target.value) || 0 })} />
-                  </div>
-                </div>
-                <div>
-                  <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Zona Penyimpanan</label>
-                  <div className="grid grid-cols-3 gap-2 mt-1">
-                    {ZONES.map(z => (
-                      <button data-testid={`zone-${z}`} type="button" key={z} onClick={() => setForm({ ...form, zone: z })} className="px-3 py-2 rounded-md border text-sm font-semibold transition"
-                        style={form.zone === z ? { background: ZONE_COLORS[z], color: "white", borderColor: ZONE_COLORS[z] } : { background: "#F9F6F0", color: ZONE_COLORS[z], borderColor: "#EAE4D8" }}>{ZONE_LABELS[z]}</button>
-                    ))}
-                  </div>
-                </div>
-                <div>
-                  <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Alergen (klik untuk toggle)</label>
-                  <div className="flex flex-wrap gap-2 mt-1">
-                    {COMMON_ALLERGENS.map(a => {
-                      const on = form.allergens?.includes(a);
-                      return <button data-testid={`allergen-${a}`} type="button" key={a} onClick={() => setForm(p => ({ ...p, allergens: on ? p.allergens.filter(x => x !== a) : [...(p.allergens || []), a] }))} className={`tag ${on ? "bg-[#C5533B]/15 text-[#C5533B]" : "bg-[#EAE4D8] text-[#5C5C5C]"}`}>{a}</button>;
-                    })}
-                  </div>
-                </div>
-                <div>
-                  <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Nilai Gizi per 100g</label>
-                  <div className="grid grid-cols-3 gap-2 mt-1">
-                    {[["calories", "Kkal"], ["protein", "Protein (g)"], ["carbs", "Karbo (g)"], ["fats", "Lemak (g)"], ["fiber", "Serat (g)"], ["sodium", "Natrium (mg)"]].map(([k, l]) => (
-                      <div key={k}>
-                        <label className="text-[10px] uppercase text-[#5C5C5C]">{l}</label>
-                        <input type="number" step="0.1" className="w-full mt-1 px-2 py-1.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0] text-sm"
-                          value={form.nutrition_per_100g?.[k] || ""}
-                          onChange={(e) => setForm({ ...form, nutrition_per_100g: { ...form.nutrition_per_100g, [k]: parseFloat(e.target.value) || 0 } })} />
-                      </div>
-                    ))}
+                    <label className="form-label">Nilai Gizi per 100g</label>
+                    <div className="grid grid-cols-3 gap-2 mt-1">
+                      {[["calories", "Kkal"], ["protein", "Protein (g)"], ["carbs", "Karbo (g)"], ["fats", "Lemak (g)"], ["fiber", "Serat (g)"], ["sodium", "Natrium (mg)"]].map(([k, l]) => (
+                        <div key={k}>
+                          <label className="form-label text-[10px]">{l}</label>
+                          <input type="number" step="0.1" className="form-input text-sm"
+                            value={form.nutrition_per_100g?.[k] || ""}
+                            onChange={(e) => setForm({ ...form, nutrition_per_100g: { ...form.nutrition_per_100g, [k]: parseFloat(e.target.value) || 0 } })} />
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
               </div>
-              <div className="flex justify-end gap-2 mt-5">
+              <div className="modal-footer">
                 <button type="button" onClick={() => setOpen(false)} className="btn-ghost">Batal</button>
                 <button data-testid="save-item" type="submit" className="btn-primary">{editing ? "Simpan Versi Baru" : "Tambah"}</button>
               </div>
@@ -344,62 +353,71 @@ export default function Page() {
 
         {/* Version history modal */}
         {versions && (
-          <div className="fixed inset-0 z-40 bg-black/40 grid place-items-center p-4" onClick={() => setVersions(null)}>
-            <div onClick={(e) => e.stopPropagation()} className="card-soft p-4 sm:p-6 w-full max-w-2xl max-h-[85vh] overflow-y-auto">
-              <h2 className="font-display text-2xl font-bold">Riwayat Versi · {versions.item.name}</h2>
-              <p className="text-[#5C5C5C] text-sm">Semua field ditampilkan. Yang diubah ditandai kuning dengan nilai lama → baru.</p>
-              <div className="mt-4 relative pl-6">
-                <div className="absolute left-2 top-2 bottom-2 w-0.5 bg-[#EAE4D8]" />
-                {versions.rows.map((v) => {
-                  const isCreate = v.action === "CREATE";
-                  const changed = v.changes || {};
-                  const fields = [
-                    ["name", "Nama"], ["zone", "Zona"], ["category", "Kategori"],
-                    ["unit", "Satuan"], ["par_level", "Par-Level"],
-                    ["price_per_unit", "Harga/Satuan"], ["allergens", "Alergen"],
-                    ["nutrition_per_100g", "Gizi/100g"],
-                  ];
-                  const fmt = (val) => {
-                    if (val == null || val === "") return "—";
-                    if (Array.isArray(val)) return val.length ? val.join(", ") : "—";
-                    if (typeof val === "object") return Object.entries(val).map(([k, v]) => `${k}:${v}`).join(", ");
-                    if (typeof val === "number") return val.toLocaleString("id-ID");
-                    return String(val);
-                  };
-                  return (
-                    <div key={v.id} className="mb-5 relative">
-                      <div className="absolute -left-[18px] top-1 w-3 h-3 rounded-full" style={{ background: isCreate ? "#4A7C59" : "#D97706" }} />
-                      <div className="flex items-baseline gap-2 flex-wrap">
-                        <span className="audit-ts text-xs text-[#5C5C5C]">{fmtDateTime(v.ts)}</span>
-                        <span className="tag" style={{ background: isCreate ? "#4A7C59" + "1A" : "#D97706" + "1A", color: isCreate ? "#4A7C59" : "#D97706" }}>{v.action}</span>
-                        <span className="text-sm font-semibold">{v.actor_email}</span>
-                        {v.note && <span className="text-xs text-[#5C5C5C]">— {v.note}</span>}
+          <div className="modal-overlay" onClick={() => setVersions(null)}>
+            <div onClick={(e) => e.stopPropagation()} className="modal-panel modal-panel-lg">
+              <div className="modal-header">
+                <div>
+                  <h2 className="font-display text-2xl font-bold">Riwayat Versi · {versions.item.name}</h2>
+                  <p className="text-[#5C5C5C] text-sm">Semua field ditampilkan. Yang diubah ditandai kuning dengan nilai lama → baru.</p>
+                </div>
+                <button type="button" onClick={() => setVersions(null)} className="btn-ghost p-1">
+                  <X size={20} />
+                </button>
+              </div>
+              <div className="modal-body">
+                <div className="relative pl-6">
+                  <div className="absolute left-2 top-2 bottom-2 w-0.5 bg-[#EAE4D8]" />
+                  {versions.rows.map((v) => {
+                    const isCreate = v.action === "CREATE";
+                    const changed = v.changes || {};
+                    const fields = [
+                      ["name", "Nama"], ["zone", "Zona"], ["category", "Kategori"],
+                      ["unit", "Satuan"], ["par_level", "Par-Level"],
+                      ["price_per_unit", "Harga/Satuan"], ["allergens", "Alergen"],
+                      ["nutrition_per_100g", "Gizi/100g"],
+                    ];
+                    const fmt = (val) => {
+                      if (val == null || val === "") return "—";
+                      if (Array.isArray(val)) return val.length ? val.join(", ") : "—";
+                      if (typeof val === "object") return Object.entries(val).map(([k, v]) => `${k}:${v}`).join(", ");
+                      if (typeof val === "number") return val.toLocaleString("id-ID");
+                      return String(val);
+                    };
+                    return (
+                      <div key={v.id} className="mb-5 relative">
+                        <div className="absolute -left-[18px] top-1 w-3 h-3 rounded-full" style={{ background: isCreate ? "#4A7C59" : "#D97706" }} />
+                        <div className="flex items-baseline gap-2 flex-wrap">
+                          <span className="audit-ts text-xs text-[#5C5C5C]">{fmtDateTime(v.ts)}</span>
+                          <span className="tag" style={{ background: isCreate ? "#4A7C59" + "1A" : "#D97706" + "1A", color: isCreate ? "#4A7C59" : "#D97706" }}>{v.action}</span>
+                          <span className="text-sm font-semibold">{v.actor_email}</span>
+                          {v.note && <span className="text-xs text-[#5C5C5C]">— {v.note}</span>}
+                        </div>
+                        <div className="mt-2 rounded-md border border-[#EAE4D8] overflow-hidden">
+                          <table className="w-full text-sm">
+                            <tbody>
+                              {fields.map(([k, label]) => {
+                                const c = changed[k];
+                                return (
+                                  <tr key={k} className={`border-b border-[#EAE4D8] last:border-0 ${c ? "bg-[#FFF7E6]" : ""}`}>
+                                    <td className="py-1.5 px-3 text-[#5C5C5C] text-xs uppercase tracking-wider w-40">{label}</td>
+                                    <td className="py-1.5 px-3 audit-ts text-sm">
+                                      {c ? (
+                                        <span><span className="line-through text-[#C5533B]">{fmt(c.old)}</span> <span className="text-[#5C5C5C]">→</span> <span className="text-[#4A7C59] font-semibold">{fmt(c.new)}</span></span>
+                                      ) : (
+                                        <span className="text-[#5C5C5C]">{fmt(versions.item[k])}</span>
+                                      )}
+                                    </td>
+                                  </tr>
+                                );
+                              })}
+                            </tbody>
+                          </table>
+                        </div>
                       </div>
-                      <div className="mt-2 rounded-md border border-[#EAE4D8] overflow-hidden">
-                        <table className="w-full text-sm">
-                          <tbody>
-                            {fields.map(([k, label]) => {
-                              const c = changed[k];
-                              return (
-                                <tr key={k} className={`border-b border-[#EAE4D8] last:border-0 ${c ? "bg-[#FFF7E6]" : ""}`}>
-                                  <td className="py-1.5 px-3 text-[#5C5C5C] text-xs uppercase tracking-wider w-40">{label}</td>
-                                  <td className="py-1.5 px-3 audit-ts text-sm">
-                                    {c ? (
-                                      <span><span className="line-through text-[#C5533B]">{fmt(c.old)}</span> <span className="text-[#5C5C5C]">→</span> <span className="text-[#4A7C59] font-semibold">{fmt(c.new)}</span></span>
-                                    ) : (
-                                      <span className="text-[#5C5C5C]">{fmt(versions.item[k])}</span>
-                                    )}
-                                  </td>
-                                </tr>
-                              );
-                            })}
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
-                  );
-                })}
-                {versions.rows.length === 0 && <div className="text-sm text-[#5C5C5C]">Belum ada perubahan.</div>}
+                    );
+                  })}
+                  {versions.rows.length === 0 && <div className="text-sm text-[#5C5C5C]">Belum ada perubahan.</div>}
+                </div>
               </div>
             </div>
           </div>

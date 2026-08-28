@@ -253,73 +253,78 @@ export default function Page() {
 
         {/* Create / Edit Modal */}
         {open && (
-          <div className="fixed inset-0 z-40 bg-black/40 grid place-items-center p-4" onClick={() => setOpen(false)}>
+          <div className="modal-overlay" onClick={() => setOpen(false)}>
             <form
               onClick={(e) => e.stopPropagation()}
               onSubmit={submit}
-              className="card-soft p-6 w-full max-w-md"
+              className="modal-panel modal-panel-md"
               data-testid="destination-modal"
             >
-              <h2 className="font-display text-2xl font-bold">
-                {editing ? "Edit Tujuan" : "Tambah Tujuan Baru"}
-              </h2>
-              <div className="grid grid-cols-1 gap-3 mt-4">
-                <div>
-                  <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Nama Tujuan</label>
-                  <input
-                    data-testid="dest-name"
-                    required
-                    className="w-full mt-1 px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]"
-                    placeholder="Contoh: PAUD Ceria"
-                    value={form.name}
-                    onChange={(e) => setForm({ ...form, name: e.target.value })}
-                  />
-                </div>
-                <div>
-                  <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Alamat</label>
-                  <input
-                    data-testid="dest-address"
-                    className="w-full mt-1 px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]"
-                    placeholder="Alamat lengkap"
-                    value={form.address}
-                    onChange={(e) => setForm({ ...form, address: e.target.value })}
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-3">
+              <div className="modal-header">
+                <h2 className="font-display text-2xl font-bold">
+                  {editing ? "Edit Tujuan" : "Tambah Tujuan Baru"}
+                </h2>
+                <button type="button" onClick={() => setOpen(false)} className="btn-ghost text-xs">✕</button>
+              </div>
+              <div className="modal-body">
+                <div className="grid grid-cols-1 gap-3">
                   <div>
-                    <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Kontak Person</label>
+                    <label className="form-label">Nama Tujuan</label>
                     <input
-                      data-testid="dest-contact"
-                      className="w-full mt-1 px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]"
-                      placeholder="Nama PIC"
-                      value={form.contact_person}
-                      onChange={(e) => setForm({ ...form, contact_person: e.target.value })}
+                      data-testid="dest-name"
+                      required
+                      className="form-input"
+                      placeholder="Contoh: PAUD Ceria"
+                      value={form.name}
+                      onChange={(e) => setForm({ ...form, name: e.target.value })}
                     />
                   </div>
                   <div>
-                    <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Telepon</label>
+                    <label className="form-label">Alamat</label>
                     <input
-                      data-testid="dest-phone"
-                      className="w-full mt-1 px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]"
-                      placeholder="08xxxxxxxxxx"
-                      value={form.phone}
-                      onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                      data-testid="dest-address"
+                      className="form-input"
+                      placeholder="Alamat lengkap"
+                      value={form.address}
+                      onChange={(e) => setForm({ ...form, address: e.target.value })}
                     />
                   </div>
-                </div>
-                <div>
-                  <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Catatan</label>
-                  <textarea
-                    data-testid="dest-notes"
-                    rows={3}
-                    className="w-full mt-1 px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0] text-sm resize-none"
-                    placeholder="Catatan tambahan (opsional)"
-                    value={form.notes}
-                    onChange={(e) => setForm({ ...form, notes: e.target.value })}
-                  />
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="form-label">Kontak Person</label>
+                      <input
+                        data-testid="dest-contact"
+                        className="form-input"
+                        placeholder="Nama PIC"
+                        value={form.contact_person}
+                        onChange={(e) => setForm({ ...form, contact_person: e.target.value })}
+                      />
+                    </div>
+                    <div>
+                      <label className="form-label">Telepon</label>
+                      <input
+                        data-testid="dest-phone"
+                        className="form-input"
+                        placeholder="08xxxxxxxxxx"
+                        value={form.phone}
+                        onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="form-label">Catatan</label>
+                    <textarea
+                      data-testid="dest-notes"
+                      rows={3}
+                      className="form-textarea"
+                      placeholder="Catatan tambahan (opsional)"
+                      value={form.notes}
+                      onChange={(e) => setForm({ ...form, notes: e.target.value })}
+                    />
+                  </div>
                 </div>
               </div>
-              <div className="flex justify-end gap-2 mt-5">
+              <div className="modal-footer">
                 <button type="button" onClick={() => setOpen(false)} className="btn-ghost">
                   Batal
                 </button>

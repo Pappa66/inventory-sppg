@@ -238,27 +238,29 @@ export default function Page() {
         )}
 
         {openLot && (
-          <div className="fixed inset-0 z-40 bg-black/40 grid place-items-center p-4" onClick={()=>setOpenLot(false)}>
-            <form onClick={(e)=>e.stopPropagation()} onSubmit={submitLot} className="card-soft p-4 sm:p-6 w-full max-w-md">
-              <h2 className="font-display text-2xl font-bold">Tambah Lot Stok</h2>
-              <div className="grid grid-cols-1 gap-3 mt-4">
-                <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Bahan</label>
-                <select data-testid="lot-item" required className="px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={lotForm.item_id} onChange={(e)=>setLotForm({...lotForm, item_id:e.target.value})}>
+          <div className="modal-overlay" onClick={()=>setOpenLot(false)}>
+            <form onClick={(e)=>e.stopPropagation()} onSubmit={submitLot} className="modal-panel modal-panel-sm">
+              <div className="modal-header">
+                <h2 className="font-display text-2xl font-bold">Tambah Lot Stok</h2>
+              </div>
+              <div className="modal-body grid grid-cols-1 gap-3">
+                <label className="form-label">Bahan</label>
+                <select data-testid="lot-item" required className="form-select" value={lotForm.item_id} onChange={(e)=>setLotForm({...lotForm, item_id:e.target.value})}>
                   <option value="">— pilih bahan —</option>
                   {items.map(it => <option key={it.id} value={it.id}>{it.name} ({it.unit})</option>)}
                 </select>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Jumlah</label>
-                    <input data-testid="lot-qty" required type="number" step="0.01" className="w-full mt-1 px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={lotForm.quantity || ""} onChange={(e)=>setLotForm({...lotForm, quantity:parseFloat(e.target.value)||0})}/>
+                    <label className="form-label">Jumlah</label>
+                    <input data-testid="lot-qty" required type="number" step="0.01" className="form-input" value={lotForm.quantity || ""} onChange={(e)=>setLotForm({...lotForm, quantity:parseFloat(e.target.value)||0})}/>
                   </div>
                   <div>
-                    <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Kadaluarsa</label>
-                    <input data-testid="lot-expiry" required type="date" className="w-full mt-1 px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={lotForm.expiry_date} onChange={(e)=>setLotForm({...lotForm, expiry_date:e.target.value})}/>
+                    <label className="form-label">Kadaluarsa</label>
+                    <input data-testid="lot-expiry" required type="date" className="form-input" value={lotForm.expiry_date} onChange={(e)=>setLotForm({...lotForm, expiry_date:e.target.value})}/>
                   </div>
                 </div>
               </div>
-              <div className="flex justify-end gap-2 mt-5">
+              <div className="modal-footer">
                 <button type="button" onClick={()=>setOpenLot(false)} className="btn-ghost">Batal</button>
                 <button data-testid="save-lot" type="submit" className="btn-primary">Simpan</button>
               </div>
@@ -267,18 +269,20 @@ export default function Page() {
         )}
 
         {openItem && (
-          <div className="fixed inset-0 z-40 bg-black/40 grid place-items-center p-4" onClick={()=>setOpenItem(false)}>
-            <form onClick={(e)=>e.stopPropagation()} onSubmit={submitItem} className="card-soft p-4 sm:p-6 w-full max-w-md">
-              <h2 className="font-display text-2xl font-bold">Tambah Bahan Baru</h2>
-              <div className="grid grid-cols-1 gap-3 mt-4">
+          <div className="modal-overlay" onClick={()=>setOpenItem(false)}>
+            <form onClick={(e)=>e.stopPropagation()} onSubmit={submitItem} className="modal-panel modal-panel-md">
+              <div className="modal-header">
+                <h2 className="font-display text-2xl font-bold">Tambah Bahan Baru</h2>
+              </div>
+              <div className="modal-body grid grid-cols-1 gap-3">
                 <div>
-                  <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Nama Bahan</label>
-                  <input data-testid="item-name" required className="w-full mt-1 px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={itemForm.name} onChange={(e)=>setItemForm({...itemForm, name:e.target.value})}/>
+                  <label className="form-label">Nama Bahan</label>
+                  <input data-testid="item-name" required className="form-input" value={itemForm.name} onChange={(e)=>setItemForm({...itemForm, name:e.target.value})}/>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Satuan</label>
-                    <select data-testid="item-unit" className="w-full mt-1 px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={itemForm.unit} onChange={(e)=>setItemForm({...itemForm, unit:e.target.value})}>
+                    <label className="form-label">Satuan</label>
+                    <select data-testid="item-unit" className="form-select" value={itemForm.unit} onChange={(e)=>setItemForm({...itemForm, unit:e.target.value})}>
                       <optgroup label="Berat">
                         <option value="kg">kg</option><option value="gram">gram</option>
                       </optgroup>
@@ -294,8 +298,8 @@ export default function Page() {
                     </select>
                   </div>
                   <div>
-                    <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Kategori</label>
-                    <select data-testid="item-category" className="w-full mt-1 px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={itemForm.category} onChange={(e)=>setItemForm({...itemForm, category:e.target.value})}>
+                    <label className="form-label">Kategori</label>
+                    <select data-testid="item-category" className="form-select" value={itemForm.category} onChange={(e)=>setItemForm({...itemForm, category:e.target.value})}>
                       {Object.entries(ITEM_CATEGORIES).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
                     </select>
                     {["OPR","CLN"].includes(itemForm.category) && (
@@ -305,16 +309,16 @@ export default function Page() {
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Par Level</label>
-                    <input data-testid="item-par" type="number" className="w-full mt-1 px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={itemForm.par_level || ""} onChange={(e)=>setItemForm({...itemForm, par_level:parseFloat(e.target.value)||0})}/>
+                    <label className="form-label">Par Level</label>
+                    <input data-testid="item-par" type="number" className="form-input" value={itemForm.par_level || ""} onChange={(e)=>setItemForm({...itemForm, par_level:parseFloat(e.target.value)||0})}/>
                   </div>
                   <div>
-                    <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Harga/Satuan</label>
-                    <input data-testid="item-price" type="number" className="w-full mt-1 px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={itemForm.price_per_unit || ""} onChange={(e)=>setItemForm({...itemForm, price_per_unit:parseFloat(e.target.value)||0})}/>
+                    <label className="form-label">Harga/Satuan</label>
+                    <input data-testid="item-price" type="number" className="form-input" value={itemForm.price_per_unit || ""} onChange={(e)=>setItemForm({...itemForm, price_per_unit:parseFloat(e.target.value)||0})}/>
                   </div>
                 </div>
                 <div>
-                  <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Zona</label>
+                  <label className="form-label">Zona</label>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mt-1">
                     {ZONES.map(z => (
                       <button type="button" key={z} onClick={()=>setItemForm({...itemForm, zone:z})} className="px-3 py-2 rounded-md border text-sm font-semibold transition"
@@ -323,7 +327,7 @@ export default function Page() {
                   </div>
                 </div>
               </div>
-              <div className="flex justify-end gap-2 mt-5">
+              <div className="modal-footer">
                 <button type="button" onClick={()=>setOpenItem(false)} className="btn-ghost">Batal</button>
                 <button data-testid="save-item" type="submit" className="btn-primary">Simpan</button>
               </div>
@@ -332,46 +336,50 @@ export default function Page() {
         )}
 
         {openOpname && (
-          <div className="fixed inset-0 z-40 bg-black/40 grid place-items-center p-4" onClick={()=>setOpenOpname(null)}>
-            <form onClick={(e)=>e.stopPropagation()} onSubmit={submitOpname} className="card-soft p-4 sm:p-6 w-full max-w-lg">
-              <h2 className="font-display text-2xl font-bold">Opname Fisik</h2>
-              <p className="text-[#5C5C5C] text-sm mt-1">{openOpname.item_name} · kadaluarsa <span className="audit-ts">{openOpname.expiry_date}</span></p>
-              <label className="text-xs uppercase tracking-widest text-[#5C5C5C] mt-4 block">Pilih Zona Penyimpanan (wajib)</label>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mt-1">
-                {ZONES.map(z => (
-                  <button data-testid={`opname-zone-${z}`} type="button" key={z} onClick={()=>setOpnameForm(p=>({...p, zone:z}))} className="px-3 py-2 rounded-md border text-sm font-semibold transition"
-                    style={opnameForm.zone===z?{background:ZONE_COLORS[z], color:"white", borderColor:ZONE_COLORS[z], boxShadow:`0 0 0 2px white, 0 0 0 4px ${ZONE_COLORS[z]}`}:{background:"#F9F6F0", color:ZONE_COLORS[z], borderColor:"#EAE4D8"}}>{ZONE_LABELS[z]}</button>
-                ))}
+          <div className="modal-overlay" onClick={()=>setOpenOpname(null)}>
+            <form onClick={(e)=>e.stopPropagation()} onSubmit={submitOpname} className="modal-panel modal-panel-md">
+              <div className="modal-header">
+                <h2 className="font-display text-2xl font-bold">Opname Fisik</h2>
+                <p className="text-[#5C5C5C] text-sm mt-1">{openOpname.item_name} · kadaluarsa <span className="audit-ts">{openOpname.expiry_date}</span></p>
               </div>
-              <label className="text-xs uppercase tracking-widest text-[#5C5C5C] mt-4 block">Hitungan fisik aktual ({openOpname.unit})</label>
-              <input data-testid="opname-qty" required type="number" step="0.01" className="w-full mt-1 px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={opnameForm.counted_quantity || ""} onChange={(e)=>setOpnameForm(p=>({...p, counted_quantity:parseFloat(e.target.value)||0}))}/>
-              <div className="mt-2 p-2 rounded bg-[#EAE4D8] text-sm">
-                <span className="text-[#5C5C5C]">Stok sistem: </span>
-                <span className="font-semibold">{openOpname.actual_quantity} {openOpname.unit}</span>
-                {opnameForm.counted_quantity > 0 && (
-                  <span className={opnameForm.counted_quantity !== openOpname.actual_quantity ? "text-[#C5533B] ml-2" : "text-[#4A7C59] ml-2"}>
-                    → Selisih: {opnameForm.counted_quantity - openOpname.actual_quantity} {openOpname.unit}
-                  </span>
+              <div className="modal-body">
+                <label className="form-label block">Pilih Zona Penyimpanan (wajib)</label>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mt-1">
+                  {ZONES.map(z => (
+                    <button data-testid={`opname-zone-${z}`} type="button" key={z} onClick={()=>setOpnameForm(p=>({...p, zone:z}))} className="px-3 py-2 rounded-md border text-sm font-semibold transition"
+                      style={opnameForm.zone===z?{background:ZONE_COLORS[z], color:"white", borderColor:ZONE_COLORS[z], boxShadow:`0 0 0 2px white, 0 0 0 4px ${ZONE_COLORS[z]}`}:{background:"#F9F6F0", color:ZONE_COLORS[z], borderColor:"#EAE4D8"}}>{ZONE_LABELS[z]}</button>
+                  ))}
+                </div>
+                <label className="form-label block mt-4">Hitungan fisik aktual ({openOpname.unit})</label>
+                <input data-testid="opname-qty" required type="number" step="0.01" className="form-input" value={opnameForm.counted_quantity || ""} onChange={(e)=>setOpnameForm(p=>({...p, counted_quantity:parseFloat(e.target.value)||0}))}/>
+                <div className="mt-2 p-2 rounded bg-[#EAE4D8] text-sm">
+                  <span className="text-[#5C5C5C]">Stok sistem: </span>
+                  <span className="font-semibold">{openOpname.actual_quantity} {openOpname.unit}</span>
+                  {opnameForm.counted_quantity > 0 && (
+                    <span className={opnameForm.counted_quantity !== openOpname.actual_quantity ? "text-[#C5533B] ml-2" : "text-[#4A7C59] ml-2"}>
+                      → Selisih: {opnameForm.counted_quantity - openOpname.actual_quantity} {openOpname.unit}
+                    </span>
+                  )}
+                </div>
+                {opnameForm.zone === "DRY" ? (
+                  <div className="mt-3">
+                    <label className="form-label flex items-center gap-2"><Droplets size={12}/> Kelembapan (%) · ideal &lt; 65%</label>
+                    <input data-testid="opname-humidity" type="number" step="0.1" className="form-input" value={opnameForm.humidity_pct} onChange={(e)=>setOpnameForm(p=>({...p, humidity_pct:e.target.value}))}/>
+                  </div>
+                ) : (
+                  <div className="mt-3">
+                    <label className="form-label flex items-center gap-2"><Thermometer size={12}/> Suhu (°C) · {opnameForm.zone==="WET"?"target 0–4°C":"target ≤ -18°C"}</label>
+                    <input data-testid="opname-temp" type="number" step="0.1" className="form-input" value={opnameForm.temperature_c} onChange={(e)=>setOpnameForm(p=>({...p, temperature_c:e.target.value}))}/>
+                    {opnameForm.temperature_c !== "" && (
+                      (opnameForm.zone === "WET" && (parseFloat(opnameForm.temperature_c) < 0 || parseFloat(opnameForm.temperature_c) > 4)) ||
+                      (opnameForm.zone === "FREEZER" && parseFloat(opnameForm.temperature_c) > -18)
+                    ) ? <div className="text-xs text-[#C5533B] mt-1">⚠ Suhu di luar threshold!</div> : null}
+                  </div>
                 )}
+                <label className="form-label block mt-3">Alasan / Catatan</label>
+                <input data-testid="opname-reason" className="form-input" placeholder="Spoilage / Routine / Adjustment" value={opnameForm.reason} onChange={(e)=>setOpnameForm(p=>({...p, reason:e.target.value}))}/>
               </div>
-              {opnameForm.zone === "DRY" ? (
-                <div className="mt-3">
-                  <label className="text-xs uppercase tracking-widest text-[#5C5C5C] flex items-center gap-2"><Droplets size={12}/> Kelembapan (%) · ideal &lt; 65%</label>
-                  <input data-testid="opname-humidity" type="number" step="0.1" className="w-full mt-1 px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={opnameForm.humidity_pct} onChange={(e)=>setOpnameForm(p=>({...p, humidity_pct:e.target.value}))}/>
-                </div>
-              ) : (
-                <div className="mt-3">
-                  <label className="text-xs uppercase tracking-widest text-[#5C5C5C] flex items-center gap-2"><Thermometer size={12}/> Suhu (°C) · {opnameForm.zone==="WET"?"target 0–4°C":"target ≤ -18°C"}</label>
-                  <input data-testid="opname-temp" type="number" step="0.1" className="w-full mt-1 px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={opnameForm.temperature_c} onChange={(e)=>setOpnameForm(p=>({...p, temperature_c:e.target.value}))}/>
-                  {opnameForm.temperature_c !== "" && (
-                    (opnameForm.zone === "WET" && (parseFloat(opnameForm.temperature_c) < 0 || parseFloat(opnameForm.temperature_c) > 4)) ||
-                    (opnameForm.zone === "FREEZER" && parseFloat(opnameForm.temperature_c) > -18)
-                  ) ? <div className="text-xs text-[#C5533B] mt-1">⚠ Suhu di luar threshold!</div> : null}
-                </div>
-              )}
-              <label className="text-xs uppercase tracking-widest text-[#5C5C5C] mt-3 block">Alasan / Catatan</label>
-              <input data-testid="opname-reason" className="w-full mt-1 px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" placeholder="Spoilage / Routine / Adjustment" value={opnameForm.reason} onChange={(e)=>setOpnameForm(p=>({...p, reason:e.target.value}))}/>
-              <div className="flex justify-end gap-2 mt-5">
+              <div className="modal-footer">
                 <button type="button" onClick={()=>setOpenOpname(null)} className="btn-ghost">Batal</button>
                 <button data-testid="save-opname" type="submit" className="btn-primary">Catat Opname</button>
               </div>
@@ -380,25 +388,29 @@ export default function Page() {
         )}
 
         {openTaken && (
-          <div className="fixed inset-0 z-40 bg-black/40 grid place-items-center p-4" onClick={()=>setOpenTaken(null)}>
-            <form onClick={(e)=>e.stopPropagation()} onSubmit={submitTaken} className="card-soft p-4 sm:p-6 w-full max-w-md">
-              <h2 className="font-display text-2xl font-bold">Pengambilan Barang</h2>
-              <p className="text-[#5C5C5C] text-sm mt-1">{openTaken.item_name} · stok tersedia: <span className="font-semibold">{openTaken.actual_quantity} {openTaken.unit}</span></p>
-              <label className="text-xs uppercase tracking-widest text-[#5C5C5C] mt-4 block">Jumlah yang diambil ({openTaken.unit})</label>
-              <input data-testid="taken-qty" required type="number" step="0.01" min="0.01" max={openTaken.actual_quantity} className="w-full mt-1 px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={takenForm.quantity || ""} onChange={(e)=>setTakenForm(p=>({...p, quantity:parseFloat(e.target.value)||0}))}/>
-              {takenForm.quantity > 0 && (
-                <div className="mt-2 p-2 rounded bg-[#EAE4D8] text-sm">
-                  <span className="text-[#5C5C5C]">Sisa setelah diambil: </span>
-                  <span className="font-semibold">{openTaken.actual_quantity - takenForm.quantity} {openTaken.unit}</span>
-                </div>
-              )}
-              <label className="text-xs uppercase tracking-widest text-[#5C5C5C] mt-3 block">Alasan Pengambilan</label>
-              <select data-testid="taken-reason" className="w-full mt-1 px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={takenForm.reason} onChange={(e)=>setTakenForm(p=>({...p, reason:e.target.value}))}>
-                <option value="COOKING">Masak Hari Ini</option>
-                <option value="PREP">Persiapan</option>
-                <option value="OTHER">Lainnya</option>
-              </select>
-              <div className="flex justify-end gap-2 mt-5">
+          <div className="modal-overlay" onClick={()=>setOpenTaken(null)}>
+            <form onClick={(e)=>e.stopPropagation()} onSubmit={submitTaken} className="modal-panel modal-panel-sm">
+              <div className="modal-header">
+                <h2 className="font-display text-2xl font-bold">Pengambilan Barang</h2>
+                <p className="text-[#5C5C5C] text-sm mt-1">{openTaken.item_name} · stok tersedia: <span className="font-semibold">{openTaken.actual_quantity} {openTaken.unit}</span></p>
+              </div>
+              <div className="modal-body">
+                <label className="form-label block">Jumlah yang diambil ({openTaken.unit})</label>
+                <input data-testid="taken-qty" required type="number" step="0.01" min="0.01" max={openTaken.actual_quantity} className="form-input" value={takenForm.quantity || ""} onChange={(e)=>setTakenForm(p=>({...p, quantity:parseFloat(e.target.value)||0}))}/>
+                {takenForm.quantity > 0 && (
+                  <div className="mt-2 p-2 rounded bg-[#EAE4D8] text-sm">
+                    <span className="text-[#5C5C5C]">Sisa setelah diambil: </span>
+                    <span className="font-semibold">{openTaken.actual_quantity - takenForm.quantity} {openTaken.unit}</span>
+                  </div>
+                )}
+                <label className="form-label block mt-3">Alasan Pengambilan</label>
+                <select data-testid="taken-reason" className="form-select" value={takenForm.reason} onChange={(e)=>setTakenForm(p=>({...p, reason:e.target.value}))}>
+                  <option value="COOKING">Masak Hari Ini</option>
+                  <option value="PREP">Persiapan</option>
+                  <option value="OTHER">Lainnya</option>
+                </select>
+              </div>
+              <div className="modal-footer">
                 <button type="button" onClick={()=>setOpenTaken(null)} className="btn-ghost">Batal</button>
                 <button data-testid="save-taken" type="submit" className="btn-primary" style={{background:"#D97706"}}>Ambil Barang</button>
               </div>

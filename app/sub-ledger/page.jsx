@@ -88,12 +88,12 @@ export default function SubLedgerPage() {
         {/* Date Filter */}
         <div className="card-soft p-4 flex flex-wrap gap-3 items-end">
           <div>
-            <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Dari Tanggal</label>
-            <input type="date" className="mt-1 px-3 py-2 rounded-md border border-[#EAE4D8] bg-white text-sm" value={filterDateStart} onChange={e => { setFilterDateStart(e.target.value); setPage(1); }} />
+            <label className="form-label">Dari Tanggal</label>
+            <input type="date" className="mt-1 form-input" value={filterDateStart} onChange={e => { setFilterDateStart(e.target.value); setPage(1); }} />
           </div>
           <div>
-            <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Sampai Tanggal</label>
-            <input type="date" className="mt-1 px-3 py-2 rounded-md border border-[#EAE4D8] bg-white text-sm" value={filterDateEnd} onChange={e => { setFilterDateEnd(e.target.value); setPage(1); }} />
+            <label className="form-label">Sampai Tanggal</label>
+            <input type="date" className="mt-1 form-input" value={filterDateEnd} onChange={e => { setFilterDateEnd(e.target.value); setPage(1); }} />
           </div>
           {(filterDateStart || filterDateEnd) && (
             <button onClick={() => { setFilterDateStart(""); setFilterDateEnd(""); setPage(1); }} className="btn-ghost text-xs">Reset</button>

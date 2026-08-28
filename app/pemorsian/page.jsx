@@ -330,23 +330,23 @@ export default function Page() {
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="card-soft p-4 text-center">
-            <div className="text-xs uppercase tracking-widest text-[#5C5C5C]">{isPemorsian ? "Total Ompreng" : "Total Foto"}</div>
+            <div className="form-label">{isPemorsian ? "Total Ompreng" : "Total Foto"}</div>
             <div className="font-display text-2xl sm:text-3xl font-bold mt-1" style={{ color: "#2C4251" }}>{isPemorsian ? totalPortions : photoCount}</div>
           </div>
           <div className="card-soft p-4 text-center">
-            <div className="text-xs uppercase tracking-widest text-[#5C5C5C]">Tugas Selesai</div>
+            <div className="form-label">Tugas Selesai</div>
             <div className="font-display text-2xl sm:text-3xl font-bold mt-1" style={{ color: "#4A7C59" }}>{completedCount} / {tasks.length}</div>
           </div>
           <div className="card-soft p-4 text-center">
-            <div className="text-xs uppercase tracking-widest text-[#5C5C5C]">Foto Terupload</div>
+            <div className="form-label">Foto Terupload</div>
             <div className="font-display text-2xl sm:text-3xl font-bold mt-1" style={{ color: "#D97706" }}>{photoCount}</div>
           </div>
         </div>
 
         <div className="flex items-end gap-4 flex-wrap">
           <div>
-            <label className="text-xs uppercase tracking-widest text-[#5C5C5C] block mb-1">Tanggal</label>
-            <input type="date" className="px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0] text-sm" value={selectedDate} onChange={(e) => setSelectedDate(e.target.value)} />
+            <label className="form-label block mb-1">Tanggal</label>
+            <input type="date" className="form-input text-sm" value={selectedDate} onChange={(e) => setSelectedDate(e.target.value)} />
           </div>
         </div>
 
@@ -419,22 +419,22 @@ export default function Page() {
         </div>
 
         {open && (
-          <div className="fixed inset-0 z-40 bg-black/40 flex items-end sm:items-center justify-center sm:p-4" onClick={() => setOpen(false)}>
-            <form onClick={(e) => e.stopPropagation()} onSubmit={submitTask} className="card-soft w-full sm:max-w-lg sm:rounded-xl rounded-t-xl max-h-[90vh] flex flex-col">
-              <div className="p-4 sm:p-6 pb-0 flex items-center justify-between shrink-0">
+          <div className="modal-overlay" onClick={() => setOpen(false)}>
+            <form onClick={(e) => e.stopPropagation()} onSubmit={submitTask} className="modal-panel modal-panel-md rounded-t-2xl sm:rounded-xl max-h-[90vh] flex flex-col">
+              <div className="modal-header">
                 <h2 className="font-display text-xl sm:text-2xl font-bold">Input {cfg.title}</h2>
                 <button type="button" onClick={() => setOpen(false)} className="btn-ghost p-2 min-w-[44px] min-h-[44px] flex items-center justify-center"><X size={20} /></button>
               </div>
 
-              <div className="p-4 sm:p-6 overflow-y-auto flex-1 space-y-3">
+              <div className="modal-body space-y-3">
                 <div>
-                  <label className="text-xs uppercase tracking-widest text-[#5C5C5C] flex items-center gap-1"><CalendarDays size={12} /> Tanggal</label>
-                  <input required type="date" className="w-full mt-1 px-4 py-3 rounded-md border border-[#EAE4D8] bg-[#F9F6F0] text-base" value={form.task_date} onChange={(e) => setForm({ ...form, task_date: e.target.value })} />
+                  <label className="form-label flex items-center gap-1"><CalendarDays size={12} /> Tanggal</label>
+                  <input required type="date" className="form-input w-full mt-1 py-3 text-base" value={form.task_date} onChange={(e) => setForm({ ...form, task_date: e.target.value })} />
                 </div>
 
                 {isPemorsian ? (
                   <div>
-                    <label className="text-xs uppercase tracking-widest text-[#5C5C5C] font-semibold mb-2 block">Ompreng per Kategori Penerima</label>
+                    <label className="form-label font-semibold mb-2 block">Ompreng per Kategori Penerima</label>
                     {menuTargets && (
                       <div className="text-xs mb-2 bg-[#4A7C59]/10 px-3 py-1.5 rounded-md space-y-1">
                         <p className="text-[#4A7C59] font-semibold">
@@ -460,7 +460,7 @@ export default function Page() {
                           <div className="flex flex-col sm:grid sm:grid-cols-2 gap-3">
                             <div>
                               <label className="text-[10px] uppercase text-[#5C5C5C]">Jumlah Ompreng</label>
-                              <input type="number" min="0" inputMode="numeric" className="w-full mt-1 px-3 py-3 rounded-md border border-[#EAE4D8] bg-white text-base" value={ompreng[cat.key].qty || ""} onChange={(e) => setOmpreng(p => ({ ...p, [cat.key]: { ...p[cat.key], qty: parseFloat(e.target.value) || 0 } }))} />
+                              <input type="number" min="0" inputMode="numeric" className="form-input w-full mt-1 py-3 text-base" value={ompreng[cat.key].qty || ""} onChange={(e) => setOmpreng(p => ({ ...p, [cat.key]: { ...p[cat.key], qty: parseFloat(e.target.value) || 0 } }))} />
                             </div>
                             <div>
                               <label className="text-[10px] uppercase text-[#5C5C5C]">Foto</label>
@@ -473,7 +473,7 @@ export default function Page() {
                   </div>
                 ) : cfg.multiPhoto ? (
                   <div>
-                    <label className="text-xs uppercase tracking-widest text-[#5C5C5C] font-semibold mb-2 block">Foto Dokumentasi</label>
+                    <label className="form-label font-semibold mb-2 block">Foto Dokumentasi</label>
                     <div className="space-y-3 sm:grid sm:grid-cols-2 sm:gap-3">
                       {(cfg.photoSlots || []).map((slot, idx) => (
                         <PhotoSlot key={idx} label={slot.label} desc={slot.desc} preview={photos[idx]} onUpload={(e) => handlePhoto(idx, e)} onRemove={() => removePhoto(idx)} uploading={uploading[idx]} />
@@ -482,7 +482,7 @@ export default function Page() {
                   </div>
                 ) : (
                   <div>
-                    <label className="text-xs uppercase tracking-widest text-[#5C5C5C] flex items-center gap-1"><Camera size={12} /> {cfg.photoLabel}</label>
+                    <label className="form-label flex items-center gap-1"><Camera size={12} /> {cfg.photoLabel}</label>
                     <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-[#EAE4D8] rounded-lg cursor-pointer hover:border-[#4A7C59] transition-colors mt-1">
                       {photos[0] ? (
                         <div className="relative">
@@ -501,12 +501,12 @@ export default function Page() {
                 )}
 
                 <div>
-                  <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Catatan</label>
-                  <textarea rows={2} className="w-full mt-1 px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0] text-sm resize-none" placeholder="Catatan tambahan (opsional)" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
+                  <label className="form-label">Catatan</label>
+                  <textarea rows={2} className="form-textarea w-full mt-1 resize-none" placeholder="Catatan tambahan (opsional)" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
                 </div>
               </div>
 
-              <div className="p-4 sm:p-6 pt-3 border-t border-[#EAE4D8] flex gap-3 shrink-0 bg-white sm:bg-transparent rounded-b-xl">
+              <div className="modal-footer">
                 <button type="button" onClick={() => setOpen(false)} className="btn-ghost flex-1 py-3">Batal</button>
                 <button type="submit" disabled={submitting} className="btn-primary flex-1 py-3 min-h-[48px] disabled:opacity-50 text-base font-semibold">{submitting ? "Menyimpan..." : "Simpan Tugas"}</button>
               </div>

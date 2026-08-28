@@ -380,112 +380,117 @@ export default function Page() {
 
         {/* Create Plan Modal */}
         {open && (
-          <div className="fixed inset-0 z-40 bg-black/40 grid place-items-center p-4" onClick={() => setOpen(false)}>
+          <div className="modal-overlay" onClick={() => setOpen(false)}>
             <form
               onClick={(e) => e.stopPropagation()}
               onSubmit={submitPlan}
-              className="card-soft p-6 w-full max-w-lg max-h-[85vh] overflow-y-auto"
+              className="modal-panel modal-panel-lg"
               data-testid="plan-modal"
             >
-              <h2 className="font-display text-2xl font-bold">Buat Rencana Antar</h2>
-              <div className="grid grid-cols-1 gap-3 mt-4">
-                <div>
-                  <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Tanggal Antar</label>
-                  <input
-                    data-testid="plan-date-input"
-                    required
-                    type="date"
-                    className="w-full mt-1 px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]"
-                    value={form.plan_date}
-                    onChange={(e) => setForm({ ...form, plan_date: e.target.value })}
-                  />
-                </div>
-                <div>
-                  <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Driver</label>
-                  <select
-                    className="w-full mt-1 px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]"
-                    value={form.driver_id}
-                    onChange={(e) => setForm({ ...form, driver_id: e.target.value })}
-                  >
-                    <option value="">— Pilih Driver —</option>
-                    {drivers.map((d) => (
-                      <option key={d.id} value={d.id}>{d.name}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Catatan</label>
-                  <textarea
-                    rows={2}
-                    className="w-full mt-1 px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0] text-sm resize-none"
-                    placeholder="Catatan tambahan (opsional)"
-                    value={form.notes}
-                    onChange={(e) => setForm({ ...form, notes: e.target.value })}
-                  />
-                </div>
-                <div>
-                  <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Pilih Tujuan & Set Porsi</label>
-                  {form.destination_ids.length > 0 && (
-                    <div className="mt-2 p-3 bg-[#2C4251]/5 border border-[#2C4251]/20 rounded-md">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-xs font-semibold text-[#2C4251]">Quick Fill: Terapkan ke semua tujuan</span>
-                        <button type="button" onClick={applyQuickFill} className="text-xs text-[#4A7C59] font-semibold hover:underline">Terapkan</button>
-                      </div>
-                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                        {Object.entries(MENU_CATEGORIES).map(([key, cat]) => (
-                          <div key={key}>
-                            <label className="text-[10px] uppercase tracking-widest" style={{ color: cat.color }}>{cat.label}</label>
-                            <input type="number" min="0" inputMode="numeric" className="w-full mt-0.5 px-2 py-1.5 rounded border border-[#EAE4D8] bg-white text-sm" value={quickFill[key] || ""} placeholder="0" onChange={(e) => setQuickFill(p => ({ ...p, [key]: parseInt(e.target.value) || 0 }))} />
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                  <div className="mt-2 space-y-3">
-                    {destinations.length === 0 && (
-                      <p className="text-sm text-[#5C5C5C]">Tidak ada tujuan aktif. Buat tujuan terlebih dahulu.</p>
-                    )}
-                    {destinations.map((d) => {
-                      const isSelected = form.destination_ids.includes(d.id);
-                      return (
-                        <div key={d.id} className="border border-[#EAE4D8] rounded-md p-3 bg-[#F9F6F0]">
-                          <label className="flex items-center gap-2 cursor-pointer">
-                            <input
-                              type="checkbox"
-                              checked={isSelected}
-                              onChange={() => toggleDest(d.id)}
-                              className="accent-[#4A7C59]"
-                            />
-                            <span className="font-semibold text-sm flex items-center gap-1">
-                              <MapPin size={12} className="text-[#4A7C59]" /> {d.name}
-                            </span>
-                          </label>
-                          {isSelected && (
-                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-2 ml-6">
-                              {Object.entries(MENU_CATEGORIES).map(([key, cat]) => (
-                                <div key={key}>
-                                  <label className="text-[10px] uppercase tracking-widest" style={{ color: cat.color }}>
-                                    {cat.label}
-                                  </label>
-                                  <input
-                                    type="number"
-                                    min="0"
-                                    className="w-full mt-0.5 px-2 py-1 rounded border border-[#EAE4D8] bg-white text-sm"
-                                    value={portions[d.id]?.[key] || ""}
-                                    placeholder="0"
-                                    onChange={(e) => setPortion(d.id, key, e.target.value)}
-                                  />
-                                </div>
-                              ))}
-                            </div>
-                          )}
+              <div className="modal-header">
+                <h2 className="font-display text-2xl font-bold">Buat Rencana Antar</h2>
+                <button type="button" onClick={() => setOpen(false)} className="btn-ghost text-lg leading-none p-1">&times;</button>
+              </div>
+              <div className="modal-body">
+                <div className="grid grid-cols-1 gap-3">
+                  <div>
+                    <label className="form-label">Tanggal Antar</label>
+                    <input
+                      data-testid="plan-date-input"
+                      required
+                      type="date"
+                      className="form-input"
+                      value={form.plan_date}
+                      onChange={(e) => setForm({ ...form, plan_date: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <label className="form-label">Driver</label>
+                    <select
+                      className="form-select"
+                      value={form.driver_id}
+                      onChange={(e) => setForm({ ...form, driver_id: e.target.value })}
+                    >
+                      <option value="">— Pilih Driver —</option>
+                      {drivers.map((d) => (
+                        <option key={d.id} value={d.id}>{d.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="form-label">Catatan</label>
+                    <textarea
+                      rows={2}
+                      className="form-textarea text-sm resize-none"
+                      placeholder="Catatan tambahan (opsional)"
+                      value={form.notes}
+                      onChange={(e) => setForm({ ...form, notes: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <label className="form-label">Pilih Tujuan & Set Porsi</label>
+                    {form.destination_ids.length > 0 && (
+                      <div className="mt-2 p-3 bg-[#2C4251]/5 border border-[#2C4251]/20 rounded-md">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-xs font-semibold text-[#2C4251]">Quick Fill: Terapkan ke semua tujuan</span>
+                          <button type="button" onClick={applyQuickFill} className="text-xs text-[#4A7C59] font-semibold hover:underline">Terapkan</button>
                         </div>
-                      );
-                    })}
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                          {Object.entries(MENU_CATEGORIES).map(([key, cat]) => (
+                            <div key={key}>
+                              <label className="text-[10px] uppercase tracking-widest" style={{ color: cat.color }}>{cat.label}</label>
+                              <input type="number" min="0" inputMode="numeric" className="form-input mt-0.5 text-sm" value={quickFill[key] || ""} placeholder="0" onChange={(e) => setQuickFill(p => ({ ...p, [key]: parseInt(e.target.value) || 0 }))} />
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    <div className="mt-2 space-y-3">
+                      {destinations.length === 0 && (
+                        <p className="text-sm text-[#5C5C5C]">Tidak ada tujuan aktif. Buat tujuan terlebih dahulu.</p>
+                      )}
+                      {destinations.map((d) => {
+                        const isSelected = form.destination_ids.includes(d.id);
+                        return (
+                          <div key={d.id} className="border border-[#EAE4D8] rounded-md p-3 bg-[#F9F6F0]">
+                            <label className="flex items-center gap-2 cursor-pointer">
+                              <input
+                                type="checkbox"
+                                checked={isSelected}
+                                onChange={() => toggleDest(d.id)}
+                                className="accent-[#4A7C59]"
+                              />
+                              <span className="font-semibold text-sm flex items-center gap-1">
+                                <MapPin size={12} className="text-[#4A7C59]" /> {d.name}
+                              </span>
+                            </label>
+                            {isSelected && (
+                              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-2 ml-6">
+                                {Object.entries(MENU_CATEGORIES).map(([key, cat]) => (
+                                  <div key={key}>
+                                    <label className="text-[10px] uppercase tracking-widest" style={{ color: cat.color }}>
+                                      {cat.label}
+                                    </label>
+                                    <input
+                                      type="number"
+                                      min="0"
+                                      className="form-input mt-0.5 text-sm"
+                                      value={portions[d.id]?.[key] || ""}
+                                      placeholder="0"
+                                      onChange={(e) => setPortion(d.id, key, e.target.value)}
+                                    />
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
                 </div>
               </div>
-              <div className="flex justify-end gap-2 mt-5">
+              <div className="modal-footer">
                 <button type="button" onClick={() => setOpen(false)} className="btn-ghost">Batal</button>
                 <button data-testid="save-plan" type="submit" className="btn-primary">Simpan Rencana</button>
               </div>

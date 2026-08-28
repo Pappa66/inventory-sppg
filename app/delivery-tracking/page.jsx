@@ -21,6 +21,8 @@ import {
   CheckCircle2,
   Clock,
   AlertTriangle,
+  Phone,
+  User,
 } from "lucide-react";
 import { SkeletonCards } from "@/components/Skeleton";
 
@@ -153,7 +155,7 @@ function UpdateFormInline({ planId, destIdx, dest, onUpdate, onCancel }) {
   return (
     <div className="mt-3 p-4 sm:p-5 bg-[#F9F6F0] border border-[#EAE4D8] rounded-xl space-y-4">
       <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
-        <label className="text-xs uppercase tracking-widest text-[#5C5C5C] font-semibold shrink-0">Status</label>
+        <label className="form-label shrink-0">Status</label>
         <div className="flex flex-wrap gap-2">
           {STEPS.map((s) => (
             <button
@@ -174,24 +176,24 @@ function UpdateFormInline({ planId, destIdx, dest, onUpdate, onCancel }) {
 
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="flex-1">
-          <label className="text-xs uppercase tracking-widest text-[#5C5C5C] flex items-center gap-1 mb-1">
+          <label className="form-label flex items-center gap-1 mb-1">
             <Clock size={12} /> Jam Pengantaran
           </label>
           <input
             type="time"
-            className="w-full px-3 py-2 rounded-md border border-[#EAE4D8] bg-white text-sm"
+            className="form-input"
             value={deliveryTime}
             onChange={(e) => setDeliveryTime(e.target.value)}
           />
         </div>
         <div className="flex-1">
-          <label className="text-xs uppercase tracking-widest text-[#5C5C5C] flex items-center gap-1 mb-1">
+          <label className="form-label flex items-center gap-1 mb-1">
             <FileText size={12} /> Catatan
           </label>
           <input
             type="text"
             placeholder="Catatan pengantaran (opsional)"
-            className="w-full px-3 py-2 rounded-md border border-[#EAE4D8] bg-white text-sm"
+            className="form-input"
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
           />
@@ -200,7 +202,7 @@ function UpdateFormInline({ planId, destIdx, dest, onUpdate, onCancel }) {
 
       {status === "DELIVERED" && (
         <div>
-          <label className="text-xs uppercase tracking-widest text-[#5C5C5C] flex items-center gap-1 mb-1">
+          <label className="form-label flex items-center gap-1 mb-1">
             <Camera size={12} /> Foto Bukti Pengantaran
             <span className="text-[#C5533B] font-bold">Wajib</span>
           </label>
@@ -346,7 +348,9 @@ export default function Page() {
 
   const myPlans = useMemo(() => {
     if (canSeeAll) return plans;
-    return plans.filter((p) => p.driver_id === user?.id);
+    return plans.filter((p) =>
+      p.delivery_assignments?.some(a => a.driver_id === user?.id)
+    );
   }, [plans, canSeeAll, user]);
 
   useEffect(() => {
@@ -380,16 +384,18 @@ export default function Page() {
       <div className="space-y-6">
         <div className="flex items-center justify-between flex-wrap gap-3">
           <div>
-            <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold">Tracking Pengantaran</h1>
+            <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold">
+              {canSeeAll ? "Tracking Pengantaran" : "Pengantaran Saya"}
+            </h1>
             <p className="text-[#5C5C5C] mt-1">
               {canSeeAll
                 ? "Pantau dan update status pengantaran semua driver."
-                : "Update status pengantaran Anda hari ini."}
+                : "Lihat rencana pengantaran dan update status di jalan."}
             </p>
           </div>
           <div className="flex items-center gap-2">
             <label className="text-xs text-[#5C5C5C]">Tanggal:</label>
-            <input type="date" value={trackDate} onChange={e => setTrackDate(e.target.value)} className="px-3 py-1.5 rounded-md border border-[#EAE4D8] bg-white text-sm" />
+            <input type="date" value={trackDate} onChange={e => setTrackDate(e.target.value)} className="form-input w-auto" />
           </div>
           <div className="flex items-center gap-2 text-sm text-[#5C5C5C]">
             <Truck size={16} className="text-[#0891B2]" />
@@ -495,6 +501,20 @@ export default function Page() {
                                     <span className="truncate">{dName || `Tujuan ${idx + 1}`}</span>
                                   </div>
                                   {dAddress && <div className="text-[11px] text-[#5C5C5C] mt-0.5 ml-5 truncate">{dAddress}</div>}
+                                  {(dest.destinations?.contact_person || dest.destinations?.phone) && (
+                                    <div className="flex items-center gap-3 mt-1 ml-5 text-[11px] text-[#5C5C5C]">
+                                      {dest.destinations?.contact_person && (
+                                        <span className="flex items-center gap-1">
+                                          <User size={10} className="shrink-0" /> {dest.destinations.contact_person}
+                                        </span>
+                                      )}
+                                      {dest.destinations?.phone && (
+                                        <a href={`tel:${dest.destinations.phone}`} className="flex items-center gap-1 text-[#0891B2] hover:underline">
+                                          <Phone size={10} className="shrink-0" /> {dest.destinations.phone}
+                                        </a>
+                                      )}
+                                    </div>
+                                  )}
                                   <div className="flex flex-wrap gap-1.5 mt-1.5">
                                     {Object.entries(MENU_CATEGORIES).map(([key, cat]) => {
                                       const portions = dest.portions?.[key] || dest[`${key.toLowerCase()}_portions`] || 0;

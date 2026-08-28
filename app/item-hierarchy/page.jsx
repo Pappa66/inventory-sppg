@@ -165,7 +165,7 @@ export default function ItemHierarchyPage() {
           <select
             value={filter.level}
             onChange={(e) => setFilter({ level: e.target.value })}
-            className="px-3 py-2 rounded-md border border-[#EAE4D8] bg-white text-sm"
+            className="form-select text-sm"
           >
             <option value="">Semua Level</option>
             <option value="1">Level 1 - Kelompok</option>
@@ -211,66 +211,68 @@ export default function ItemHierarchyPage() {
 
         {/* Form Modal */}
         {form && (
-          <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4" onClick={() => setForm(null)}>
-            <div className="card-soft max-w-md w-full p-4 sm:p-6 space-y-4" onClick={e => e.stopPropagation()}>
-              <div className="flex items-center justify-between">
+          <div className="modal-overlay" onClick={() => setForm(null)}>
+            <div className="modal-panel modal-panel-sm" onClick={e => e.stopPropagation()}>
+              <div className="modal-header">
                 <h3 className="font-display font-bold text-lg">{form.id ? "Edit" : "Tambah"} Item Hierarki</h3>
-                <button onClick={() => setForm(null)} className="p-1 hover:bg-[#EAE4D8] rounded"><X size={18}/></button>
+                <button onClick={() => setForm(null)} className="btn-ghost p-2 min-w-[44px] min-h-[44px] flex items-center justify-center"><X size={18}/></button>
               </div>
-              <div>
-                <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Kode</label>
-                <input required className="w-full mt-1 px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0] font-mono" value={form.code} onChange={e => setForm({...form, code: e.target.value})} placeholder="Contoh: KH-01-001"/>
-              </div>
-              <div>
-                <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Nama</label>
-                <input required className="w-full mt-1 px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={form.name} onChange={e => setForm({...form, name: e.target.value})} placeholder="Nama item"/>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="modal-body space-y-4">
                 <div>
-                  <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Level</label>
-                  <select className="w-full mt-1 px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={form.level} onChange={e => setForm({...form, level: parseInt(e.target.value)})}>
-                    <option value={1}>1 - Kelompok</option>
-                    <option value={2}>2 - Sub-Kelompok</option>
-                    <option value={3}>3 - Barang</option>
-                  </select>
+                  <label className="form-label">Kode</label>
+                  <input required className="form-input w-full mt-1 font-mono" value={form.code} onChange={e => setForm({...form, code: e.target.value})} placeholder="Contoh: KH-01-001"/>
                 </div>
                 <div>
-                  <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Kode Induk</label>
-                  <select className="w-full mt-1 px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={form.parent_code || ""} onChange={e => setForm({...form, parent_code: e.target.value || null})}>
-                    <option value="">-</option>
-                    {items.filter(i => i.level < form.level && i.is_active !== false).map(i => (
-                      <option key={i.code} value={i.code}>{i.code} - {i.name}</option>
-                    ))}
-                  </select>
+                  <label className="form-label">Nama</label>
+                  <input required className="form-input w-full mt-1" value={form.name} onChange={e => setForm({...form, name: e.target.value})} placeholder="Nama item"/>
                 </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="form-label">Level</label>
+                    <select className="form-select w-full mt-1" value={form.level} onChange={e => setForm({...form, level: parseInt(e.target.value)})}>
+                      <option value={1}>1 - Kelompok</option>
+                      <option value={2}>2 - Sub-Kelompok</option>
+                      <option value={3}>3 - Barang</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="form-label">Kode Induk</label>
+                    <select className="form-select w-full mt-1" value={form.parent_code || ""} onChange={e => setForm({...form, parent_code: e.target.value || null})}>
+                      <option value="">-</option>
+                      {items.filter(i => i.level < form.level && i.is_active !== false).map(i => (
+                        <option key={i.code} value={i.code}>{i.code} - {i.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="form-label">Kategori</label>
+                    <select className="form-select w-full mt-1" value={form.category || ""} onChange={e => setForm({...form, category: e.target.value || null})}>
+                      <option value="">-</option>
+                      <option value="KH">KH - Karbohidrat</option>
+                      <option value="PH">PH - Protein Hewani</option>
+                      <option value="PN">PN - Protein Nabati</option>
+                      <option value="SY">SY - Sayuran</option>
+                      <option value="BU">BU - Buah-buahan</option>
+                      <option value="BB">BB - Bahan Baku Lain</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="form-label">Satuan</label>
+                    <input className="form-input w-full mt-1" value={form.unit || ""} onChange={e => setForm({...form, unit: e.target.value})} placeholder="kg, liter, ikat"/>
+                  </div>
+                </div>
+                {form.level === 3 && (
+                  <div>
+                    <label className="form-label">Zona</label>
+                    <select className="form-select w-full mt-1" value={form.zone || "DRY"} onChange={e => setForm({...form, zone: e.target.value})}>
+                      {ZONES.map(z => <option key={z} value={z}>{z}</option>)}
+                    </select>
+                  </div>
+                )}
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Kategori</label>
-                  <select className="w-full mt-1 px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={form.category || ""} onChange={e => setForm({...form, category: e.target.value || null})}>
-                    <option value="">-</option>
-                    <option value="KH">KH - Karbohidrat</option>
-                    <option value="PH">PH - Protein Hewani</option>
-                    <option value="PN">PN - Protein Nabati</option>
-                    <option value="SY">SY - Sayuran</option>
-                    <option value="BU">BU - Buah-buahan</option>
-                    <option value="BB">BB - Bahan Baku Lain</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Satuan</label>
-                  <input className="w-full mt-1 px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={form.unit || ""} onChange={e => setForm({...form, unit: e.target.value})} placeholder="kg, liter, ikat"/>
-                </div>
-              </div>
-              {form.level === 3 && (
-                <div>
-                  <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Zona</label>
-                  <select className="w-full mt-1 px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={form.zone || "DRY"} onChange={e => setForm({...form, zone: e.target.value})}>
-                    {ZONES.map(z => <option key={z} value={z}>{z}</option>)}
-                  </select>
-                </div>
-              )}
-              <div className="flex gap-2 pt-2">
+              <div className="modal-footer">
                 <button onClick={handleSave} className="btn-primary flex-1"><Save size={14}/> Simpan</button>
                 <button onClick={() => setForm(null)} className="btn-outline flex-1">Batal</button>
               </div>

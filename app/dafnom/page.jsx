@@ -255,13 +255,13 @@ export default function DafNomPage() {
                       )}
                     </div>
                     <input
-                      className="w-full px-2 py-1.5 rounded border border-[#EAE4D8] bg-[#F9F6F0] text-sm font-medium"
+                      className="form-input w-full font-medium"
                       value={entry.jabatan}
                       onChange={e => update(idx, "jabatan", e.target.value)}
                       placeholder="Jabatan"
                     />
                     <input
-                      className="w-full px-2 py-1.5 rounded border border-[#EAE4D8] bg-[#F9F6F0] text-sm"
+                      className="form-input w-full"
                       value={entry.nama}
                       onChange={e => update(idx, "nama", e.target.value)}
                       placeholder="Nama lengkap"
@@ -270,14 +270,14 @@ export default function DafNomPage() {
                       <div>
                         <label className="text-[10px] uppercase text-[#5C5C5C]">Jumlah</label>
                         <input type="number" min="0"
-                          className="w-full mt-0.5 px-2 py-1.5 rounded border border-[#EAE4D8] bg-white text-sm text-right"
+                          className="form-input w-full mt-0.5 text-right"
                           value={entry.jumlah || ""}
                           onChange={e => update(idx, "jumlah", parseInt(e.target.value) || 0)} />
                       </div>
                       <div>
                         <label className="text-[10px] uppercase text-[#5C5C5C]">Insentif/Hari</label>
                         <input type="number" min="0" step="500"
-                          className="w-full mt-0.5 px-2 py-1.5 rounded border border-[#EAE4D8] bg-white text-sm text-right"
+                          className="form-input w-full mt-0.5 text-right"
                           value={entry.insentif || ""}
                           onChange={e => update(idx, "insentif", parseInt(e.target.value) || 0)} />
                       </div>

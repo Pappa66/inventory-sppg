@@ -133,7 +133,7 @@ export default function OpeningBalancesPage() {
           <select
             value={selectedPeriod}
             onChange={e => setSelectedPeriod(e.target.value)}
-            className="px-3 py-2 rounded-md border border-[#EAE4D8] bg-white text-sm"
+            className="form-select"
           >
             {periods.map(p => (
               <option key={p.id} value={p.id}>{p.period_name}</option>
@@ -150,13 +150,13 @@ export default function OpeningBalancesPage() {
           <div className="relative flex-1 max-w-sm">
             <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#5C5C5C]" />
             <input
-              className="w-full pl-9 pr-4 py-2 rounded-md border border-[#EAE4D8] bg-white text-sm"
+              className="form-input w-full pl-9 pr-4"
               placeholder="Cari kode atau nama barang..."
               value={search}
               onChange={e => setSearch(e.target.value)}
             />
           </div>
-          <select value={filterCat} onChange={e => setFilterCat(e.target.value)} className="px-3 py-2 rounded-md border border-[#EAE4D8] bg-white text-sm">
+          <select value={filterCat} onChange={e => setFilterCat(e.target.value)} className="form-select">
             <option value="">Semua Kategori</option>
             <option value="KH">KH - Karbohidrat</option>
             <option value="PH">PH - Protein Hewani</option>
@@ -197,7 +197,7 @@ export default function OpeningBalancesPage() {
                     {canWrite ? (
                       <input
                         type="number"
-                        className="w-full px-2 py-1.5 rounded border border-[#EAE4D8] bg-white text-sm text-right"
+                        className="form-input w-full text-right"
                         value={balances[item.code]?.quantity || ""}
                         onChange={e => handleChange(item.code, "quantity", e.target.value)}
                       />
@@ -210,7 +210,7 @@ export default function OpeningBalancesPage() {
                     {canWrite ? (
                       <input
                         type="number"
-                        className="w-full px-2 py-1.5 rounded border border-[#EAE4D8] bg-white text-sm text-right"
+                        className="form-input w-full text-right"
                         value={balances[item.code]?.value || ""}
                         onChange={e => handleChange(item.code, "value", e.target.value)}
                       />
@@ -255,7 +255,7 @@ export default function OpeningBalancesPage() {
                       {canWrite ? (
                         <input
                           type="number"
-                          className="w-24 text-right px-2 py-1 rounded border border-[#EAE4D8] bg-white text-sm"
+                          className="form-input w-24 text-right"
                           value={balances[item.code]?.quantity || ""}
                           onChange={e => handleChange(item.code, "quantity", e.target.value)}
                         />
@@ -267,7 +267,7 @@ export default function OpeningBalancesPage() {
                       {canWrite ? (
                         <input
                           type="number"
-                          className="w-32 text-right px-2 py-1 rounded border border-[#EAE4D8] bg-white text-sm"
+                          className="form-input w-32 text-right"
                           value={balances[item.code]?.value || ""}
                           onChange={e => handleChange(item.code, "value", e.target.value)}
                         />

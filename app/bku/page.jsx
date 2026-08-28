@@ -119,34 +119,34 @@ export default function BKUPage() {
         {/* Filters */}
         <div className="card-soft p-4 flex flex-wrap gap-3 items-end">
           <div>
-            <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Kode Akun</label>
-            <select className="mt-1 px-3 py-2 rounded-md border border-[#EAE4D8] bg-white text-sm" value={filterAccount} onChange={e => { setFilterAccount(e.target.value); setPage(1); }}>
+            <label className="form-label">Kode Akun</label>
+            <select className="mt-1 form-select" value={filterAccount} onChange={e => { setFilterAccount(e.target.value); setPage(1); }}>
               <option value="">Semua</option>
               {ACCOUNT_CODES.map(a => <option key={a.code} value={a.code}>{a.code} - {a.name}</option>)}
             </select>
           </div>
           <div>
-            <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Dari Tanggal</label>
-            <input type="date" className="mt-1 px-3 py-2 rounded-md border border-[#EAE4D8] bg-white text-sm" value={filterDateStart} onChange={e => { setFilterDateStart(e.target.value); setPage(1); }} />
+            <label className="form-label">Dari Tanggal</label>
+            <input type="date" className="mt-1 form-input" value={filterDateStart} onChange={e => { setFilterDateStart(e.target.value); setPage(1); }} />
           </div>
           <div>
-            <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Sampai Tanggal</label>
-            <input type="date" className="mt-1 px-3 py-2 rounded-md border border-[#EAE4D8] bg-white text-sm" value={filterDateEnd} onChange={e => { setFilterDateEnd(e.target.value); setPage(1); }} />
+            <label className="form-label">Sampai Tanggal</label>
+            <input type="date" className="mt-1 form-input" value={filterDateEnd} onChange={e => { setFilterDateEnd(e.target.value); setPage(1); }} />
           </div>
         </div>
 
         {/* Grand Total */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="card-soft p-4">
-            <div className="text-xs uppercase tracking-widest text-[#5C5C5C]">Total Debet</div>
+            <div className="form-label">Total Debet</div>
             <div className="font-display text-xl sm:text-2xl font-bold mt-1 text-[#4A7C59]">{fmtIDR(grandTotal.debit)}</div>
           </div>
           <div className="card-soft p-4">
-            <div className="text-xs uppercase tracking-widest text-[#5C5C5C]">Total Kredit</div>
+            <div className="form-label">Total Kredit</div>
             <div className="font-display text-xl sm:text-2xl font-bold mt-1 text-[#C5533B]">{fmtIDR(grandTotal.credit)}</div>
           </div>
           <div className="card-soft p-4">
-            <div className="text-xs uppercase tracking-widest text-[#5C5C5C]">Saldo Kas (1000+1100+1200)</div>
+            <div className="form-label">Saldo Kas (1000+1100+1200)</div>
             <div className={`font-display text-xl sm:text-2xl font-bold mt-1 ${cashSaldo.debit - cashSaldo.credit >= 0 ? "text-[#4A7C59]" : "text-[#C5533B]"}`}>
               {fmtIDR(cashSaldo.debit - cashSaldo.credit)}
             </div>

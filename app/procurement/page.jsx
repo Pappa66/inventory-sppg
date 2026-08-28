@@ -147,82 +147,87 @@ export default function Page() {
         <Pagination page={page} totalPages={Math.ceil(purchases.length / perPage)} onPageChange={setPage} />
 
         {open && (
-          <div className="fixed inset-0 z-40 bg-black/40 grid place-items-center p-4 overflow-y-auto" onClick={()=>setOpen(false)}>
-            <form onClick={(e)=>e.stopPropagation()} onSubmit={submit} className="card-soft p-4 sm:p-6 w-full max-w-2xl my-8" data-testid="purchase-form">
-              <h2 className="font-display text-2xl font-bold">Catat Belanja</h2>
-              <div className="grid grid-cols-2 gap-3 mt-4">
-                <div className="col-span-2">
-                  <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Kategori</label>
-                  <div className="role-switch w-full mt-1" style={{display:"grid", gridTemplateColumns:"1fr 1fr"}}>
-                    {["STOCK","OPERATIONAL"].map((c) => (
-                      <button data-testid={`cat-${c}`} type="button" key={c} data-active={form.category===c} onClick={()=>setForm({...form, category:c})}
-                        style={form.category===c?{background:c==="STOCK"?"#4A7C59":"#D97706", color:"white"}:{}}>{c}</button>
-                    ))}
-                  </div>
-                </div>
-                <div className="col-span-2">
-                  <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Deskripsi</label>
-                  <input data-testid="purchase-desc" required className="w-full mt-1 px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={form.description} onChange={(e)=>setForm({...form, description:e.target.value})}/>
-                </div>
-                <div>
-                  <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Jumlah manual (Rp)</label>
-                  <input data-testid="purchase-amount" required type="number" className="w-full mt-1 px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={form.amount_idr || ""} onChange={(e)=>setForm({...form, amount_idr:parseFloat(e.target.value)||0})}/>
-                </div>
-                <div>
-                  <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Total struk (Rp)</label>
-                  <input type="number" className="w-full mt-1 px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={form.receipt_total_idr || ""} onChange={(e)=>setForm({...form, receipt_total_idr:parseFloat(e.target.value)||0})}/>
-                </div>
-                <div>
-                  <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Supplier</label>
-                  <input className="w-full mt-1 px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={form.supplier} onChange={(e)=>setForm({...form, supplier:e.target.value})}/>
-                </div>
-                <div>
-                  <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Transport / BBM (Rp)</label>
-                  <input type="number" className="w-full mt-1 px-4 py-2.5 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" value={form.transport_amount_idr || ""} onChange={(e)=>setForm({...form, transport_amount_idr:parseFloat(e.target.value)||0})}/>
-                </div>
-
-                {form.category === "STOCK" && (
+          <div className="modal-overlay" onClick={()=>setOpen(false)}>
+            <form onClick={(e)=>e.stopPropagation()} onSubmit={submit} className="modal-panel modal-panel-lg" data-testid="purchase-form">
+              <div className="modal-header">
+                <h2 className="font-display text-2xl font-bold">Catat Belanja</h2>
+                <button type="button" onClick={()=>setOpen(false)} className="btn-ghost text-lg leading-none p-1">&times;</button>
+              </div>
+              <div className="modal-body">
+                <div className="grid grid-cols-2 gap-3">
                   <div className="col-span-2">
-                    <div className="flex items-center justify-between mt-2">
-                      <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Rincian Bahan</label>
-                      <button data-testid="add-purchase-item" type="button" onClick={addItemRow} className="btn-ghost text-xs"><Plus size={12}/> Baris</button>
-                    </div>
-                    <div className="space-y-2 mt-2">
-                      {form.items.map((row, i) => (
-                        <div key={i} className="grid grid-cols-6 sm:grid-cols-12 gap-2">
-                          <select className="col-span-6 px-2 py-2 rounded-md border border-[#EAE4D8] bg-[#F9F6F0] text-sm" value={row.item_id} onChange={(e)=>updItemRow(i,"item_id",e.target.value)}>
-                            <option value="">— bahan —</option>
-                            {items.map(it => {
-                              const stok = stockByItem[it.id] || 0;
-                              const low = stok < (it.par_level || 0);
-                              return <option key={it.id} value={it.id}>{it.name} ({it.unit}){stok > 0 ? ` — Stok: ${stok}` : ""}{low ? " ⚠" : ""}</option>;
-                            })}
-                          </select>
-                          <input placeholder="qty" type="number" step="0.01" className="col-span-2 px-2 py-2 rounded-md border border-[#EAE4D8] bg-[#F9F6F0] text-sm" value={row.quantity || ""} onChange={(e)=>updItemRow(i,"quantity",parseFloat(e.target.value)||0)}/>
-                          <input placeholder="harga" type="number" className="col-span-3 px-2 py-2 rounded-md border border-[#EAE4D8] bg-[#F9F6F0] text-sm" value={row.unit_price || ""} onChange={(e)=>updItemRow(i,"unit_price",parseFloat(e.target.value)||0)}/>
-                          <button type="button" onClick={()=>removeItemRow(i)} className="col-span-1 text-[#C5533B]">×</button>
-                        </div>
+                    <label className="form-label">Kategori</label>
+                    <div className="role-switch w-full mt-1" style={{display:"grid", gridTemplateColumns:"1fr 1fr"}}>
+                      {["STOCK","OPERATIONAL"].map((c) => (
+                        <button data-testid={`cat-${c}`} type="button" key={c} data-active={form.category===c} onClick={()=>setForm({...form, category:c})}
+                          style={form.category===c?{background:c==="STOCK"?"#4A7C59":"#D97706", color:"white"}:{}}>{c}</button>
                       ))}
                     </div>
                   </div>
-                )}
+                  <div className="col-span-2">
+                    <label className="form-label">Deskripsi</label>
+                    <input data-testid="purchase-desc" required className="form-input" value={form.description} onChange={(e)=>setForm({...form, description:e.target.value})}/>
+                  </div>
+                  <div>
+                    <label className="form-label">Jumlah manual (Rp)</label>
+                    <input data-testid="purchase-amount" required type="number" className="form-input" value={form.amount_idr || ""} onChange={(e)=>setForm({...form, amount_idr:parseFloat(e.target.value)||0})}/>
+                  </div>
+                  <div>
+                    <label className="form-label">Total struk (Rp)</label>
+                    <input type="number" className="form-input" value={form.receipt_total_idr || ""} onChange={(e)=>setForm({...form, receipt_total_idr:parseFloat(e.target.value)||0})}/>
+                  </div>
+                  <div>
+                    <label className="form-label">Supplier</label>
+                    <input className="form-input" value={form.supplier} onChange={(e)=>setForm({...form, supplier:e.target.value})}/>
+                  </div>
+                  <div>
+                    <label className="form-label">Transport / BBM (Rp)</label>
+                    <input type="number" className="form-input" value={form.transport_amount_idr || ""} onChange={(e)=>setForm({...form, transport_amount_idr:parseFloat(e.target.value)||0})}/>
+                  </div>
 
-                <div className="col-span-2">
-                  <label className="text-xs uppercase tracking-widest text-[#5C5C5C]">Foto Struk (wajib)</label>
-                  <input data-testid="purchase-photo" ref={fileRef} type="file" accept="image/*" capture="environment" onChange={pickPhoto} className="w-full mt-1 text-sm"/>
-                  {form.receipt_photo ? (
-                    <div className="relative mt-2 rounded-md overflow-hidden border border-[#EAE4D8]">
-                      <img alt="struk" src={form.receipt_photo} className="w-full h-52 object-cover"/>
-                      <div className="absolute bottom-0 left-0 right-0 bg-[#2D2D2D]/85 text-white text-[10px] audit-ts p-2 flex items-center justify-between">
-                        <span>SPPG · {new Date().toISOString()}</span><span>WATERMARK · ROLE: {activeRole}</span>
+                  {form.category === "STOCK" && (
+                    <div className="col-span-2">
+                      <div className="flex items-center justify-between mt-2">
+                        <label className="form-label">Rincian Bahan</label>
+                        <button data-testid="add-purchase-item" type="button" onClick={addItemRow} className="btn-ghost text-xs"><Plus size={12}/> Baris</button>
+                      </div>
+                      <div className="space-y-2 mt-2">
+                        {form.items.map((row, i) => (
+                          <div key={i} className="grid grid-cols-6 sm:grid-cols-12 gap-2">
+                            <select className="col-span-6 form-select text-sm" value={row.item_id} onChange={(e)=>updItemRow(i,"item_id",e.target.value)}>
+                              <option value="">— bahan —</option>
+                              {items.map(it => {
+                                const stok = stockByItem[it.id] || 0;
+                                const low = stok < (it.par_level || 0);
+                                return <option key={it.id} value={it.id}>{it.name} ({it.unit}){stok > 0 ? ` — Stok: ${stok}` : ""}{low ? " ⚠" : ""}</option>;
+                              })}
+                            </select>
+                            <input placeholder="qty" type="number" step="0.01" className="col-span-2 form-input text-sm" value={row.quantity || ""} onChange={(e)=>updItemRow(i,"quantity",parseFloat(e.target.value)||0)}/>
+                            <input placeholder="harga" type="number" className="col-span-3 form-input text-sm" value={row.unit_price || ""} onChange={(e)=>updItemRow(i,"unit_price",parseFloat(e.target.value)||0)}/>
+                            <button type="button" onClick={()=>removeItemRow(i)} className="col-span-1 text-[#C5533B]">×</button>
+                          </div>
+                        ))}
                       </div>
                     </div>
-                  ) : (
-                    <button type="button" onClick={()=>fileRef.current?.click()} className="w-full mt-2 h-32 border-2 border-dashed border-[#EAE4D8] rounded-md text-[#5C5C5C] flex flex-col items-center justify-center gap-2"><Camera/> Ambil / Pilih Foto Struk</button>
                   )}
+
+                  <div className="col-span-2">
+                    <label className="form-label">Foto Struk (wajib)</label>
+                    <input data-testid="purchase-photo" ref={fileRef} type="file" accept="image/*" capture="environment" onChange={pickPhoto} className="w-full mt-1 text-sm"/>
+                    {form.receipt_photo ? (
+                      <div className="relative mt-2 rounded-md overflow-hidden border border-[#EAE4D8]">
+                        <img alt="struk" src={form.receipt_photo} className="w-full h-52 object-cover"/>
+                        <div className="absolute bottom-0 left-0 right-0 bg-[#2D2D2D]/85 text-white text-[10px] audit-ts p-2 flex items-center justify-between">
+                          <span>SPPG · {new Date().toISOString()}</span><span>WATERMARK · ROLE: {activeRole}</span>
+                        </div>
+                      </div>
+                    ) : (
+                      <button type="button" onClick={()=>fileRef.current?.click()} className="w-full mt-2 h-32 border-2 border-dashed border-[#EAE4D8] rounded-md text-[#5C5C5C] flex flex-col items-center justify-center gap-2"><Camera/> Ambil / Pilih Foto Struk</button>
+                    )}
+                  </div>
                 </div>
               </div>
-              <div className="flex justify-end gap-2 mt-5">
+              <div className="modal-footer">
                 <button type="button" onClick={()=>setOpen(false)} className="btn-ghost">Batal</button>
                 <button data-testid="submit-purchase" type="submit" className="btn-primary">Simpan</button>
               </div>
@@ -231,24 +236,29 @@ export default function Page() {
         )}
 
         {verifyOf && (
-          <div className="fixed inset-0 z-40 bg-black/40 grid place-items-center p-4" onClick={()=>setVerifyOf(null)}>
-            <div onClick={(e)=>e.stopPropagation()} className="card-soft p-4 sm:p-6 w-full max-w-lg">
-              <h2 className="font-display text-2xl font-bold">Validasi Akuntan</h2>
-              <p className="text-[#5C5C5C] text-sm mt-1">{verifyOf.description}</p>
-              <div className="grid grid-cols-2 gap-3 mt-4 text-sm">
-                <div className="card-soft p-3">
-                  <div className="text-[10px] uppercase tracking-widest text-[#5C5C5C]">Input Manual</div>
-                  <div className="audit-ts text-xl font-bold">{fmtIDR(verifyOf.amount_idr)}</div>
-                </div>
-                <div className="card-soft p-3">
-                  <div className="text-[10px] uppercase tracking-widest text-[#5C5C5C]">Struk Digital</div>
-                  <div className="audit-ts text-xl font-bold">{fmtIDR(verifyOf.receipt_total_idr||0)}</div>
-                </div>
+          <div className="modal-overlay" onClick={()=>setVerifyOf(null)}>
+            <div onClick={(e)=>e.stopPropagation()} className="modal-panel modal-panel-md">
+              <div className="modal-header">
+                <h2 className="font-display text-2xl font-bold">Validasi Akuntan</h2>
+                <button type="button" onClick={()=>setVerifyOf(null)} className="btn-ghost text-lg leading-none p-1">&times;</button>
               </div>
-              <img alt="struk" src={verifyOf.receipt_photo} className="mt-3 w-full h-52 object-contain rounded-md border border-[#EAE4D8] bg-[#2D2D2D]"/>
-              <label className="text-xs uppercase tracking-widest text-[#5C5C5C] mt-3 block">Catatan</label>
-              <textarea data-testid="verify-note" className="w-full mt-1 px-3 py-2 rounded-md border border-[#EAE4D8] bg-[#F9F6F0]" rows={2} value={verifyNote} onChange={(e)=>setVerifyNote(e.target.value)}/>
-              <div className="flex justify-end gap-2 mt-4">
+              <div className="modal-body">
+                <p className="text-[#5C5C5C] text-sm">{verifyOf.description}</p>
+                <div className="grid grid-cols-2 gap-3 mt-4 text-sm">
+                  <div className="card-soft p-3">
+                    <div className="form-label">Input Manual</div>
+                    <div className="audit-ts text-xl font-bold">{fmtIDR(verifyOf.amount_idr)}</div>
+                  </div>
+                  <div className="card-soft p-3">
+                    <div className="form-label">Struk Digital</div>
+                    <div className="audit-ts text-xl font-bold">{fmtIDR(verifyOf.receipt_total_idr||0)}</div>
+                  </div>
+                </div>
+                <img alt="struk" src={verifyOf.receipt_photo} className="mt-3 w-full h-52 object-contain rounded-md border border-[#EAE4D8] bg-[#2D2D2D]"/>
+                <label className="form-label mt-3 block">Catatan</label>
+                <textarea data-testid="verify-note" className="form-textarea" rows={2} value={verifyNote} onChange={(e)=>setVerifyNote(e.target.value)}/>
+              </div>
+              <div className="modal-footer">
                 <button data-testid="reject-purchase" onClick={()=>verify(false)} className="btn-outline" style={{borderColor:"#C5533B", color:"#C5533B"}}>Tolak</button>
                 <button data-testid="approve-purchase" onClick={()=>verify(true)} className="btn-primary">Setujui</button>
               </div>
