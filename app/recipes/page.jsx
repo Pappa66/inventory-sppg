@@ -40,6 +40,20 @@ export default function Page() {
   const [page, setPage] = useState(1);
   const perPage = 15;
 
+  const ALLOWED_ROLES = ["admin_apps", "admin_sppg", "head_chef", "kitchen_head", "nutritionist"];
+  if (!ALLOWED_ROLES.includes(activeRole)) {
+    return (
+      <Layout>
+        <div className="flex items-center justify-center min-h-[50vh]">
+          <div className="text-center">
+            <h1 className="font-display text-2xl font-bold text-[#5C5C5C]">Akses Dibatasi</h1>
+            <p className="text-[#5C5C5C] mt-2">Anda tidak memiliki izin untuk mengakses halaman ini.</p>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
+
   const load = () => {
     setLoading(true);
     Promise.all([api.get("/recipes"), api.get("/items")])

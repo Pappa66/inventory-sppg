@@ -80,7 +80,7 @@ export default function Page() {
     return purchases.slice(start, start + perPage);
   }, [purchases, page]);
 
-  const ALLOWED_ROLES = ["admin_apps","admin_sppg","field_assistant","accountant","kitchen_head"];
+  const ALLOWED_ROLES = ["admin_apps","admin_sppg","field_assistant","accountant"];
   if (!ALLOWED_ROLES.includes(activeRole)) {
     return (
       <Layout>

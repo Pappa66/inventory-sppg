@@ -32,7 +32,7 @@ export default function Page() {
     } catch (er) { toast.error(formatErr(er)); }
   };
 
-  if (!["admin_apps","admin_sppg","kitchen_head","nutritionist"].includes(activeRole)) {
+  if (!["admin_apps","admin_sppg","kitchen_head","head_chef","nutritionist"].includes(activeRole)) {
     return (
       <Layout>
         <div className="flex items-center justify-center min-h-[50vh]">

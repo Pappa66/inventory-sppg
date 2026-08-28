@@ -5,6 +5,7 @@ import Layout from "@/components/Layout";
 import { api } from "@/lib/api";
 import { Calculator, CheckCircle2, AlertTriangle, ChefHat, Scale, HeartPulse, Leaf } from "lucide-react";
 import { AKG_STANDARDS, nutritionFactor } from "@/lib/format";
+import { useAuth } from "@/contexts/AuthContext";
 
 function NutrientBar({ label, value, unit, standard, color }) {
   const pct = standard > 0 ? Math.min((value / standard) * 100, 120) : 0;
@@ -36,6 +37,22 @@ const NUTRI_COLS = [
 ];
 
 export default function NutritionCalcPage() {
+  const { activeRole } = useAuth();
+
+  const ALLOWED_ROLES = ["nutritionist"];
+  if (!ALLOWED_ROLES.includes(activeRole)) {
+    return (
+      <Layout>
+        <div className="flex items-center justify-center min-h-[50vh]">
+          <div className="text-center">
+            <h1 className="font-display text-2xl font-bold text-[#5C5C5C]">Akses Dibatasi</h1>
+            <p className="text-[#5C5C5C] mt-2">Anda tidak memiliki izin untuk mengakses halaman ini.</p>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
+
   const [recipes, setRecipes] = useState([]);
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);

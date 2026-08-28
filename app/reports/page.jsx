@@ -578,7 +578,7 @@ export default function ReportsPage() {
     toast.success("BAPSD berhasil dicetak");
   };
 
-  if (!["admin_apps", "admin_sppg", "accountant", "kitchen_head"].includes(activeRole)) {
+  if (!["admin_apps", "admin_sppg", "accountant", "kitchen_head", "head_chef", "nutritionist"].includes(activeRole)) {
     return (
       <Layout>
         <div className="flex items-center justify-center min-h-[50vh]">
