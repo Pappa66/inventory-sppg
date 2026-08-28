@@ -7,13 +7,13 @@ export async function GET(request) {
     const supabase = await createClient();
     const { searchParams } = new URL(request.url);
 
-    let query = supabase.from("anggaran").select("*").order("plan_date", { ascending: true });
+    let query = supabase.from("anggaran_periods").select("*").order("created_at", { ascending: true });
 
     const from = searchParams.get("from");
-    if (from) query = query.gte("plan_date", from);
+    if (from) query = query.gte("created_at", from);
 
     const to = searchParams.get("to");
-    if (to) query = query.lte("plan_date", to);
+    if (to) query = query.lte("created_at", to);
 
     const { data, error } = await query;
     if (error) return apiError(error.message);
@@ -21,11 +21,11 @@ export async function GET(request) {
     const anggarans = data || [];
 
     const summary = anggarans.map((a) => ({
-      plan_date: a.plan_date,
-      total_portions: a.total_portions || 0,
+      period_name: a.period_name,
+      total_portions: a.total_porsi || 0,
       rab: a.rab || 0,
-      actual: a.actual || 0,
-      selisih: (a.rab || 0) - (a.actual || 0),
+      actual: 0,
+      selisih: (a.rab || 0),
     }));
 
     const totals = summary.reduce(

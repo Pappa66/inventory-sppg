@@ -6,24 +6,28 @@ export async function GET(request) {
     await getTokenUser(request);
     const supabase = await createClient();
 
-    const { data: items } = await supabase.from("items").select("*");
-    const { data: lots } = await supabase.from("stock_lots").select("*");
+    const { data: lots } = await supabase
+      .from("stock_lots")
+      .select("item_id, actual_quantity, quantity, items(name, unit, zone, category, par_level)");
 
     const byItem = {};
     for (const l of lots || []) {
-      byItem[l.item_id] = (byItem[l.item_id] || 0) + Number(l.actual_quantity || l.quantity || 0);
+      if (!byItem[l.item_id]) {
+        byItem[l.item_id] = { item: l.items || {}, total: 0 };
+      }
+      byItem[l.item_id].total += Number(l.actual_quantity || l.quantity || 0);
     }
 
-    const low = (items || [])
-      .filter(it => (byItem[it.id] || 0) < it.par_level)
-      .map(it => ({
-        item_id: it.id,
-        item_name: it.name,
-        unit: it.unit,
-        zone: it.zone || "DRY",
-        current: byItem[it.id] || 0,
-        par_level: it.par_level,
-        shortage: Math.round((it.par_level - (byItem[it.id] || 0)) * 1000) / 1000,
+    const low = Object.entries(byItem)
+      .filter(([, v]) => v.total < (v.item.par_level || 0))
+      .map(([item_id, v]) => ({
+        item_id,
+        item_name: v.item.name,
+        unit: v.item.unit,
+        zone: v.item.zone || "DRY",
+        current: v.total,
+        par_level: v.item.par_level || 0,
+        shortage: Math.round(((v.item.par_level || 0) - v.total) * 1000) / 1000,
       }));
 
     return apiSuccess(low);

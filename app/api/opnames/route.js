@@ -53,7 +53,7 @@ export async function POST(request) {
     // Update stock lot actual_quantity
     if (body.lot_id) {
       const { error: lotErr } = await supabase.from("stock_lots").update({ actual_quantity: body.counted_quantity }).eq("id", body.lot_id);
-      if (lotErr) console.error("[OPNAME] stock_lot update error:", lotErr);
+      if (lotErr) return apiError("Gagal update stok: " + lotErr.message);
     }
 
     const selisih = system_quantity != null ? body.counted_quantity - system_quantity : "N/A";

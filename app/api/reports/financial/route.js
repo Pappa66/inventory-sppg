@@ -5,10 +5,13 @@ export async function GET(request) {
   try {
     await getTokenUser(request);
     const supabase = await createClient();
+    const url = new URL(request.url);
+    const limit = Math.min(parseInt(url.searchParams.get("limit") || "500", 10), 5000);
     const { data: purchases } = await supabase
       .from("purchases")
       .select("*")
-      .order("purchased_at", { ascending: false });
+      .order("purchased_at", { ascending: false })
+      .limit(limit);
 
     const total_stock = (purchases || []).filter(p => p.category === "STOCK").reduce((s, p) => s + (p.amount_idr || 0), 0);
     const total_opex = (purchases || []).filter(p => p.category === "OPERATIONAL").reduce((s, p) => s + (p.amount_idr || 0), 0);

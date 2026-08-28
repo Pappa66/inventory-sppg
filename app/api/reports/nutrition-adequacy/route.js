@@ -13,9 +13,12 @@ export async function GET(request) {
     if (weekStart) query = query.eq("week_start", weekStart);
     const { data: menus } = await query;
 
-    const { data: recipes } = await supabase.from("recipes").select("*");
+    const recipeIds = [...new Set((menus || []).flatMap(m => m.recipe_ids || []))];
     const rmap = {};
-    for (const r of recipes || []) rmap[r.id] = r;
+    if (recipeIds.length > 0) {
+      const { data: recipes } = await supabase.from("recipes").select("*").in("id", recipeIds);
+      for (const r of recipes || []) rmap[r.id] = r;
+    }
 
     const rows = (menus || []).map(m => {
       const portions = m.portions || 1;
