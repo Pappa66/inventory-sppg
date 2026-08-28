@@ -1,3 +1,4 @@
+// DEPRECATED: Use /api/daily-tasks instead
 import { createClient } from "@/lib/supabase";
 import { getTokenUser, requireRoles, apiError, apiSuccess } from "@/lib/db-helpers";
 

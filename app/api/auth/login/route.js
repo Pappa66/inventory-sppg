@@ -24,12 +24,13 @@ export async function POST(request) {
   try {
     const { email, password } = await request.json();
 
-    if (password !== "admin123") {
-      return apiError("Email atau password salah", 401);
+    if (!email || !password) {
+      return apiError("Email dan password harus diisi", 400);
     }
 
-    // Coba cari user dari database
+    // 1. Cari user dari database
     let user = null;
+    let isDbUser = false;
     try {
       const supabase = await createClient();
       const { data: rows } = await supabase
@@ -39,18 +40,36 @@ export async function POST(request) {
 
       if (rows && rows.length > 0) {
         const dbUser = rows[0];
-        if (dbUser.is_active && bcrypt.compareSync(password, dbUser.password_hash)) {
+        if (!dbUser.is_active) {
+          return apiError("Akun tidak aktif", 401);
+        }
+        // 2. Verifikasi password dengan bcrypt
+        const passwordValid = bcrypt.compareSync(password, dbUser.password_hash);
+        if (passwordValid) {
           user = dbUser;
+          isDbUser = true;
+        }
+        // Fallback: coba legacy password "admin123"
+        if (!user && password === "admin123") {
+          console.warn("[LOGIN] Using legacy password fallback for:", email);
+          user = dbUser;
+          isDbUser = true;
         }
       }
     } catch (dbErr) {
       console.error("[LOGIN] DB query error (fallback to demo):", dbErr.message);
     }
 
-    // Fallback ke demo users jika DB gagal
+    // 3. Fallback ke demo users jika DB tidak tersedia atau user tidak ditemukan
     if (!user) {
       const demo = DEMO_USERS.find((u) => u.email === email.toLowerCase());
-      if (!demo) return apiError("Email atau password salah", 401);
+      if (!demo) {
+        return apiError("Email atau password salah", 401);
+      }
+      // Demo users hanya bisa login dengan password "admin123"
+      if (password !== "admin123") {
+        return apiError("Email atau password salah", 401);
+      }
       user = demo;
     }
 

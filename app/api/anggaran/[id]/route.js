@@ -13,16 +13,16 @@ export async function PATCH(request, { params }) {
 
     const { data: old } = await supabase.from("anggaran").select("*").eq("id", id).single();
 
-    const updates = { ...body };
-    delete updates.id;
-    delete updates.created_at;
+    const allowed = ["total_porsi", "rab", "notes", "status"];
+    const updates = Object.fromEntries(
+      allowed.filter((k) => k in body).map((k) => [k, body[k]])
+    );
 
-    if (updates.total_portions != null || updates.price_per_portion != null) {
-      const total_portions = updates.total_portions ?? old?.total_portions ?? 0;
+    if (updates.total_porsi != null || updates.price_per_portion != null) {
+      const total_porsi = updates.total_porsi ?? old?.total_porsi ?? 0;
       const price_per_portion = updates.price_per_portion ?? old?.price_per_portion ?? 15000;
-      updates.total_portions = total_portions;
-      updates.price_per_portion = price_per_portion;
-      updates.rab = total_portions * price_per_portion;
+      updates.total_porsi = total_porsi;
+      updates.rab = total_porsi * price_per_portion;
     }
 
     const { error } = await supabase.from("anggaran").update(updates).eq("id", id);

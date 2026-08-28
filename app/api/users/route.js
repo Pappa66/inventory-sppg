@@ -7,7 +7,7 @@ export async function GET(request) {
     const user = await getTokenUser(request);
     requireRoles("admin_apps","admin_sppg","field_assistant","kitchen_head")(user);
     const supabase = await createClient();
-    const { data } = await supabase.from("users").select("*").order("created_at", { ascending: false });
+    const { data } = await supabase.from("users").select("id, name, email, phone, role, is_active, created_at, updated_at").order("created_at", { ascending: false });
     return apiSuccess(data || []);
   } catch (e) {
     return apiError("Internal server error", 500);

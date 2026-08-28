@@ -9,9 +9,17 @@ export async function PUT(request, { params }) {
     const body = await request.json();
     const supabase = await createClient();
 
+    const allowed = ["name", "code", "level", "description", "is_active"];
+    const updates = {
+      ...Object.fromEntries(
+        allowed.filter((k) => k in body).map((k) => [k, body[k]])
+      ),
+      updated_at: new Date().toISOString(),
+    };
+
     const { data, error } = await supabase
       .from("item_hierarchies")
-      .update({ ...body, updated_at: new Date().toISOString() })
+      .update(updates)
       .eq("id", id)
       .select()
       .single();

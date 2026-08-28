@@ -117,6 +117,15 @@ export async function DELETE(request, { params }) {
     const { data: old } = await supabase.from("delivery_plans").select("*").eq("id", id).single();
     if (!old) return apiError("Delivery plan tidak ditemukan", 404);
 
+    const { data: assignmentIds } = await supabase
+      .from("delivery_assignments")
+      .select("id")
+      .eq("plan_id", id);
+
+    if (assignmentIds?.length) {
+      await supabase.from("delivery_logs").delete().in("assignment_id", assignmentIds.map((a) => a.id));
+    }
+
     await supabase.from("delivery_plan_items").delete().eq("plan_id", id);
     await supabase.from("delivery_assignments").delete().eq("plan_id", id);
 
