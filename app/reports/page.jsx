@@ -3,7 +3,7 @@
 import React, { useEffect, useState, useMemo, useCallback } from "react";
 import Layout from "@/components/Layout";
 import { api } from "@/lib/api";
-import { fmtIDR, fmtDate, BENEFICIARY_TYPES, ACCOUNT_CODES } from "@/lib/format";
+import { fmtIDR, fmtDate } from "@/lib/format";
 import {
   FileText, ScrollText, BookOpen, Users, Stamp, FileCheck,
   Calendar, Download, Printer

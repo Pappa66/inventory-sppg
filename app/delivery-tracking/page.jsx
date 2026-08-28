@@ -516,16 +516,12 @@ export default function Page() {
                                     </div>
                                   )}
                                   <div className="flex flex-wrap gap-1.5 mt-1.5">
-                                    {Object.entries(MENU_CATEGORIES).map(([key, cat]) => {
-                                      const portions = dest.portions?.[key] || dest[`${key.toLowerCase()}_portions`] || 0;
-                                      if (!portions) return null;
-                                      return (
-                                        <span key={key} className="text-[10px] px-2 py-0.5 rounded-full font-medium"
-                                          style={{ background: `${cat.color}1A`, color: cat.color }}>
-                                          {cat.label}: {portions}
-                                        </span>
-                                      );
-                                    })}
+                                    {dest.category && dest.portions > 0 && MENU_CATEGORIES[dest.category] && (
+                                      <span className="text-[10px] px-2 py-0.5 rounded-full font-medium"
+                                        style={{ background: `${MENU_CATEGORIES[dest.category].color}1A`, color: MENU_CATEGORIES[dest.category].color }}>
+                                        {MENU_CATEGORIES[dest.category].label}: {dest.portions}
+                                      </span>
+                                    )}
                                   </div>
                                   {lastLog && (
                                     <div className="mt-2 text-[11px] text-[#5C5C5C] flex items-center gap-1.5">

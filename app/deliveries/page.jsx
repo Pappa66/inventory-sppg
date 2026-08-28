@@ -162,14 +162,18 @@ export default function Page() {
   const openEdit = (plan) => {
     const existingPortions = {};
     const existingDestIds = [];
+    const destMap = {};
     for (const item of plan.delivery_plan_items || []) {
-      existingDestIds.push(item.destination_id);
-      existingPortions[item.destination_id] = {
-        BALITA: item.portions?.BALITA || item.balita_portions || 0,
-        PORTION_SMALL: item.portions?.PORTION_SMALL || item.portion_small_portions || 0,
-        PORTION_LARGE: item.portions?.PORTION_LARGE || item.portion_large_portions || 0,
-        BUMIL_BUSUI: item.portions?.BUMIL_BUSUI || item.bumil_busui_portions || 0,
-      };
+      if (!destMap[item.destination_id]) {
+        destMap[item.destination_id] = true;
+        existingDestIds.push(item.destination_id);
+      }
+      if (!existingPortions[item.destination_id]) {
+        existingPortions[item.destination_id] = { BALITA: 0, PORTION_SMALL: 0, PORTION_LARGE: 0, BUMIL_BUSUI: 0 };
+      }
+      if (item.category && item.portions) {
+        existingPortions[item.destination_id][item.category] = item.portions;
+      }
     }
     setEditingPlan(plan);
     setForm({
@@ -369,21 +373,24 @@ export default function Page() {
                             </td>
                           )}
                         </tr>
-                        {isExpanded && p.delivery_plan_items?.map((dest, idx) => (
-                          <tr key={`${p.id}-${idx}`} className="bg-[#F9F6F0] border-b border-[#EAE4D8] last:border-0">
-                            <td className="py-2 px-4 text-xs text-[#5C5C5C] pl-10">{idx + 1}.</td>
-                            <td className="py-2 px-4 text-sm font-medium">{dest.destinations?.name || destName(dest.destination_id)}</td>
-                            <td className="py-2 px-4" colSpan={canWrite ? 3 : 2}>
-                              <div className="flex flex-wrap gap-2">
-                                {Object.entries(MENU_CATEGORIES).map(([key, cat]) => (
-                                  <span key={key} className="text-xs px-2 py-0.5 rounded-full" style={{ background: `${cat.color}1A`, color: cat.color }}>
-                                    {cat.label}: {dest.portions?.[key] || 0}
-                                  </span>
-                                ))}
-                              </div>
-                            </td>
-                          </tr>
-                        ))}
+                        {isExpanded && p.delivery_plan_items?.map((dest, idx) => {
+                          const catInfo = MENU_CATEGORIES[dest.category];
+                          return (
+                            <tr key={`${p.id}-${idx}`} className="bg-[#F9F6F0] border-b border-[#EAE4D8] last:border-0">
+                              <td className="py-2 px-4 text-xs text-[#5C5C5C] pl-10">{idx + 1}.</td>
+                              <td className="py-2 px-4 text-sm font-medium">{dest.destinations?.name || destName(dest.destination_id)}</td>
+                              <td className="py-2 px-4" colSpan={canWrite ? 3 : 2}>
+                                <div className="flex flex-wrap gap-2">
+                                  {catInfo && (
+                                    <span key={dest.category} className="text-xs px-2 py-0.5 rounded-full" style={{ background: `${catInfo.color}1A`, color: catInfo.color }}>
+                                      {catInfo.label}: {dest.portions}
+                                    </span>
+                                  )}
+                                </div>
+                              </td>
+                            </tr>
+                          );
+                        })}
                       </React.Fragment>
                     );
                   })}
@@ -421,18 +428,21 @@ export default function Page() {
                       <MapPin size={14} /> {(p.delivery_plan_items?.length || 0)} tujuan
                       {isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
                     </button>
-                    {isExpanded && p.delivery_plan_items?.map((dest, idx) => (
-                      <div key={idx} className="bg-[#EAE4D8]/30 rounded-md p-3 space-y-1">
-                        <div className="font-medium text-sm">{dest.destinations?.name || destName(dest.destination_id)}</div>
-                        <div className="flex flex-wrap gap-1">
-                          {Object.entries(MENU_CATEGORIES).map(([key, cat]) => (
-                            <span key={key} className="text-[10px] px-1.5 py-0.5 rounded-full" style={{ background: `${cat.color}1A`, color: cat.color }}>
-                              {cat.label}: {dest.portions?.[key] || 0}
-                            </span>
-                          ))}
+                    {isExpanded && p.delivery_plan_items?.map((dest, idx) => {
+                      const catInfo = MENU_CATEGORIES[dest.category];
+                      return (
+                        <div key={idx} className="bg-[#EAE4D8]/30 rounded-md p-3 space-y-1">
+                          <div className="font-medium text-sm">{dest.destinations?.name || destName(dest.destination_id)}</div>
+                          <div className="flex flex-wrap gap-1">
+                            {catInfo && (
+                              <span key={dest.category} className="text-[10px] px-1.5 py-0.5 rounded-full" style={{ background: `${catInfo.color}1A`, color: catInfo.color }}>
+                                {catInfo.label}: {dest.portions}
+                              </span>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                     {canWrite && (
                       <div className="flex items-center gap-2">
                         <div className="flex-1">

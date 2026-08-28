@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase";
-import { getTokenUser, logAudit, apiError, apiSuccess } from "@/lib/db-helpers";
+import { getTokenUser, logAudit, apiError, apiSuccess, requireRoles } from "@/lib/db-helpers";
 
 const DEFAULT_ENTRIES = [
   { jabatan: "Kepala SPPG", jumlah: 1, insentif: 2000, nama: "" },
@@ -15,8 +15,10 @@ const DEFAULT_ENTRIES = [
   { jabatan: "Kader Gizi", jumlah: 5, insentif: 2000, nama: "" },
 ];
 
-export async function GET() {
+export async function GET(request) {
   try {
+    const user = await getTokenUser(request);
+    if (!user) return apiError("Unauthorized", 401);
     const supabase = await createClient();
     const { data } = await supabase.from("global_config").select("value").eq("key", "dafnom_entries").single();
     let entries = DEFAULT_ENTRIES;
@@ -32,6 +34,8 @@ export async function GET() {
 export async function PUT(request) {
   try {
     const user = await getTokenUser(request);
+    if (!user) return apiError("Unauthorized", 401);
+    requireRoles("admin_apps","admin_sppg","accountant","kitchen_head")(user);
     const body = await request.json();
     const supabase = await createClient();
     const entries = body.entries || [];
