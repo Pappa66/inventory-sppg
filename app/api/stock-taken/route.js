@@ -73,23 +73,17 @@ export async function POST(request) {
     }));
 
     // 5) Batch insert audit trail
-    const actorLabel = `${user?.name || "System"} (${user?.role || "system"})`;
     const auditEntries = updateResults.map(({ item, lot, newQty }) => ({
-      actor: actorLabel,
-      actor_id: user.id,
-      actor_role: user.role,
+      actor: user?.name || user?.email || "System",
+      actor_email: user?.email || null,
       action: "STOCK_TAKEN",
       entity: "stock_lots",
       entity_id: item.lot_id,
-      changes: {
-        actual_quantity: { old: lot.actual_quantity, new: newQty },
-        taken_by: { old: null, new: user.id },
-        taken_at: { old: null, new: now },
-        taken_reason: { old: null, new: item.reason || "COOKING" },
-        _reason: item.reason || "COOKING",
-      },
       note: `Diambil: ${item.quantity} ${lot.items?.unit || ""} dari ${lot.items?.name || "unknown"}. Sisa: ${newQty}. Alasan: ${item.reason || "COOKING"}`,
-      timestamp: now,
+      before_data: { actual_quantity: lot.actual_quantity, taken_by: null, taken_at: null, taken_reason: null },
+      after_data: { actual_quantity: newQty, taken_by: user.id, taken_at: now, taken_reason: item.reason || "COOKING" },
+      zone: null,
+      created_at: now,
     }));
 
     const { error: auditErr } = await supabase.from("audit_trail").insert(auditEntries);

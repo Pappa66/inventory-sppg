@@ -10,7 +10,6 @@ export async function GET(request) {
     const { data, error } = await supabase
       .from("biweekly_periods")
       .select("*")
-      .eq("is_active", true)
       .order("start_date", { ascending: false });
 
     if (error) {

@@ -19,7 +19,7 @@ export async function PUT(request, { params }) {
     }
 
     const allowed = ["period_id","transaction_date","account_code","description","debit","credit","buku_pembantu","notes"];
-    const updates = { updated_at: new Date().toISOString() };
+    const updates = {};
     for (const key of allowed) { if (body[key] !== undefined) updates[key] = body[key]; }
 
     const { data, error } = await supabase

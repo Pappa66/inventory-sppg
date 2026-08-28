@@ -33,8 +33,7 @@ export async function POST(request) {
       recipe_ids: body.recipe_ids || [],
       portions: body.portions || 1,
       total_days: body.total_days || 5,
-      active_days: body.active_days || [1,2,3,4,5],
-      menu_category: body.menu_category || null,
+      active_days: body.active_days || 5,
       status: "DRAFT",
       created_at: new Date().toISOString(),
     };

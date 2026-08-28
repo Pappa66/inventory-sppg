@@ -13,7 +13,7 @@ export async function PATCH(request, { params }) {
     if (!existing) return apiError("Stock lot tidak ditemukan", 404);
 
     const allowed = ["quantity","actual_quantity","expiry_date","note","zone","taken_by","taken_at","taken_reason"];
-    const updates = { updated_at: new Date().toISOString() };
+    const updates = {};
     for (const key of allowed) { if (body[key] !== undefined) updates[key] = body[key]; }
 
     const { error } = await supabase.from("stock_lots").update(updates).eq("id", id);

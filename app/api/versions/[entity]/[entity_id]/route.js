@@ -12,12 +12,12 @@ export async function GET(request, { params }) {
       .select("*")
       .eq("entity", entity)
       .eq("entity_id", entity_id)
-      .order("timestamp", { ascending: false })
+      .order("created_at", { ascending: false })
       .limit(50);
 
     if (auditErr) return apiError("Gagal ambil riwayat: " + auditErr.message, 500);
 
-    const allowedEntities = ["items", "users", "stock_lots", "item_hierarchies", "periods", "suppliers"];
+    const allowedEntities = ["items", "menus", "purchases", "users", "recipes", "destinations", "anggaran"];
     const tableName = allowedEntities.includes(entity) ? entity : "items";
     const { data: item } = await supabase
       .from(tableName)
@@ -28,17 +28,17 @@ export async function GET(request, { params }) {
     const rows = (audit || []).map(r => {
       const diff = {};
       const oldValues = {};
-      if (r.changes && typeof r.changes === "object") {
-        for (const [k, v] of Object.entries(r.changes)) {
-          if (v && typeof v === "object" && "new" in v) {
-            diff[k] = { old: v.old, new: v.new };
-            oldValues[k] = v.old;
-          }
+      const oldData = r.before_data && typeof r.before_data === "object" ? r.before_data : {};
+      const afterData = r.after_data && typeof r.after_data === "object" ? r.after_data : {};
+      for (const k of Object.keys({ ...oldData, ...afterData })) {
+        if (oldData[k] !== afterData[k]) {
+          diff[k] = { old: oldData[k], new: afterData[k] };
         }
       }
+      Object.assign(oldValues, oldData);
       return {
         id: r.id,
-        ts: r.timestamp,
+        ts: r.created_at,
         action: r.action,
         actor: r.actor,
         actor_email: r.actor,

@@ -32,7 +32,7 @@ export async function POST(request) {
       supplier: body.supplier || null,
       items: body.items || [],
       purchased_at: body.purchased_at || new Date().toISOString(),
-      created_by: user.email,
+      created_by: user.id,
       created_by_name: user.name,
       created_at: new Date().toISOString(),
       verified: false,

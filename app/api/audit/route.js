@@ -13,7 +13,7 @@ export async function GET(request) {
     const { data } = await supabase
       .from("audit_trail")
       .select("*")
-      .order("timestamp", { ascending: false })
+      .order("created_at", { ascending: false })
       .limit(limit);
 
     return apiSuccess(data || []);

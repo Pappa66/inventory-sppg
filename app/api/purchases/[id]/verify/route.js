@@ -19,7 +19,7 @@ export async function POST(request, { params }) {
 
     const updates = {
       verified: body.verified,
-      verified_by: user.email,
+      verified_by: user.id,
       verified_at: new Date().toISOString(),
       verification_note: body.note || null,
     };
