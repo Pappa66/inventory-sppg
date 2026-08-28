@@ -4,7 +4,7 @@ import { getTokenUser, requireRoles, apiError, apiSuccess } from "@/lib/db-helpe
 export async function GET(request) {
   try {
     const user = await getTokenUser(request);
-    requireRoles("admin_apps","admin_sppg", "accountant", "kitchen_head", "nutritionist")(user);
+    requireRoles("admin_apps","admin_sppg","accountant","kitchen_head","head_chef")(user);
 
     const url = new URL(request.url);
     const limit = parseInt(url.searchParams.get("limit") || "200");

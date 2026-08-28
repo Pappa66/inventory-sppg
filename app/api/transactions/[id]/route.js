@@ -11,6 +11,9 @@ export async function PUT(request, { params }) {
     const body = await request.json();
     const supabase = await createClient();
 
+    const { data: existing } = await supabase.from("transaksis").select("id").eq("id", id).single();
+    if (!existing) return apiError("Transaksi tidak ditemukan", 404);
+
     if (body.account_code && !VALID_ACCOUNT_CODES.includes(body.account_code)) {
       return apiError(`Kode akun tidak valid. Yang diperbolehkan: ${VALID_ACCOUNT_CODES.join(", ")}`, 400);
     }
@@ -45,6 +48,9 @@ export async function DELETE(request, { params }) {
     requireRoles("admin_apps","admin_sppg","accountant")(user);
     const { id } = await params;
     const supabase = await createClient();
+
+    const { data: existing } = await supabase.from("transaksis").select("id").eq("id", id).single();
+    if (!existing) return apiError("Transaksi tidak ditemukan", 404);
 
     const { error } = await supabase.from("transaksis").delete().eq("id", id);
     if (error) return apiError(error.message);

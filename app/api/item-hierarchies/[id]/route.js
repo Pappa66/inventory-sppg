@@ -9,6 +9,9 @@ export async function PUT(request, { params }) {
     const body = await request.json();
     const supabase = await createClient();
 
+    const { data: existing } = await supabase.from("item_hierarchies").select("id").eq("id", id).single();
+    if (!existing) return apiError("Hierarki tidak ditemukan", 404);
+
     const allowed = ["name", "code", "level", "description", "is_active"];
     const updates = {
       ...Object.fromEntries(
@@ -43,6 +46,9 @@ export async function DELETE(request, { params }) {
     requireRoles("admin_apps","admin_sppg")(user);
     const { id } = await params;
     const supabase = await createClient();
+
+    const { data: existing } = await supabase.from("item_hierarchies").select("id").eq("id", id).single();
+    if (!existing) return apiError("Hierarki tidak ditemukan", 404);
 
     const { error } = await supabase
       .from("item_hierarchies")

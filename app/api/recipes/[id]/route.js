@@ -11,6 +11,9 @@ export async function PATCH(request, { params }) {
     const body = await request.json();
     const supabase = await createClient();
 
+    const { data: existing } = await supabase.from("recipes").select("id").eq("id", id).single();
+    if (!existing) return apiError("Resep tidak ditemukan", 404);
+
     const allowedFields = ["name", "servings", "menu_category", "ingredients", "instructions", "calories_kcal", "protein_g", "carbs_g", "fats_g", "fiber_g", "sodium_mg", "allergens", "photo_url", "nutrition_auto"];
     const updates = {};
     for (const k of allowedFields) {
@@ -37,8 +40,13 @@ export async function DELETE(request, { params }) {
     requireRoles("admin_apps","admin_sppg", "head_chef", "kitchen_head")(user);
     const { id } = await params;
     const supabase = await createClient();
+
+    const { data: existing } = await supabase.from("recipes").select("id").eq("id", id).single();
+    if (!existing) return apiError("Resep tidak ditemukan", 404);
+
     const { error } = await supabase.from("recipes").delete().eq("id", id);
     if (error) return apiError(error.message);
+    // Note: menus.recipe_ids may reference this deleted recipe
     await logAudit(supabase, { actor: user, action: "DELETE_RECIPE", entity: "recipes", entity_id: id });
     return apiSuccess({ ok: true });
   } catch (e) {

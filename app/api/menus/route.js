@@ -3,7 +3,9 @@ import { getTokenUser, requireRoles, logAudit, apiError, apiSuccess } from "@/li
 
 export async function GET(request) {
   try {
-    await getTokenUser(request);
+    const user = await getTokenUser(request);
+    if (!user) return apiError("Unauthorized", 401);
+    requireRoles("admin_apps","admin_sppg","kitchen_head","head_chef")(user);
     const supabase = await createClient();
     const url = new URL(request.url);
     const weekStart = url.searchParams.get("week_start");
@@ -32,6 +34,7 @@ export async function POST(request) {
       portions: body.portions || 1,
       total_days: body.total_days || 5,
       active_days: body.active_days || [1,2,3,4,5],
+      menu_category: body.menu_category || null,
       status: "DRAFT",
       created_at: new Date().toISOString(),
     };

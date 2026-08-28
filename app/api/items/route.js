@@ -6,6 +6,8 @@ const CAN_EDIT = ["admin_apps","admin_sppg", "kitchen_head", "head_chef", "field
 export async function GET(request) {
   try {
     const user = await getTokenUser(request);
+    if (!user) return apiError("Unauthorized", 401);
+    requireRoles("admin_apps","admin_sppg","head_chef","kitchen_head","nutritionist","field_assistant")(user);
     const supabase = await createClient();
     const { data } = await supabase.from("items").select("*").order("name");
     return apiSuccess(data || []);

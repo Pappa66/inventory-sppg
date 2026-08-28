@@ -60,11 +60,11 @@ export async function PATCH(request, { params }) {
     const { data: old } = await supabase.from("delivery_plan_items").select("*").eq("id", body.item_id).eq("plan_id", id).single();
     if (!old) return apiError("Plan item tidak ditemukan", 404);
 
-    const updates = { ...body };
-    delete updates.item_id;
-    delete updates.id;
-    delete updates.plan_id;
-    delete updates.created_at;
+    const allowedFields = ["category", "portions", "notes"];
+    const updates = {};
+    for (const k of allowedFields) {
+      if (body[k] !== undefined) updates[k] = body[k];
+    }
 
     const { error } = await supabase.from("delivery_plan_items").update(updates).eq("id", body.item_id);
     if (error) return apiError(error.message);

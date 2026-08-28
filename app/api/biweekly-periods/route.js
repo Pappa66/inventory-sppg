@@ -3,7 +3,9 @@ import { getTokenUser, requireRoles, apiError, apiSuccess } from "@/lib/db-helpe
 
 export async function GET(request) {
   try {
-    await getTokenUser(request);
+    const user = await getTokenUser(request);
+    if (!user) return apiError("Unauthorized", 401);
+    requireRoles("admin_apps","admin_sppg")(user);
     const supabase = await createClient();
     const { data, error } = await supabase
       .from("biweekly_periods")

@@ -12,6 +12,7 @@ export async function PATCH(request, { params }) {
     const supabase = await createClient();
 
     const { data: old } = await supabase.from("anggaran").select("*").eq("id", id).single();
+    if (!old) return apiError("Anggaran tidak ditemukan", 404);
 
     const allowed = ["total_porsi", "rab", "notes", "status"];
     const updates = Object.fromEntries(
@@ -48,6 +49,7 @@ export async function DELETE(request, { params }) {
     const supabase = await createClient();
 
     const { data: old } = await supabase.from("anggaran").select("*").eq("id", id).single();
+    if (!old) return apiError("Anggaran tidak ditemukan", 404);
     const { error } = await supabase.from("anggaran").delete().eq("id", id);
     if (error) return apiError(error.message);
 

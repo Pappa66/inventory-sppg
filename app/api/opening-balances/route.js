@@ -3,7 +3,9 @@ import { getTokenUser, requireRoles, logAudit, apiError, apiSuccess } from "@/li
 
 export async function GET(request) {
   try {
-    await getTokenUser(request);
+    const user = await getTokenUser(request);
+    if (!user) return apiError("Unauthorized", 401);
+    requireRoles("admin_apps","admin_sppg")(user);
     const supabase = await createClient();
     const { searchParams } = new URL(request.url);
     const period_id = searchParams.get("period_id");

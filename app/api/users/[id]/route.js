@@ -34,3 +34,28 @@ export async function PATCH(request, { params }) {
     return apiError("Internal server error", 500);
   }
 }
+
+export async function DELETE(request, { params }) {
+  try {
+    const user = await getTokenUser(request);
+    requireRoles("admin_apps", "admin_sppg")(user);
+    const { id } = await params;
+    const supabase = await createClient();
+
+    const { data: existing } = await supabase.from("users").select("*").eq("id", id).single();
+    if (!existing) return apiError("User tidak ditemukan", 404);
+
+    const { error } = await supabase.from("users").delete().eq("id", id);
+    if (error) return apiError(error.message);
+
+    await logAudit(supabase, {
+      actor: user, action: "DELETE_USER", entity: "users", entity_id: id,
+      before: { name: existing.name, role: existing.role, is_active: existing.is_active },
+      after: null,
+    });
+
+    return apiSuccess({ ok: true });
+  } catch (e) {
+    return apiError("Internal server error", 500);
+  }
+}

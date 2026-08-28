@@ -12,6 +12,7 @@ export async function PATCH(request, { params }) {
     const supabase = await createClient();
 
     const { data: old } = await supabase.from("items").select("*").eq("id", id).single();
+    if (!old) return apiError("Item tidak ditemukan", 404);
 
     const allowed = ["name","unit","category","par_level","price_per_unit","zone","allergens","nutrition_per_100g"];
     const updates = { updated_at: new Date().toISOString() };
@@ -41,6 +42,8 @@ export async function DELETE(request, { params }) {
     const supabase = await createClient();
 
     const { data: old } = await supabase.from("items").select("*").eq("id", id).single();
+    if (!old) return apiError("Item tidak ditemukan", 404);
+    await supabase.from("stock_lots").delete().eq("item_id", id);
     const { error } = await supabase.from("items").delete().eq("id", id);
     if (error) return apiError(error.message);
 

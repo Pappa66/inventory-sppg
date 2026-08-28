@@ -5,7 +5,7 @@ export async function GET(request) {
   try {
     const user = await getTokenUser(request);
     if (!user) return apiError("Unauthorized", 401);
-
+    requireRoles("admin_apps","admin_sppg","field_assistant","driver")(user);
     const supabase = await createClient();
     const { searchParams } = new URL(request.url);
     const assignmentId = searchParams.get("assignment_id");

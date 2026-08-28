@@ -3,7 +3,9 @@ import { getTokenUser, requireRoles, logAudit, apiError, apiSuccess } from "@/li
 
 export async function GET(request) {
   try {
-    await getTokenUser(request);
+    const user = await getTokenUser(request);
+    if (!user) return apiError("Unauthorized", 401);
+    requireRoles("admin_apps","admin_sppg","field_assistant","accountant")(user);
     const supabase = await createClient();
     const { data } = await supabase.from("purchases").select("*").order("purchased_at", { ascending: false }).limit(2000);
     return apiSuccess(data || []);
